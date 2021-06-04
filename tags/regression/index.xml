@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Regression on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/regression/</link>
+    <description>Recent content in Regression on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 14 Dec 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/regression/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>线性回归与局部加权线性回归</title>
+      <link>https://shixiangwang.github.io/home/cn/post/20191214_lrlwlr/</link>
+      <pubDate>Sat, 14 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/20191214_lrlwlr/</guid>
+      <description>线性回归1 如果自变量有p个，线性回归模型的形式为： $$y=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_px_p+\epsilon$$ 如果有n个样本，则线性模型的样本形式为： $$y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}+\epsilon_i, \ \ i=1,2,\cdots,n.$$ 如果记 $$\mathbf y=\left[ \begin{array}{ccc} y_1\\ y_2\\ \vdots\\ y_n \end{array} \right]; \ \ \mathbf X=\left[ \begin{array}{ccc} 1 &amp;amp; x_{11}</description>
+    </item>
+    
+    <item>
+      <title>R线性回归</title>
+      <link>https://shixiangwang.github.io/home/cn/post/r%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/</link>
+      <pubDate>Sat, 01 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/r%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/</guid>
+      <description>线性回归 MASS库中包含Boston(波士顿房价)数据集，它记录了波士顿周围506个街区的medv(房价中位数)。我们将设法用13个预测变量</description>
+    </item>
+    
+  </channel>
+</rss>

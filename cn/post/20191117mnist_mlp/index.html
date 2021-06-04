@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>MNIST手写字体分类 - Boylad</title>
+    
+     
+    <meta property="og:title" content="MNIST手写字体分类 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>MNIST手写字体分类</h1>
+
+
+
+<h3>Boylad &middot 
+2019-11-17</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<p>下面的代码训练了一个<code>多层感知机(Multilayer Perceptron, MLP)</code>，在<code>MNIST</code><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>数据集上做手写字体分类。训练集有60000张28x28像素的灰度图片，测试集有10000张同样尺寸的图片。批大小设为128，训练20个<code>epoch</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> keras
+<span style="color:#f92672">from</span> tensorflow.keras.datasets <span style="color:#f92672">import</span> mnist
+<span style="color:#f92672">from</span> tensorflow.keras.models <span style="color:#f92672">import</span> Sequential
+<span style="color:#f92672">from</span> tensorflow.keras.layers <span style="color:#f92672">import</span> Dense, Dropout
+<span style="color:#f92672">from</span> tensorflow.keras.optimizers <span style="color:#f92672">import</span> RMSprop
+<span style="color:#f92672">from</span> sklearn.metrics <span style="color:#f92672">import</span> confusion_matrix
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+
+batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">128</span>
+num_classes <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+epochs <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>
+
+(x_train, y_train), (x_test, y_test) <span style="color:#f92672">=</span> mnist<span style="color:#f92672">.</span>load_data()
+x_train <span style="color:#f92672">=</span> x_train<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">60000</span>, <span style="color:#ae81ff">784</span>)
+x_test <span style="color:#f92672">=</span> x_test<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">10000</span>, <span style="color:#ae81ff">784</span>)
+x_train <span style="color:#f92672">=</span> x_train<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+x_test <span style="color:#f92672">=</span> x_test<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+x_train <span style="color:#f92672">/=</span> <span style="color:#ae81ff">255</span>
+x_test <span style="color:#f92672">/=</span> <span style="color:#ae81ff">255</span>
+</code></pre></div><p>查看训练集前10张图片：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">4</span>))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>):
+    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">5</span>,i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+    plt<span style="color:#f92672">.</span>imshow(x_train[i]<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">28</span>), cmap<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gray&#39;</span>)
+    plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#39;off&#39;</span>)
+plt<span style="color:#f92672">.</span>draw()
+</code></pre></div><p><img src="../../post/imgs/20191117_mnist_mlp/output_3_0.png" alt="png"></p>
+<p>将标签One-Hot编码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">y_train_1hot <span style="color:#f92672">=</span> keras<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>to_categorical(y_train, num_classes)
+y_test_1hot <span style="color:#f92672">=</span> keras<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>to_categorical(y_test, num_classes)
+y_train_1hot[:<span style="color:#ae81ff">10</span>]
+</code></pre></div><p>训练集标签<code>One-Hot编码</code>后的数组：</p>
+<pre><code>array([[0., 0., 0., 0., 0., 1., 0., 0., 0., 0.],
+       [1., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 1., 0., 0., 0., 0., 0.],
+       [0., 1., 0., 0., 0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0., 0., 0., 0., 0., 1.],
+       [0., 0., 1., 0., 0., 0., 0., 0., 0., 0.],
+       [0., 1., 0., 0., 0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 1., 0., 0., 0., 0., 0., 0.],
+       [0., 1., 0., 0., 0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 1., 0., 0., 0., 0., 0.]], dtype=float32)
+</code></pre>
+<p>搭建MLP，指定输入图片尺寸、中间层的激活函数用<code>ReLU</code>，多分类问题输出层的激活函数用<code>Softmax</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> Sequential()
+model<span style="color:#f92672">.</span>add(Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">784</span>,)))
+model<span style="color:#f92672">.</span>add(Dropout(<span style="color:#ae81ff">0.2</span>))
+model<span style="color:#f92672">.</span>add(Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(Dropout(<span style="color:#ae81ff">0.2</span>))
+model<span style="color:#f92672">.</span>add(Dense(num_classes, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;softmax&#39;</span>))
+
+model<span style="color:#f92672">.</span>summary()
+</code></pre></div><p><code>dense</code>层为全连接层，其中<code>dense_3</code>层有(28x28+1)x512个参数(包括偏置)，<code>dense_4</code>层有(512+1)x512个参数，<code>dense_5</code>输出层有(512+1)x10个参数，<code>dropout</code>层无参数。</p>
+<pre><code>Model: &quot;sequential&quot;
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+dense (Dense)                (None, 512)               401920    
+_________________________________________________________________
+dropout (Dropout)            (None, 512)               0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 512)               262656    
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 512)               0         
+_________________________________________________________________
+dense_2 (Dense)              (None, 10)                5130      
+=================================================================
+Total params: 669,706
+Trainable params: 669,706
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+<p>编译并训练模型。用<code>交叉熵损失函数</code>，优化器用<code>RMSprop</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>compile(loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;categorical_crossentropy&#39;</span>,
+              optimizer<span style="color:#f92672">=</span>RMSprop(),
+              metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;accuracy&#39;</span>])
+
+history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit(x_train, y_train_1hot,
+                    batch_size<span style="color:#f92672">=</span>batch_size,
+                    epochs<span style="color:#f92672">=</span>epochs,
+                    verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,
+                    validation_data<span style="color:#f92672">=</span>(x_test, y_test_1hot))
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>,<span style="color:#ae81ff">4</span>))
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">121</span>)
+plt<span style="color:#f92672">.</span>plot(history<span style="color:#f92672">.</span>epoch, history<span style="color:#f92672">.</span>history<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;loss&#39;</span>), label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;train_loss&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(history<span style="color:#f92672">.</span>epoch, history<span style="color:#f92672">.</span>history<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;val_loss&#39;</span>), label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;val_loss&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;Loss&#34;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#34;Epochs&#34;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">122</span>)
+plt<span style="color:#f92672">.</span>plot(history<span style="color:#f92672">.</span>epoch, history<span style="color:#f92672">.</span>history<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;accuracy&#39;</span>), label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;train_accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(history<span style="color:#f92672">.</span>epoch, history<span style="color:#f92672">.</span>history<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;val_accuracy&#39;</span>), label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;val_accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;Accuracy&#34;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#34;Epochs&#34;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>draw()
+</code></pre></div><p><img src="../../post/imgs/20191117_mnist_mlp/output_10_0.png" alt="png"></p>
+<p>测试集上预测结果的<code>混淆矩阵</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">predict <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>predict(x_test)
+
+classes <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">9</span>]
+output_test <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> predict:
+    output_test<span style="color:#f92672">.</span>append([classes[np<span style="color:#f92672">.</span>argsort(i)[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]], i[np<span style="color:#f92672">.</span>argsort(i)[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]]])   
+pre_test <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> output_test:
+    pre_test<span style="color:#f92672">.</span>append(i[<span style="color:#ae81ff">0</span>])
+
+confusion_matrix(pre_test, y_test, labels<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span>,<span style="color:#ae81ff">8</span>,<span style="color:#ae81ff">9</span>])
+</code></pre></div><pre><code>array([[ 973,    0,    5,    1,    1,    2,    5,    0,    3,    1],
+       [   1, 1127,    3,    0,    2,    0,    3,    3,    1,    4],
+       [   0,    1, 1011,    1,    2,    0,    0,    5,    2,    0],
+       [   1,    2,    5,  999,    0,    5,    1,    1,    4,    8],
+       [   0,    0,    1,    0,  967,    1,    3,    0,    2,   10],
+       [   2,    0,    0,    2,    0,  879,    3,    0,    6,    3],
+       [   2,    2,    0,    0,    3,    1,  941,    0,    2,    1],
+       [   1,    1,    4,    3,    1,    1,    0, 1015,    2,    3],
+       [   0,    2,    3,    3,    1,    2,    2,    1,  947,    4],
+       [   0,    0,    0,    1,    5,    1,    0,    3,    5,  975]])
+</code></pre>
+<p>测试集上预测结果的得分：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">score <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>evaluate(x_test, y_test_1hot, verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Test loss:&#39;</span>, score[<span style="color:#ae81ff">0</span>])
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Test accuracy:&#39;</span>, score[<span style="color:#ae81ff">1</span>])
+</code></pre></div><pre><code>Test loss: 0.13322639135406414
+Test accuracy: 0.9834
+</code></pre>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="http://yann.lecun.com/exdb/mnist/">http://yann.lecun.com/exdb/mnist/</a> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86/">R数据预处理</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191124imdb_mlp/">电影评论&amp;新闻主题文本分类</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191124imdb_mlp\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R时间序列ARIMA模型预测 - Boylad</title>
+    
+     
+    <meta property="og:title" content="R时间序列ARIMA模型预测 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R时间序列ARIMA模型预测</h1>
+
+
+
+<h3>Boylad &middot 
+2018-12-08</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="通过差分得到平稳时间序列" class="section level3">
+<h3><strong>通过差分得到平稳时间序列</strong></h3>
+<p>每年女子裙子边缘的直径做成的时间序列数据从1866-1911年在平均值上是不平稳的。随着时间增加，数值变化很大。</p>
+<pre class="r"><code>skirts &lt;- scan(&quot;http://robjhyndman.com/tsdldata/roberts/skirts.dat&quot;, skip = 5)
+skirts &lt;- ts(skirts, start = c(1866)) #生成时间序列
+skirts
+## Time Series:
+## Start = 1866 
+## End = 1911 
+## Frequency = 1 
+##  [1]  608  617  625  636  657  691  728  784  816  876  949  997 1027 1047 1049
+## [16] 1018 1021 1012 1018  991  962  921  871  829  822  820  802  821  819  791
+## [31]  746  726  661  620  588  568  542  551  541  557  556  534  528  529  523
+## [46]  531
+plot.ts(skirts)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>一阶差分，并画出差分序列的图：</p>
+<pre class="r"><code>skirtsdiff &lt;- diff(skirts, differences = 1)
+plot.ts(skirtsdiff)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>从一阶差分图可以看出，数据仍是不平稳的，继续差分：</p>
+<pre class="r"><code>skirtsdiff2 &lt;- diff(skirts, differences = 2)
+plot.ts(skirtsdiff2)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>二阶差分后的时间序列在均值和方差上看起来像是平稳的，随着时间推移，时间序列的水平和方差大致保持不变。因此，对裙子直径进行两次差分可以得到平稳序列。
+<br></p>
+</div>
+<div id="确定合适的arima模型" class="section level3">
+<h3><strong>确定合适的ARIMA模型</strong></h3>
+<p>如果时间序列是平稳的，或者通过做n次差分转化为一个平稳时间序列，接下来就是要选择合适的ARIMA模型，这意味着要寻找ARIMA(p,d,q)中合适的p值和q值。</p>
+<p>为了得到p值和q值，通常需要检查平稳时间序列的(自)相关图和偏自相关图。acf()和pacf()函数中设定plot=FALSE来得到自相关和偏自相关的真实值。</p>
+<pre class="r"><code>acf(skirtsdiff2, lag.max = 20)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>acf(skirtsdiff2, lag.max = 20, plot = FALSE)
+## 
+## Autocorrelations of series &#39;skirtsdiff2&#39;, by lag
+## 
+##      0      1      2      3      4      5      6      7      8      9     10 
+##  1.000 -0.303  0.096  0.009  0.102 -0.453  0.173 -0.025 -0.039  0.073 -0.094 
+##     11     12     13     14     15     16     17     18     19     20 
+##  0.133 -0.089 -0.027 -0.102  0.207 -0.260  0.114  0.101  0.011 -0.090</code></pre>
+<p>自相关图显示滞后一阶自相关值基本没有超过边界值，虽然五阶自相关值超出边界，但很可能属于偶然出现的，而且，自相关图在其他阶上都没有超出显著边界，而且可以期望1～20之间的自相关值偶尔会超出95%的置信边界。</p>
+<pre class="r"><code>pacf(skirtsdiff2, lag.max = 20)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pacf(skirtsdiff2, lag.max = 20, plot = FALSE)
+## 
+## Partial autocorrelations of series &#39;skirtsdiff2&#39;, by lag
+## 
+##      1      2      3      4      5      6      7      8      9     10     11 
+## -0.303  0.005  0.043  0.128 -0.439 -0.110  0.073  0.028  0.128 -0.355  0.095 
+##     12     13     14     15     16     17     18     19     20 
+##  0.052 -0.094 -0.103 -0.034 -0.021 -0.002  0.074  0.020 -0.034</code></pre>
+<p>由上图可见，偏自相关选5阶，故ARIMA模型可确定为arima(1,2,5)。</p>
+<pre class="r"><code>skirtsarima &lt;- arima(skirts, order = c(1,2,5))
+skirtsarima
+## 
+## Call:
+## arima(x = skirts, order = c(1, 2, 5))
+## 
+## Coefficients:
+##           ar1     ma1     ma2     ma3     ma4      ma5
+##       -0.4345  0.2762  0.1033  0.1472  0.0267  -0.8384
+## s.e.   0.1837  0.2171  0.2198  0.2716  0.1904   0.2888
+## 
+## sigma^2 estimated as 206.1:  log likelihood = -183.8,  aic = 381.6</code></pre>
+<p>因此可得如下模型：<span class="math inline">\(y_t=-0.4345y_{t-1}+0.2762u_{t-1}+0.1033u_{t-2}+0.1472u_{t-3}+0.0267u_{t-4}-0.8384u_{t-5}\)</span>
+<br></p>
+</div>
+<div id="arima模型预测" class="section level3">
+<h3><strong>ARIMA模型预测</strong></h3>
+<p>预测后5年裙子的边缘直径：</p>
+<pre class="r"><code>library(forecast)
+## Registered S3 method overwritten by &#39;quantmod&#39;:
+##   method            from
+##   as.zoo.data.frame zoo
+skirtsarimaforecast &lt;- forecast(skirtsarima, h = 5, level = c(99.5))
+skirtsarimaforecast
+##      Point Forecast  Lo 99.5  Hi 99.5
+## 1912       548.5762 507.1167 590.0357
+## 1913       545.1793 459.3292 631.0295
+## 1914       540.9354 396.3768 685.4940
+## 1915       531.8838 316.2785 747.4892
+## 1916       529.1296 233.2625 824.9968
+plot(skirtsarimaforecast)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="arima模型预测结果的检验" class="section level3">
+<h3><strong>ARIMA模型预测结果的检验</strong></h3>
+<p>在指数平滑模型下，观察ARIMA模型的预测误差是否是平均值为0且方差为常数的正态分布(服从零均值、方差不变的正态分布)是个很好的办法，同时也要观察连续预测误差是否(自)相关。</p>
+<pre class="r"><code>acf(skirtsarimaforecast$residuals, lag.max = 20)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>Box.test(skirtsarimaforecast$residuals, lag = 20, type = &quot;Ljung-Box&quot;)
+## 
+##  Box-Ljung test
+## 
+## data:  skirtsarimaforecast$residuals
+## X-squared = 8.5974, df = 20, p-value = 0.9871</code></pre>
+<p>既然自相关图显示出在滞后1～20阶(lagsl-20)中样本自相关值都没有超出显著(置信)边界，而且Ljung-Box检验的p值为0.9871，所以推断在滞后1～20阶(lagsl-20)中没有证据说明预测误差是非零自相关的。</p>
+<p>为了调查预测误差是否是平均值为零且方差为常数的正态分布(服从零均值、方差不变的正态分布)，可以做预测误差的时间曲线图。</p>
+<pre class="r"><code>plot.ts(skirtsarimaforecast$residuals)</code></pre>
+<p><img src="../../../cn/post/2018-12-08-r时间序列arima模型预测_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>预测误差的时间曲线图显示出随着时间的增加，方差大致为常数(大致不变)(尽管上半部分的时间序列方差看起来稍微高一些)。因此，把预测误差看作平均值为0、方差为常数的正态分布(服从零均值、方差不变的正态分布)是合理的。</p>
+<p>既然依次连续的预测误差看起来不是相关的，而且看起来是平均值为0、方差为常数的正态分布，那么对于裙子直径的数据，ARIMA(1,2,5)看起来是非常合适的预测模型。</p>
+<p><code>以上内容整理自《经济金融计量及其R语言应用》by朱顺泉</code></p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C/">R基础知识（二）</a></span>
+  <span class="nav-next"><a href="../../../cn/post/r%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86/">R数据预处理</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/r%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

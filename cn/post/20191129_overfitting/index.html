@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>神经网络过拟合与正则化 - Boylad</title>
+    
+     
+    <meta property="og:title" content="神经网络过拟合与正则化 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>神经网络过拟合与正则化</h1>
+
+
+
+<h3>Boylad &middot 
+2019-11-29</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<blockquote>
+<p>Deep learning models tend to be good at fitting to the training data, but the real challenge is generalization, not fitting.</p>
+</blockquote>
+<p>这里我们使用IMDB数据集作为测试，介绍一些神经网络中过拟合问题的处理方法。数据预处理部分，参考<a href="https://guankuiliu.github.io/cn/post/20191124imdb_mlp/">这里</a>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> keras.datasets <span style="color:#f92672">import</span> imdb
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">from</span> keras <span style="color:#f92672">import</span> models
+<span style="color:#f92672">from</span> keras <span style="color:#f92672">import</span> layers
+
+(train_data,train_labels),(test_data,test_labels) <span style="color:#f92672">=</span> imdb<span style="color:#f92672">.</span>load_data(num_words<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">vectorize_sequences</span>(sequences, dimension<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>):
+    results <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((len(sequences), dimension))
+    <span style="color:#66d9ef">for</span> i, sequence <span style="color:#f92672">in</span> enumerate(sequences):
+        results[i, sequence] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.</span>  
+    <span style="color:#66d9ef">return</span> results
+
+x_train <span style="color:#f92672">=</span> vectorize_sequences(train_data)
+x_test <span style="color:#f92672">=</span> vectorize_sequences(test_data)
+y_train <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(train_labels)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+y_test <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(test_labels)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+</code></pre></div><h3 id="缩小网络规模1">缩小网络规模<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h3>
+<p>防止过拟合最简单的办法是减少模型的<code>capacity</code>。下面是<code>original_model</code>与<code>smaller_model</code>在验证集上损失的表现（<strong>较低的验证损失表示模型更好</strong>）。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">original_model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+original_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+original_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+original_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+original_model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+                       loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+                       metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+
+smaller_model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+smaller_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">4</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+smaller_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">4</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+smaller_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+smaller_model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+                      loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+                      metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+
+original_hist <span style="color:#f92672">=</span> original_model<span style="color:#f92672">.</span>fit(x_train, y_train,
+                                   epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                                   batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                                   validation_data<span style="color:#f92672">=</span>(x_test, y_test))
+smaller_model_hist <span style="color:#f92672">=</span> smaller_model<span style="color:#f92672">.</span>fit(x_train, y_train,
+                                       epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                                       batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                                       validation_data<span style="color:#f92672">=</span>(x_test, y_test))
+                                       
+epochs <span style="color:#f92672">=</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>)
+original_val_loss <span style="color:#f92672">=</span> original_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+smaller_model_val_loss <span style="color:#f92672">=</span> smaller_model_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+plt<span style="color:#f92672">.</span>plot(epochs, original_val_loss, <span style="color:#e6db74">&#39;b+&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Original model&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, smaller_model_val_loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Smaller model&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191129_overfitting/output_4_1.png" alt="png"></p>
+<p>可以看到，<code>smaller_model</code>比<code>original_model</code>晚2个<code>epoch</code>才开始出现过拟合，之后<code>smaller_model</code>性能的下降（损失增加）速度要慢得多。接下来我们训练一个容量更大的网络：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">bigger_model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+bigger_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+bigger_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+bigger_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+bigger_model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+                     loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+                     metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+                     
+bigger_model_hist <span style="color:#f92672">=</span> bigger_model<span style="color:#f92672">.</span>fit(x_train, y_train,
+                                     epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                                     batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                                     validation_data<span style="color:#f92672">=</span>(x_test, y_test))
+
+bigger_model_val_loss <span style="color:#f92672">=</span> bigger_model_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+original_train_loss <span style="color:#f92672">=</span> original_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+bigger_model_train_loss <span style="color:#f92672">=</span> bigger_model_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+
+plt<span style="color:#f92672">.</span>plot(epochs, original_val_loss, <span style="color:#e6db74">&#39;b+&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Original model&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, bigger_model_val_loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Bigger model&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>plot(epochs, original_train_loss, <span style="color:#e6db74">&#39;b+&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Original model&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, bigger_model_train_loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Bigger model&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Training loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191129_overfitting/output_6_0.png" alt="png"></p>
+<p>如上图所示，容量更大的网络几乎是一开始就过拟合了，并且在训练集上损失也是很快就接近0。</p>
+<h3 id="权重正则化1">权重正则化<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h3>
+<p><code>l2(0.001)</code>意味着当前层的权重矩阵中每个系数将为网络总损失增加<code>0.001*权重系数</code>。正则只在训练时添加到网络中，因此测试时网络的损失将更高些。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> keras <span style="color:#f92672">import</span> regularizers
+
+l2_model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+l2_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, kernel_regularizer<span style="color:#f92672">=</span>regularizers<span style="color:#f92672">.</span>l2(<span style="color:#ae81ff">0.001</span>),
+                          activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+l2_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, kernel_regularizer<span style="color:#f92672">=</span>regularizers<span style="color:#f92672">.</span>l2(<span style="color:#ae81ff">0.001</span>),
+                          activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+l2_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+
+l2_model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+                 loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+                 metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+
+l2_model_hist <span style="color:#f92672">=</span> l2_model<span style="color:#f92672">.</span>fit(x_train, y_train,
+                             epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                             batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                             validation_data<span style="color:#f92672">=</span>(x_test, y_test))
+
+l2_model_val_loss <span style="color:#f92672">=</span> l2_model_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+
+plt<span style="color:#f92672">.</span>plot(epochs, original_val_loss, <span style="color:#e6db74">&#39;b+&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Original model&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, l2_model_val_loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;L2-regularized model&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191129_overfitting/output_11_0.png" alt="png"></p>
+<p>同样的网络架构，同样的参数，L2正则确实能减轻过拟合。也可以使用以下两种正则方式：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> keras <span style="color:#f92672">import</span> regularizers
+
+regularizers<span style="color:#f92672">.</span>l1(<span style="color:#ae81ff">0.001</span>)  <span style="color:#75715e"># L1正则化</span>
+regularizers<span style="color:#f92672">.</span>l1_l2(l1<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>, l2<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>)  <span style="color:#75715e"># 同时L1和L2正则化</span>
+</code></pre></div><h3 id="dropout正则化1">Dropout正则化<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h3>
+<p>对某一层使用dropout，就是在训练过程中随机将该层的一些输出特征<strong>舍弃</strong>(设置为0)。<strong>dropout比率</strong>是被设为0所占的比例，通常在0.2~0.5范围内。测试时没有单元被舍弃，而该层的输出值需按照dropout比率缩小，因为这时比训练时有更多的单元被激活，需要加以平衡。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">dpt_model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+dpt_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+dpt_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>))
+dpt_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+dpt_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>))
+dpt_model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+
+dpt_model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+                  loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+                  metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+
+dpt_model_hist <span style="color:#f92672">=</span> dpt_model<span style="color:#f92672">.</span>fit(x_train, y_train,
+                               epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                               batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                               validation_data<span style="color:#f92672">=</span>(x_test, y_test))
+
+dpt_model_val_loss <span style="color:#f92672">=</span> dpt_model_hist<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+
+plt<span style="color:#f92672">.</span>plot(epochs, original_val_loss, <span style="color:#e6db74">&#39;b+&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Original model&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, dpt_model_val_loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Dropout-regularized model&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191129_overfitting/output_14_0.png" alt="png"></p>
+<p>可见，Dropout正则化也显著提高了网络的拟合能力。防止过拟合的常用方法：</p>
+<ul>
+<li>Getting more training data.</li>
+<li>Reducing the capacity of the network.</li>
+<li>Adding weight regularization.</li>
+<li>Adding dropout.</li>
+</ul>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>本文整理自：<em>Deep Learning with Python</em> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191126boston_preice_regression/">波士顿房价预测</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191130_cats_v.s._dogs/">Cats v.s. Dogs CNN分类</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191126boston_preice_regression\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191130_cats_v.s._dogs\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

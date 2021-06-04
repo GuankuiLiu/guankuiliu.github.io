@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>朴素贝叶斯算法过滤手机垃圾短信 - Boylad</title>
+    
+     
+    <meta property="og:title" content="朴素贝叶斯算法过滤手机垃圾短信 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>朴素贝叶斯算法过滤手机垃圾短信</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-13</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="收集数据" class="section level3">
+<h3><strong>收集数据</strong></h3>
+<p>我们将使用从网站<code>http://www.dt.fee.unicamp.br/~tiago/smsspamcollection/</code>
+搜集的垃圾短信改编的数据。该数据集包含短信的文本信息，而且带有表明该短信是否为垃圾短信的标签。垃圾短信标记为spam，而非垃圾短信标记为ham。朴素贝叶斯分类器将根据短信中所有单词提供的证据计算垃圾短信和非垃圾短信的概率。<br><br></p>
+</div>
+<div id="探索和准备数据" class="section level3">
+<h3><strong>探索和准备数据</strong></h3>
+<p>构建分类器的第一步涉及原始数据的处理与分析，文本数据的准备具有挑战性，因为将词和句子转化成计算机能够理解的形式是很必要的。我们将把数据转换成一种称为<strong>词袋</strong>(bag-of-words)的表示方法，这种表示方法忽略了单词出现的顺序，只是简单地提供一个变量用来表示单词是否会出现。为了使数据可以在R中方便地应用，这里所使用的数据已经对原始数据进行了更改。</p>
+<pre class="r"><code>setwd(&quot;C:/Users/Boylad/Documents/mydata/Machine_Learning_with_R&quot;)
+sms_raw &lt;- read.csv(&quot;sms_spam.csv&quot;, stringsAsFactors = FALSE)
+str(sms_raw)
+## &#39;data.frame&#39;:    5559 obs. of  2 variables:
+##  $ type: chr  &quot;ham&quot; &quot;ham&quot; &quot;ham&quot; &quot;spam&quot; ...
+##  $ text: chr  &quot;Hope you are having a good week. Just checking in&quot; &quot;K..give back my thanks.&quot; &quot;Am also doing in cbe only. But have to pay.&quot; &quot;complimentary 4 STAR Ibiza Holiday or 拢10,000 cash needs your URGENT collection. 09066364349 NOW from Landline&quot;| __truncated__ ...</code></pre>
+<p>可以看到sms_raw数据文件包含了5559条短信，每条短信都有两个特征：type和text。将SMS(短信服务)的特征type编码为ham或者spam，而变量text存储整个SMS短信文本。当前的变量type是一个字符串向量。由于它是一个分类变量，所以将其转换成一个因子会更好。</p>
+<pre class="r"><code>sms_raw$type &lt;- factor(sms_raw$type)
+str(sms_raw$type)
+##  Factor w/ 2 levels &quot;ham&quot;,&quot;spam&quot;: 1 1 1 2 2 1 1 1 2 1 ...
+table(sms_raw$type)
+## 
+##  ham spam 
+## 4812  747</code></pre>
+<p>可以看到改变了已经被很好地重新编码为一个因子，此外可以看到数据中有747条(约13%)条短信被标记为spam，其余的短信被标记为ham。<br><br></p>
+</div>
+<div id="处理和分析文本数据" class="section level3">
+<h3><strong>处理和分析文本数据</strong></h3>
+<p>短信就是由词、空格、数字和标点符号组成的文本字符串。处理这种类型的复杂数据需要大量的思考工作，一方面需要考虑如何去除数字和标点符号，如何处理没有意义的单词，如and、but和or等，以及如何将句子分解成单个的单词。幸运的是，文本挖掘添加包tm中提供了这些功能。<br></p>
+<p>处理文本数据的第一步涉及创建一个<strong>语料库</strong>，即一个文本文件的集合。在这个例子中，一个文本文件就是指一条短信，我们通过下面的命令建立一个包含训练数据中短信的语料库。</p>
+<pre class="r"><code>library(tm)
+## 载入需要的程辑包：NLP
+sms_corpus &lt;- Corpus(VectorSource(sms_raw$text)) #VectorSource()Create a vector source</code></pre>
+<p>上面的命令使用了两个函数。首先，函数Corpus()创建了一个R对象来存储文本文档。这个函数通过一个参数来指定所加载的文本文档的格式。因为我们已经把短信读入R并存储在一个向量中，所以我们用函数VectorSource()来指示函数Corpus()使用向量sms_train$text的信息。函数Corpus()将结果存储在一个名为sms_corpus的对象中。用print()函数输出我们刚刚创建的语料库，我们将会看到该语料库包含了训练数据集中5559条短信的每一条短信。</p>
+<pre class="r"><code>print(sms_corpus)
+## &lt;&lt;SimpleCorpus&gt;&gt;
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 5559</code></pre>
+<p>如果要查看语料库的内容，可以使用inspect()。将该函数与访问向量的方法结合在一起，可以查看具体的短信内容。</p>
+<pre class="r"><code>inspect(sms_corpus[1:3]) #查看前3条短信的内容
+## &lt;&lt;SimpleCorpus&gt;&gt;
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 3
+## 
+## [1] Hope you are having a good week. Just checking in
+## [2] K..give back my thanks.                          
+## [3] Am also doing in cbe only. But have to pay.</code></pre>
+<p>语料库现在包含5559条短信的内容。在将文本内容分解成单词之前，需要进行一些清理步骤以去除标点符号和可能会影响结果的其他字符。例如，我们把单词hello!、HELLO······和Hello都作为单词hello的实例。<br></p>
+<p>函数tm_map()提供了一种用来转换(即映射)tm语料库的方法。我们将使用一系列转换函数来清理我们的语料库，并将结果保存为一个叫做corpus_clean的新对象。首先，我们将把所有短信的字母变成小写字母，并去除所有数字：</p>
+<pre class="r"><code>corpus_clean &lt;- tm_map(sms_corpus, tolower)
+corpus_clean &lt;- tm_map(corpus_clean, removeNumbers)</code></pre>
+<p>在分析文本时，一个常见的做法就是去除填充词，比如to、and、but和or，这些词称为<strong>停用词</strong>(stop word)。我们将使用tm添加包中提供的函数stopwords()，这个函数包含了一组大量的停用词。如果想知道其所包含的所有停用词，可以通过stopwords()查看</p>
+<pre class="r"><code>stopwords()
+##   [1] &quot;i&quot;          &quot;me&quot;         &quot;my&quot;         &quot;myself&quot;     &quot;we&quot;        
+##   [6] &quot;our&quot;        &quot;ours&quot;       &quot;ourselves&quot;  &quot;you&quot;        &quot;your&quot;      
+##  [11] &quot;yours&quot;      &quot;yourself&quot;   &quot;yourselves&quot; &quot;he&quot;         &quot;him&quot;       
+##  [16] &quot;his&quot;        &quot;himself&quot;    &quot;she&quot;        &quot;her&quot;        &quot;hers&quot;      
+##  [21] &quot;herself&quot;    &quot;it&quot;         &quot;its&quot;        &quot;itself&quot;     &quot;they&quot;      
+##  [26] &quot;them&quot;       &quot;their&quot;      &quot;theirs&quot;     &quot;themselves&quot; &quot;what&quot;      
+##  [31] &quot;which&quot;      &quot;who&quot;        &quot;whom&quot;       &quot;this&quot;       &quot;that&quot;      
+##  [36] &quot;these&quot;      &quot;those&quot;      &quot;am&quot;         &quot;is&quot;         &quot;are&quot;       
+##  [41] &quot;was&quot;        &quot;were&quot;       &quot;be&quot;         &quot;been&quot;       &quot;being&quot;     
+##  [46] &quot;have&quot;       &quot;has&quot;        &quot;had&quot;        &quot;having&quot;     &quot;do&quot;        
+##  [51] &quot;does&quot;       &quot;did&quot;        &quot;doing&quot;      &quot;would&quot;      &quot;should&quot;    
+##  [56] &quot;could&quot;      &quot;ought&quot;      &quot;i&#39;m&quot;        &quot;you&#39;re&quot;     &quot;he&#39;s&quot;      
+##  [61] &quot;she&#39;s&quot;      &quot;it&#39;s&quot;       &quot;we&#39;re&quot;      &quot;they&#39;re&quot;    &quot;i&#39;ve&quot;      
+##  [66] &quot;you&#39;ve&quot;     &quot;we&#39;ve&quot;      &quot;they&#39;ve&quot;    &quot;i&#39;d&quot;        &quot;you&#39;d&quot;     
+##  [71] &quot;he&#39;d&quot;       &quot;she&#39;d&quot;      &quot;we&#39;d&quot;       &quot;they&#39;d&quot;     &quot;i&#39;ll&quot;      
+##  [76] &quot;you&#39;ll&quot;     &quot;he&#39;ll&quot;      &quot;she&#39;ll&quot;     &quot;we&#39;ll&quot;      &quot;they&#39;ll&quot;   
+##  [81] &quot;isn&#39;t&quot;      &quot;aren&#39;t&quot;     &quot;wasn&#39;t&quot;     &quot;weren&#39;t&quot;    &quot;hasn&#39;t&quot;    
+##  [86] &quot;haven&#39;t&quot;    &quot;hadn&#39;t&quot;     &quot;doesn&#39;t&quot;    &quot;don&#39;t&quot;      &quot;didn&#39;t&quot;    
+##  [91] &quot;won&#39;t&quot;      &quot;wouldn&#39;t&quot;   &quot;shan&#39;t&quot;     &quot;shouldn&#39;t&quot;  &quot;can&#39;t&quot;     
+##  [96] &quot;cannot&quot;     &quot;couldn&#39;t&quot;   &quot;mustn&#39;t&quot;    &quot;let&#39;s&quot;      &quot;that&#39;s&quot;    
+## [101] &quot;who&#39;s&quot;      &quot;what&#39;s&quot;     &quot;here&#39;s&quot;     &quot;there&#39;s&quot;    &quot;when&#39;s&quot;    
+## [106] &quot;where&#39;s&quot;    &quot;why&#39;s&quot;      &quot;how&#39;s&quot;      &quot;a&quot;          &quot;an&quot;        
+## [111] &quot;the&quot;        &quot;and&quot;        &quot;but&quot;        &quot;if&quot;         &quot;or&quot;        
+## [116] &quot;because&quot;    &quot;as&quot;         &quot;until&quot;      &quot;while&quot;      &quot;of&quot;        
+## [121] &quot;at&quot;         &quot;by&quot;         &quot;for&quot;        &quot;with&quot;       &quot;about&quot;     
+## [126] &quot;against&quot;    &quot;between&quot;    &quot;into&quot;       &quot;through&quot;    &quot;during&quot;    
+## [131] &quot;before&quot;     &quot;after&quot;      &quot;above&quot;      &quot;below&quot;      &quot;to&quot;        
+## [136] &quot;from&quot;       &quot;up&quot;         &quot;down&quot;       &quot;in&quot;         &quot;out&quot;       
+## [141] &quot;on&quot;         &quot;off&quot;        &quot;over&quot;       &quot;under&quot;      &quot;again&quot;     
+## [146] &quot;further&quot;    &quot;then&quot;       &quot;once&quot;       &quot;here&quot;       &quot;there&quot;     
+## [151] &quot;when&quot;       &quot;where&quot;      &quot;why&quot;        &quot;how&quot;        &quot;all&quot;       
+## [156] &quot;any&quot;        &quot;both&quot;       &quot;each&quot;       &quot;few&quot;        &quot;more&quot;      
+## [161] &quot;most&quot;       &quot;other&quot;      &quot;some&quot;       &quot;such&quot;       &quot;no&quot;        
+## [166] &quot;nor&quot;        &quot;not&quot;        &quot;only&quot;       &quot;own&quot;        &quot;same&quot;      
+## [171] &quot;so&quot;         &quot;than&quot;       &quot;too&quot;        &quot;very&quot;</code></pre>
+<p>我们将通过使用函数tm_map()来剔除数据中的停用词和标点符号。</p>
+<pre class="r"><code>corpus_clean &lt;- tm_map(corpus_clean, removeWords, stopwords())
+corpus_clean &lt;- tm_map(corpus_clean, removePunctuation)</code></pre>
+<p>既然我们已经去除了数字、停用词和corpus_clean &lt;- tm_map(corpus_clean, removeWords, stopwords())标点符号，那么文本信息中这些字符曾经所在的地方就变成了一个空格。最后一步就是去除额外的空格，只在词与词之间留下一个空格。</p>
+<pre class="r"><code>corpus_clean &lt;- tm_map(corpus_clean, stripWhitespace)</code></pre>
+<p>我们现在看一看短信语料库中前3条短信在清理前后的对比：</p>
+<pre class="r"><code>inspect(sms_corpus[1:3])
+## &lt;&lt;SimpleCorpus&gt;&gt;
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 3
+## 
+## [1] Hope you are having a good week. Just checking in
+## [2] K..give back my thanks.                          
+## [3] Am also doing in cbe only. But have to pay.
+inspect(corpus_clean[1:3])
+## &lt;&lt;SimpleCorpus&gt;&gt;
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 3
+## 
+## [1] hope good week just checking  kgive back thanks            
+## [3]  also cbe pay</code></pre>
+<p>最后的步骤就是通过一个所谓的<strong>标记化</strong>过程将消息分解成由单个单词组成的组，一个记号(token)就是一个文本字符串的单个元素，在这种情况下，本例中的记号就是单词。tm添加包提供了标记短信语料库的功能，函数DocumentTermMatrix()将一个语料库作为输入，并创建一个<strong>稀疏矩阵</strong>，其中矩阵的行表示文档(即短信)，矩阵的列表是单词。矩阵中的每一个单元存储一个数字，它代表由列标识的单词出现在由行所标识的文档中的次数。完整的系数矩阵有5559行和7939列。</p>
+<pre class="r"><code>sms_dtm &lt;- DocumentTermMatrix(corpus_clean)
+str(sms_dtm)
+## List of 6
+##  $ i       : int [1:42875] 1 1 1 1 1 2 2 2 3 3 ...
+##  $ j       : int [1:42875] 1 2 3 4 5 6 7 8 9 10 ...
+##  $ v       : num [1:42875] 1 1 1 1 1 1 1 1 1 1 ...
+##  $ nrow    : int 5559
+##  $ ncol    : int 7938
+##  $ dimnames:List of 2
+##   ..$ Docs : chr [1:5559] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   ..$ Terms: chr [1:7938] &quot;checking&quot; &quot;good&quot; &quot;hope&quot; &quot;just&quot; ...
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;DocumentTermMatrix&quot; &quot;simple_triplet_matrix&quot;
+##  - attr(*, &quot;weighting&quot;)= chr [1:2] &quot;term frequency&quot; &quot;tf&quot;</code></pre>
+<p>我们看到在这个以 ‘ijv’ 或 ‘triplet’ 格式存储的稀疏矩阵中，非零元素一共有42875个，i对应非零元素的行坐标，j对应非零元素的列坐标，v对应i和j坐标决定的非零元素值(在这里是个数)。<br><br></p>
+<div id="建立训练数据集和测试数据集" class="section level4">
+<h4><strong>1.建立训练数据集和测试数据集</strong></h4>
+<p>我们将数据集分成两部分：75%的训练数据和25%的测试数据。因为短信的排序是随机的，所以我们可以简单地取前4169条短信用于训练，剩下的1390条短信用于测试。</p>
+<pre class="r"><code>#分解原始数据
+sms_raw_train &lt;- sms_raw[1:4169, ]
+sms_raw_test &lt;- sms_raw[4170:5559, ]
+
+#输出文档-单词矩阵(稀疏矩阵)
+sms_dtm_train &lt;- sms_dtm[1:4169, ]
+sms_dtm_test &lt;- sms_dtm[4170:5559, ]
+
+#得到语料库
+sms_corpus_train &lt;- corpus_clean[1:4169]
+sms_corpus_test &lt;- corpus_clean[4170:5559]</code></pre>
+<p>为了确认上述子集是一个完整的短信数据的代表，可以通过比较垃圾短信在训练数据和测试数据中所占的比例：</p>
+<pre class="r"><code>prop.table(table(sms_raw_train$type))
+## 
+##       ham      spam 
+## 0.8647158 0.1352842
+prop.table(table(sms_raw_test$type))
+## 
+##       ham      spam 
+## 0.8683453 0.1316547</code></pre>
+<p>可见，无论是训练数据集还是测试数据集，它们都包含约13%的垃圾短信，这表明垃圾短信被平均分配在这两个数据集中。<br><br></p>
+</div>
+<div id="可视化文本数据词云" class="section level4">
+<h4><strong>2.可视化文本数据——词云</strong></h4>
+<p>wordcloud添加包提供了一个简单的R函数来创建词云，我们将应用这个函数使短信中的单词类型可视化。比较垃圾短信和非垃圾短信有助于我们了解朴素贝叶斯短信过滤器是否有可能成功。可以从tm语料库直接创建词云。</p>
+<pre class="r"><code>library(wordcloud)
+## 载入需要的程辑包：RColorBrewer
+wordcloud(sms_corpus_train, min.freq = 40, random.order = FALSE)</code></pre>
+<p><img src="../../../cn/post/2018-10-13-朴素贝叶斯算法过滤手机垃圾短信_files/figure-html/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>以上命令将从sms_corpus_train预料库创建一个词云。由于设置了random.order=FALSE,所以该词云将以非随机的顺序排列。而且出现频率越高的单词越靠近中心。如果没有设置random.order，该词云将会以默认的随机方式排列。参数min.freq用来指定显示在词云中的单词必须满足在语料库中出现的最小频率。通用的规则是，开始时设置参数min.freq的值为语料库中文档总数目的10%。<br></p>
+<p>另一个有趣的可视化涉及垃圾短信和非垃圾短信词云的比较。虽然没有对垃圾短信和非垃圾短信分别建立语料库，但函数wordcloud()函数有一个非常有用的功能。给定<strong>原始文本</strong>，在建立语料库之和现实词云之前，它会自动应用文本转换过程。先从sms_raw_train获取子集：</p>
+<pre class="r"><code>spam &lt;- subset(sms_raw_train, type == &quot;spam&quot;)
+ham &lt;- subset(sms_raw_train, type == &quot;ham&quot;)</code></pre>
+<p>现在我们有两个包含原始文本字符串的文本特征的数据框，这一次我们将使用参数max.words，用来显示两个集合的任何一个集合中最常见的30个单词，而且参数scale允许调整词云中单词的最大字体和最小字体。</p>
+<pre class="r"><code>wordcloud(spam$text, max.words = 30, scale = c(3, 0.5), colors = &#39;darkgreen&#39;)</code></pre>
+<p><img src="../../../cn/post/2018-10-13-朴素贝叶斯算法过滤手机垃圾短信_files/figure-html/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>wordcloud(ham$text, max.words = 30, scale = c(3, 0.5),colors = &#39;red&#39;)</code></pre>
+<p><img src="../../../cn/post/2018-10-13-朴素贝叶斯算法过滤手机垃圾短信_files/figure-html/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>很显然，墨绿色的词云就是垃圾短信的词云。垃圾短信包括urgent、free、mobile、call、claim和stop等词，而这些词一次都没出现在非垃圾短信中，相反非垃圾短信使用的单词有can、sorry、need和time等。<br><br></p>
+</div>
+<div id="为频繁出现的单词创建指示特征" class="section level4">
+<h4><strong>3.为频繁出现的单词创建指示特征</strong></h4>
+<p>目前，该稀疏矩阵包含数量超过7000个特征，即至少出现在一条短信中的每一个单词的特征。所有这些特征不可能都对分类发挥作用。为了减少特征的数量，我们将提出训练数据中出现在少于5条短信中或者少于记录总数的0.1%的所有单词。查找频繁出现的单词需要使用tm添加包中的findFreqTerms()函数，该函数输入一个<strong>文档-单词矩阵</strong>，返回一个字符向量，该向量包含出现次数不少于指定次数的单词。下面的命令将显示一个字符串向量，该向量中的单词在矩阵sms_dtm_train中至少出现5次。：</p>
+<pre class="r"><code>sms_dict &lt;- findFreqTerms(sms_dtm_train, 5)
+sms_train &lt;- DocumentTermMatrix(sms_corpus_train, list(dictionary = sms_dict))
+sms_test &lt;- DocumentTermMatrix(sms_corpus_test, list(dictionary = sms_dict))
+str(sms_train)
+## List of 6
+##  $ i       : int [1:24011] 1 1 1 1 1 2 2 3 3 4 ...
+##  $ j       : int [1:24011] 1 2 3 4 5 6 7 8 9 10 ...
+##  $ v       : num [1:24011] 1 1 1 1 1 1 1 1 1 1 ...
+##  $ nrow    : int 4169
+##  $ ncol    : int 1216
+##  $ dimnames:List of 2
+##   ..$ Docs : chr [1:4169] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   ..$ Terms: chr [1:1216] &quot;checking&quot; &quot;good&quot; &quot;hope&quot; &quot;just&quot; ...
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;DocumentTermMatrix&quot; &quot;simple_triplet_matrix&quot;
+##  - attr(*, &quot;weighting&quot;)= chr [1:2] &quot;term frequency&quot; &quot;tf&quot;
+str(sms_test)
+## List of 6
+##  $ i       : int [1:7593] 1 1 1 2 2 2 2 2 2 3 ...
+##  $ j       : int [1:7593] 1 2 3 4 5 6 7 8 9 10 ...
+##  $ v       : num [1:7593] 1 1 1 1 1 1 1 1 1 1 ...
+##  $ nrow    : int 1390
+##  $ ncol    : int 1216
+##  $ dimnames:List of 2
+##   ..$ Docs : chr [1:1390] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   ..$ Terms: chr [1:1216] &quot;coming&quot; &quot;dinner&quot; &quot;home&quot; &quot;can&quot; ...
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;DocumentTermMatrix&quot; &quot;simple_triplet_matrix&quot;
+##  - attr(*, &quot;weighting&quot;)= chr [1:2] &quot;term frequency&quot; &quot;tf&quot;</code></pre>
+<p>现在训练数据和测试数据包含了大约1200个特征，只对应于至少出现在5条短信中的单词。</p>
+<p>朴素贝叶斯分类器通常是训练具有明确特征的数据，因为稀疏矩阵中的元素表示一个单词出现在一条消息中的次数，于是，我们需要将其改变成因子向量，根据单词是否出现，简单地表示成yes或者no。下面的代码定义了一个函数convert_counts()，它将计数转换成因子：</p>
+<pre class="r"><code>conver_counts &lt;- function(x){
+  x &lt;- ifelse(x &gt; 0, 1, 0)
+  x &lt;- factor(x, levels = c(0, 1), labels = c(&quot;No&quot;, &quot;Yes&quot;))
+  return(x)
+}</code></pre>
+<p>上面的代码，第一行用来定义函数语句ifelse(x &gt; 0, 1, 0)将改变x中的值，如果该值大于0，则它会被1替代，否则，它仍为0。命令factor()简单地将值0和1转化为用no和yes所标记的因子。最后，返回变换后的向量x。现在我们通过apply()函数将convet_counts应用于稀疏矩阵的每一列。函数apply()允许一个函数作用于矩阵的每一行或者每一列，它使用参数MARGIN来指定作用的对象是矩阵的行或者列。在这里，因为我们感兴趣的是矩阵的列，所以令MARGIN=2(=1表示行)，用来转换训练矩阵和测试矩阵的完整命令如下：</p>
+<pre class="r"><code>sms_train &lt;- apply(sms_train, MARGIN = 2, conver_counts)
+sms_test &lt;- apply(sms_test, MARGIN = 2, conver_counts)
+str(sms_train)
+##  chr [1:4169, 1:1216] &quot;Yes&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; ...
+##  - attr(*, &quot;dimnames&quot;)=List of 2
+##   ..$ Docs : chr [1:4169] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   ..$ Terms: chr [1:1216] &quot;checking&quot; &quot;good&quot; &quot;hope&quot; &quot;just&quot; ...
+str(sms_train)
+##  chr [1:4169, 1:1216] &quot;Yes&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; &quot;No&quot; ...
+##  - attr(*, &quot;dimnames&quot;)=List of 2
+##   ..$ Docs : chr [1:4169] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   ..$ Terms: chr [1:1216] &quot;checking&quot; &quot;good&quot; &quot;hope&quot; &quot;just&quot; ...</code></pre>
+<p>结果是两个矩阵，每个矩阵都带有因子类型的列，用Yes和No来表示每一列的单词是否出现在所构成行的信息中。<br><br></p>
+</div>
+</div>
+<div id="基于数据训练模型" class="section level3">
+<h3><strong>4.基于数据训练模型</strong></h3>
+<p>因为我们已经将原始短信转换成了可以用一个统计模型代表的形式，所以，此时是应用朴素贝叶斯算法的时候了。该算法将根据单词的存在与否来估计一条给定短信是垃圾短短的概率。我们采用e1071添加包中的朴素贝叶斯算法实现。为了基于sms_train矩阵建立模型，我们将使用如下命令。</p>
+<pre class="r"><code>library(e1071)
+sms_classifier &lt;- naiveBayes(sms_train, sms_raw_train$type)</code></pre>
+<p>sms_classifier变量现在包含一个可以用于预测的naiveBayes分类器对象。</p>
+</div>
+<div id="评估模型的性能" class="section level3">
+<h3><strong>5.评估模型的性能</strong></h3>
+<p>为了评估短信分类器，我们需要基于测试数据中未知的短信来检验分类器的预测值。未知的短信特征存储在一个名为sms_test的矩阵中，而分类标签spam和ham存储在sms_raw_test数据框中一个名为type的向量中。我们把已经训练过的分类器命名为sms_classifier，我们将用它来产生预测值，并将预测值与真实值相比较。我们用函数predict()进行预测，并将这些预测值存储在一个名为sms_test_pred的向量中：</p>
+<pre class="r"><code>sms_test_pred &lt;- predict(sms_classifier, sms_test)</code></pre>
+<p>为了比较预测值和真实值，我们将使用，gmodels添加包中的函数CrossTable(),我们将增加一些额外的参数来消除不必要的元素的比例，并使用参数，dnn(维度名称)来重新标记行和列，代码如下：</p>
+<pre class="r"><code>library(gmodels)
+CrossTable(sms_test_pred, sms_raw_test$type, 
+           prop.chisq = FALSE, prop.t = FALSE, prop.r = FALSE,
+           dnn = c(&quot;predicted&quot;, &quot;actual&quot;))
+## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |           N / Col Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  1390 
+## 
+##  
+##              | actual 
+##    predicted |       ham |      spam | Row Total | 
+## -------------|-----------|-----------|-----------|
+##          ham |      1203 |        30 |      1233 | 
+##              |     0.997 |     0.164 |           | 
+## -------------|-----------|-----------|-----------|
+##         spam |         4 |       153 |       157 | 
+##              |     0.003 |     0.836 |           | 
+## -------------|-----------|-----------|-----------|
+## Column Total |      1207 |       183 |      1390 | 
+##              |     0.868 |     0.132 |           | 
+## -------------|-----------|-----------|-----------|
+## 
+## </code></pre>
+<p>从表中可以看出，1207条非垃圾短信中有4条短信被错误地归为垃圾短信，比例为0.3%，而183条垃圾短信中有32条短信被错误地归为非垃圾短息，比例为17.5%，效果非常好。另外，本案例的研究也说明了为什么朴素贝叶斯算法是用于文本分类的一种标准算法，而且，朴素贝叶斯方法可以直接拿来使用，执行的效果也是出奇的好。</p>
+<p>另一方面，被错误地归类为垃圾短信的4条短信可能会为过滤算法的部署带来显著的问题。如果过滤导致某人错过一条重要的约会或者紧急的情况的短信，那么他们会很快放弃这种产品，因此我们需要研究这些分类错误的短信，看看书哪里出了问题。<strong>时刻谨记错误的代价</strong>。<br><br></p>
+</div>
+<div id="模型性能的提升" class="section level3">
+<h3><strong>6.模型性能的提升</strong></h3>
+<p>在训练模型时，我们并没有设置一个值来用于拉普拉斯估计。毫无疑问，这样就允许在分类的过程中单词可能出现在0条垃圾短信中或者0条非垃圾短信中。比如，虽然单词“ringtone”只出现在训练数据的垃圾短信中，但这并不意味着每一个含有单词“ringtone”的短信就应该被归为垃圾短信。我们还像前面一样训练朴素贝叶斯模型，但这一次我们设置laplace = 1。</p>
+<pre class="r"><code>sms_classifier2 &lt;- naiveBayes(sms_train, sms_raw_train$type, laplace = 1)
+sms_test_pred2 &lt;- predict(sms_classifier2, sms_test)
+CrossTable(sms_test_pred2, sms_raw_test$type,
+           prop.chisq = FALSE, prop.t = FALSE, prop.r = FALSE,
+           dnn = c(&quot;predicted&quot;, &quot;actual&quot;))
+## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |           N / Col Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  1390 
+## 
+##  
+##              | actual 
+##    predicted |       ham |      spam | Row Total | 
+## -------------|-----------|-----------|-----------|
+##          ham |      1191 |        18 |      1209 | 
+##              |     0.987 |     0.098 |           | 
+## -------------|-----------|-----------|-----------|
+##         spam |        16 |       165 |       181 | 
+##              |     0.013 |     0.902 |           | 
+## -------------|-----------|-----------|-----------|
+## Column Total |      1207 |       183 |      1390 | 
+##              |     0.868 |     0.132 |           | 
+## -------------|-----------|-----------|-----------|
+## 
+## </code></pre>
+<p>结果如上表所示，我们将错误地归为非垃圾短信的垃圾短信的数量由32减少到31，虽然这看上去只是一个很小的改进。总之，我们必须意识到如果我们对于垃圾短信的过滤过于激进，那么重要信息被遗漏的可能性是很大的。<br><br></p>
+<p>以上内容整理自《Machine Learning with R》 by Brett Lantz</p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E8%AF%86%E5%88%AB%E9%AB%98%E9%A3%8E%E9%99%A9%E9%93%B6%E8%A1%8C%E8%B4%B7%E6%AC%BE/">决策树算法识别高风险银行贷款</a></span>
+  <span class="nav-next"><a href="../../../cn/post/log-normal-weibull-distribution/"> Log Normal &amp; Weibull Distribution</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E8%AF%86%E5%88%AB%E9%AB%98%E9%A3%8E%E9%99%A9%E9%93%B6%E8%A1%8C%E8%B4%B7%E6%AC%BE\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/log-normal-weibull-distribution\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R基础知识（一） - Boylad</title>
+    
+     
+    <meta property="og:title" content="R基础知识（一） - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R基础知识（一）</h1>
+
+
+
+<h3>Boylad &middot 
+2018-12-02</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<p>ls()函数可以查看所有的对象列表</p>
+<p>rm()函数可以用来去除对象</p>
+<p>rm(list = ls())消除所有的对象</p>
+<p>pdf()函数去创建一个pdf文件</p>
+<p>jpeg()函数建立一个jpeg格式的输出文件</p>
+<p>dev.off()函数指示用R创建图形的工作到此为止</p>
+<pre class="r"><code>pdf(&quot;Figure.pdf&quot;)
+plot(rnorm(100), rnorm(100), col = &quot;green&quot;)
+dev.off()
+## png 
+##   2</code></pre>
+<p>contour()函数产生一个等高线图，它用于表示三维数据；形式上就像一幅地图。它有三个参数：</p>
+<ol style="list-style-type: decimal">
+<li><p>x值的向量(第一维)</p></li>
+<li><p>y值的向量(第二维)</p></li>
+<li><p>每对(x,y)坐标上标记某个矩阵的元素，用z记(第三维)</p></li>
+</ol>
+<pre class="r"><code>x = seq(-pi, pi, length = 50)
+y &lt;- x
+f &lt;- outer(x, y, function(x, y) cos(y) / (1+x^2))
+contour(x,y,f)
+contour(x,y,f,nlevels = 45, add = T)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fa &lt;- (f - t(f)) / 2 #f是一个矩阵，t表示转置
+contour(x,y,fa, nlevels = 15)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>image()函数与contour()函数工作原理相似，只不过它能产生一个有颜色的图形，颜色随z值的不同而不同。这就是所谓的热地图(heatmap)，常常用于绘制天气预报上的温度变化。另外，persp()函数可以用来产生一个三维图。参数theta和参数phi可以控制观看图形的角度。</p>
+<pre class="r"><code>image(x,y,fa)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>persp(x,y,fa)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>persp(x,y,fa,theta = 30)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>persp(x,y,fa,theta = 30, phi = 20)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>persp(x,y,fa,theta = 30, phi = 70)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>persp(x,y,fa,theta = 30, phi = 40)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-3-6.png" width="672" style="display: block; margin: auto;" /></p>
+<p>fix()函数可以开启一个电子表格窗口来浏览数据。然而，在有新的R命令被应用之前这个窗口需要被关闭(为此，在下面代码中fix()函数被注释了)。</p>
+<pre class="r"><code>library(MASS)
+library(ISLR)
+data(Auto)
+#fix(Auto)</code></pre>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li><p>read.table()函数中，参数na.strings = “?”告知R在扫描数据的任何位置只要遇到指定的字符特征或者一个特征集(如问号标记)，应该在数据矩阵中对这条数据做确实标记。</p></li>
+<li><p>na.omit()函数简单地剔除含有缺失值的行。</p></li>
+<li><p>attach()函数来告诉R允许在指定的数据框里的变量通过变量名调用。</p></li>
+<li><p>as.factor()函数将一个定量的变量转换成一个定性的变量。</p></li>
+<li><p>pairs()函数可以用于建立一个对任何指定数据集中每一对变量的散点图矩阵。也可以为这些变量的子集产生一个散点图。</p></li>
+</ol>
+<pre class="r"><code>pairs(Auto)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pairs(~mpg + displacement + horsepower + weight + acceleration, Auto)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>如果要绘制在X轴上的变量是定性的，箱线图(boxplot)将自动通过plot()函数差生：</p>
+<pre class="r"><code>attach(Auto)
+cylinders &lt;- as.factor(cylinders)
+plot(cylinders, mpg, col = &quot;red&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(cylinders, mpg, col = &quot;red&quot;, varwidth = TRUE)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(cylinders, mpg, col = &quot;red&quot;, varwidth = TRUE, horizontal = TRUE,
+     xlab = &quot;cylinders&quot;, ylab = &quot;MPG&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-6-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>紧随plot()函数之后的identify()函数提供了一个有用的交互式别方法，可以对图上的每个点指定显示某个变量值。下例中，identify()输入了三个参数：x轴变量，y轴变量，以及我们希望在屏幕上为每个点打印出的变量名称。单击一个图上的某个点，将引导R打印指定变量上这个点的值。点击这个图，将推出identify()函数。默认情况下，在identify()函数下显示的数字代表这个点的行号。注：在Rmarkdown中不能交互。</p>
+<pre class="r"><code>plot(horsepower, mpg)
+identify(horsepower, mpg, name)</code></pre>
+<p><img src="../../../cn/post/2018-12-02-r基础知识-一_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>## integer(0)</code></pre>
+<p>当用R完成分析时，可以输入q()关闭它，或者退出。当推出R时，可以选择保存当前工作区，这样就对下次使用这次R会话里已经创建的所欲对象(如数据集)做了布置。在推出R之前，可以用savehistory()函数将最近会话里输入的所有命令都保存成一个记录；下次进入R时，可以用loadhistory()函数载入这些历史记录。
+<br>
+<br></p>
+<p><code>以上内容整理自《An Introduction to Statistical Learning with Applications in R》</code></p>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/">R线性回归</a></span>
+  <span class="nav-next"><a href="../../../cn/post/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C/">R基础知识（二）</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

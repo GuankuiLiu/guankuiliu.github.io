@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R规则和模式挖掘 - Boylad</title>
+    
+     
+    <meta property="og:title" content="R规则和模式挖掘 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R规则和模式挖掘</h1>
+
+
+
+<h3>Boylad &middot 
+2018-11-01</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<p>本节中我们会介绍创建和观察事务数据集，使用Apriori算法执行关联分析，使用多种图形模式可视化关联关系，以及使用Eclat算法找出频繁项集。最后，我们会使用时序信息创建事务，并使用cSPADE算法发现频繁序列模式。</p>
+<div id="把数据转换会事务" class="section level3">
+<h3><strong>把数据转换会事务</strong></h3>
+<p>使用任何规则挖掘算法之前，我们需要把数据框格式的数据转换为事务。本例中，我们会展示如何使用arules程序包把购买订单数据集转换为事务(挖掘频繁项集或关联规则之前，要准备事务类型的数据集，然后转换为事务)。首先加载arules程序包：</p>
+<pre class="r"><code>library(arules)
+## Warning: 程辑包&#39;arules&#39;是用R版本4.0.3 来建造的
+## 载入需要的程辑包：Matrix
+## 
+## 载入程辑包：&#39;arules&#39;
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     abbreviate, write</code></pre>
+<p>使用函数load给R进程加载用户的购买订单数据：</p>
+<pre class="r"><code>setwd(&quot;c:/Users/Boylad/Documents/mydata/R_for_Data_Science_Cookbook&quot;)
+load(&quot;product_by_user.RData&quot;)</code></pre>
+<p>最后，使用函数as，把data.table(或者data.frame)转换为事务(生成32539个事务和20054个项)：</p>
+<pre class="r"><code>trans &lt;- as(product_by_user$Product, &quot;transactions&quot;)
+trans
+## transactions in sparse format with
+##  32539 transactions (rows) and
+##  20054 items (columns)</code></pre>
+<p>除了把data.table(或者data.frame)类型转换为事务，我们还可以使用下列步骤，把一个列或者矩阵类型转换为事务。使用包含购买记录的3个向量生成一个列：</p>
+<pre class="r"><code>tr_list &lt;- list(c(&quot;Apple&quot;, &quot;Bread&quot;, &quot;Cake&quot;),
+                c(&quot;Apple&quot;, &quot;Bread&quot;, &quot;Milk&quot;),
+                c(&quot;Bread&quot;, &quot;Cake&quot;, &quot;Milk&quot;))
+names(tr_list) = paste(&quot;Tr&quot;, c(1:3), sep = &quot;&quot;)</code></pre>
+<p>然后，使用函数as把数据框转换为事务：</p>
+<pre class="r"><code>trans2 &lt;- as(tr_list, &quot;transactions&quot;)
+trans2
+## transactions in sparse format with
+##  3 transactions (rows) and
+##  4 items (columns)</code></pre>
+<p>也可以把矩阵格式的数据转换为事务：</p>
+<pre class="r"><code>tr_matrix &lt;- matrix(c(1,1,1,0,1,1,0,1,0,1,1,1), ncol = 4)
+dimnames(tr_matrix) &lt;- list(paste(&quot;Tr&quot;, c(1:3), sep = &quot;&quot;))
+trans3 &lt;- as(tr_matrix, &quot;transactions&quot;)
+trans3
+## transactions in sparse format with
+##  3 transactions (rows) and
+##  4 items (columns)</code></pre>
+<p><br></p>
+</div>
+<div id="展示事务和关联" class="section level3">
+<h3><strong>展示事务和关联</strong></h3>
+<p>arules程序包使用transactions类存储事物数据。因此，我们必须使用arules提供的原生函数来展示事务和关联规则。首先，获取事务的LIST表示：</p>
+<pre class="r"><code>head(LIST(trans), 3)
+## $`00001`
+## [1] &quot;P0014520085&quot;
+## 
+## $`00002`
+## [1] &quot;P0018800250&quot;
+## 
+## $`00003`
+## [1] &quot;P0003926850034&quot; &quot;P0013344760004&quot; &quot;P0013834251&quot;    &quot;P0014251480003&quot;</code></pre>
+<p>然后，使用函数summary给出汇总统计信息和细节信息(例如：基本描述、最频繁项、事务长度分布)：</p>
+<pre class="r"><code>summary(trans)
+## transactions as itemMatrix in sparse format with
+##  32539 rows (elements/itemsets/transactions) and
+##  20054 columns (items) and a density of 7.720787e-05 
+## 
+## most frequent items:
+## P0005772981 P0024239865 P0004607050 P0003425855 P0006323656     (Other) 
+##         611         610         489         462         327       47882 
+## 
+## element (itemset/transaction) length distribution:
+## sizes
+##     1     2     3     4     5     6     7     8     9    10    11    12    13 
+## 23822  5283  1668   707   355   221   132    88    62    49    29    20    23 
+##    14    15    16    17    18    19    20    21    22    23    24    27    29 
+##    19     9     8     7     6     1     6     5     3     3     2     4     1 
+##    30    32    35    44 
+##     2     1     2     1 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   1.000   1.000   1.000   1.548   2.000  44.000 
+## 
+## includes extended item information - examples:
+##        labels
+## 1 P0000005913
+## 2 P0000006020
+## 3 P0000006591
+## 
+## includes extended transaction information - examples:
+##   transactionID
+## 1         00001
+## 2         00002
+## 3         00003</code></pre>
+<p>然后，我们可以使用函数inspect展示事务：</p>
+<pre class="r"><code>inspect(trans[1:3])
+##     items            transactionID
+## [1] {P0014520085}            00001
+## [2] {P0018800250}            00002
+## [3] {P0003926850034,              
+##      P0013344760004,              
+##      P0013834251,                 
+##      P0014251480003}         00003</code></pre>
+<p>另外，我们也可以根据大小过滤事务：</p>
+<pre class="r"><code>filter_trans &lt;- trans[size(trans) &gt;= 3]
+inspect(filter_trans[1:3])
+##     items            transactionID
+## [1] {P0003926850034,              
+##      P0013344760004,              
+##      P0013834251,                 
+##      P0014251480003}         00003
+## [2] {P0018474750044,              
+##      P0023729451,                 
+##      P0024077600013,              
+##      P0024236730}            00005
+## [3] {P0003169854,                 
+##      P0008070856,                 
+##      P0020005801,                 
+##      P0024629850}            00007</code></pre>
+<p>我们也可以使用函数image图形化的观察事务：</p>
+<pre class="r"><code>image(trans[1:300, 1:300])</code></pre>
+<p><img src="../../../cn/post/2018-11-01-r规则和模式挖掘_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>要图形化展示频度/支持度条形图，使用itemFrequencyPlot：</p>
+<pre class="r"><code>itemFrequencyPlot(trans, topN = 10, type = &quot;absolute&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-11-01-r规则和模式挖掘_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="使用apriori规则挖掘关联关系" class="section level3">
+<h3><strong>使用Apriori规则挖掘关联关系</strong></h3>
+<p>关联挖掘的目的是从事务数据集中发现项之间的关系。关联挖掘的典型过程是找到支持度大于最小支持度的项集。然后，算法使用频繁项集生成置信度大于最小置信度的强规则(例如，牛奶=&gt;面包，买牛奶的客户很肯能会买面包。)根据定义，关联规则使用X=&gt;Y的形式表示，其中X和Y是不相连的项集。我们可以使用两个指标度量关联强度：<strong>支持度</strong>和<strong>置信度</strong>。支持度给出了一条规则在数据集中可用的百分比，置信度给出了X和Y出现在同一次事务中的概率：
+<span class="math display">\[Support=\frac{\sigma(X\bigcup Y)}{N}\]</span>
+<span class="math display">\[Confidence=\frac{\sigma(X\bigcup Y)}{\sigma(X)}\]</span>
+其中，<span class="math inline">\(\sigma\)</span>表示特定频繁项集的频度，N表示全量数据集。<br></p>
+<p>因为支持度和置信度只是对规则强度的度量，我们依然会获取到许多额外的拥有高支持度和高置信度的过则。所以，我们可以使用第三种度量——提升度——来评估规则的质量(顺序)。根据定义，提升度代表规则大于X和Y随机共同出现的强度。我们可以用如下形式的提升度：
+<span class="math display">\[Lift=\frac{\sigma(X\bigcup Y)}{\sigma(X)\times\sigma(Y)}\]</span>
+Apriori是著名的挖掘关联关系的算法。它执行逐层的、宽度优先算法来给预备选项计数，Apriori算法流程首先首先逐层找出频繁项集(拥有最小支持度的项的集合)。例如，算法首先找出频度为1的项集，然后使用这些项集找出频度为2的项集。整个流程可以迭代地从频繁度为k的项集中找出新的频度为k+1的项集，直到没有频繁项集。最后，算法使用频繁项集生成关联规则。<br></p>
+<p>关联挖掘是一项发现隐藏在事物数据集中有意义上关系的技术。这项技术首先找到所有频繁项集，并从频繁项集中生成强关联规则。使用，Apriori发现支持度大于0.001、置信度大于0.1的规则(从汇总信息中可以看到，Apriori生成6条规则，而且，我们可以看到规则长度的分布、质量度量的汇总信息、挖掘信息。在质量度量的汇总信息中我们可以找到关于3个度量度，支持度、置信度和提升度的描述性统计。支持度是包含某个项集的事务占比；置信度是规则的正确百分比；提升度是目标关联规则响应除以平均响应时间。)：</p>
+<pre class="r"><code>rules &lt;- apriori(trans, parameter = list(supp = 0.001, conf = 0.1,
+                                         target = &quot;rules&quot;))
+## Apriori
+## 
+## Parameter specification:
+##  confidence minval smax arem  aval originalSupport maxtime support minlen
+##         0.1    0.1    1 none FALSE            TRUE       5   0.001      1
+##  maxlen target  ext
+##      10  rules TRUE
+## 
+## Algorithmic control:
+##  filter tree heap memopt load sort verbose
+##     0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+## 
+## Absolute minimum support count: 32 
+## 
+## set item appearances ...[0 item(s)] done [0.00s].
+## set transactions ...[20054 item(s), 32539 transaction(s)] done [0.03s].
+## sorting and recoding items ... [143 item(s)] done [0.00s].
+## creating transaction tree ... done [0.00s].
+## checking subsets of size 1 2 done [0.00s].
+## writing ... [6 rule(s)] done [0.00s].
+## creating S4 object  ... done [0.00s].
+summary(rules)
+## set of 6 rules
+## 
+## rule length distribution (lhs + rhs):sizes
+## 2 
+## 6 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       2       2       2       2       2       2 
+## 
+## summary of quality measures:
+##     support           confidence        coverage             lift      
+##  Min.   :0.001137   Min.   :0.1131   Min.   :0.004886   Min.   :16.01  
+##  1st Qu.:0.001183   1st Qu.:0.1351   1st Qu.:0.006354   1st Qu.:17.72  
+##  Median :0.001321   Median :0.1503   Median :0.008482   Median :22.85  
+##  Mean   :0.001281   Mean   :0.1740   Mean   :0.007985   Mean   :22.06  
+##  3rd Qu.:0.001368   3rd Qu.:0.2098   3rd Qu.:0.009896   3rd Qu.:26.21  
+##  Max.   :0.001383   Max.   :0.2704   Max.   :0.010049   Max.   :27.33  
+##      count      
+##  Min.   :37.00  
+##  1st Qu.:38.50  
+##  Median :43.00  
+##  Mean   :41.67  
+##  3rd Qu.:44.50  
+##  Max.   :45.00  
+## 
+## mining info:
+##   data ntransactions support confidence
+##  trans         32539   0.001        0.1</code></pre>
+<p>我们可以是使用inspect展示所有规则：</p>
+<pre class="r"><code>inspect(rules)
+##     lhs                 rhs              support     confidence coverage   
+## [1] {P0014252070}    =&gt; {P0014252066}    0.001321491 0.2704403  0.004886444
+## [2] {P0014252066}    =&gt; {P0014252070}    0.001321491 0.1335404  0.009895817
+## [3] {P0006587250003} =&gt; {P0006587250014} 0.001137097 0.1608696  0.007068441
+## [4] {P0006587250014} =&gt; {P0006587250003} 0.001137097 0.1131498  0.010049479
+## [5] {P0014252055}    =&gt; {P0014252066}    0.001382956 0.2261307  0.006115738
+## [6] {P0014252066}    =&gt; {P0014252055}    0.001382956 0.1397516  0.009895817
+##     lift     count
+## [1] 27.32874 43   
+## [2] 27.32874 43   
+## [3] 16.00775 37   
+## [4] 16.00775 37   
+## [5] 22.85113 45   
+## [6] 22.85113 45</code></pre>
+<p>最后，根据置信度对规则排序，并查看所有规则(我们看到P0014252070关联P0014252066是置信度最高的规则，其支持度为0.001321491，置信度为0.2704403，提升度为27.32874)：</p>
+<pre class="r"><code>rules &lt;- sort(rules, by = &quot;confidence&quot;, decreasing = TRUE)
+inspect(rules)
+##     lhs                 rhs              support     confidence coverage   
+## [1] {P0014252070}    =&gt; {P0014252066}    0.001321491 0.2704403  0.004886444
+## [2] {P0014252055}    =&gt; {P0014252066}    0.001382956 0.2261307  0.006115738
+## [3] {P0006587250003} =&gt; {P0006587250014} 0.001137097 0.1608696  0.007068441
+## [4] {P0014252066}    =&gt; {P0014252055}    0.001382956 0.1397516  0.009895817
+## [5] {P0014252066}    =&gt; {P0014252070}    0.001321491 0.1335404  0.009895817
+## [6] {P0006587250014} =&gt; {P0006587250003} 0.001137097 0.1131498  0.010049479
+##     lift     count
+## [1] 27.32874 43   
+## [2] 22.85113 45   
+## [3] 16.00775 37   
+## [4] 22.85113 45   
+## [5] 27.32874 43   
+## [6] 16.00775 37</code></pre>
+<p>另外，除了使用函数summary和inspect查看关联规则外，我们还可以使用intersetMeasure获取其他相关度量。</p>
+<pre class="r"><code>data(Groceries)
+head(interestMeasure(rules, c(&quot;support&quot;, &quot;chiSquare&quot;, &quot;confidence&quot;,
+                               &quot;conviction&quot;, &quot;cosine&quot;, &quot;coverage&quot;,
+                               &quot;leverage&quot;, &quot;lift&quot;, &quot;oddsRatio&quot;),
+                              Groceries))
+##       support chiSquared confidence conviction    cosine    coverage
+## 1 0.001321491  1107.0201  0.2704403   1.357126 0.1900387 0.004886444
+## 2 0.001382956   955.5117  0.2261307   1.279420 0.1777698 0.006115738
+## 3 0.001137097   529.6267  0.1608696   1.179734 0.1349161 0.007068441
+## 4 0.001382956   955.5117  0.1397516   1.155346 0.1777698 0.009895817
+## 5 0.001321491  1107.0201  0.1335404   1.148482 0.1900387 0.009895817
+## 6 0.001137097   529.6267  0.1131498   1.119616 0.1349161 0.010049479
+##      leverage     lift oddsRatio
+## 1 0.001273136 27.32874  42.65057
+## 2 0.001322436 22.85113  33.82332
+## 3 0.001066063 16.00775  21.16675
+## 4 0.001322436 22.85113  33.82332
+## 5 0.001273136 27.32874  42.65057
+## 6 0.001066063 16.00775  21.16675</code></pre>
+<p><br></p>
+</div>
+<div id="对冗余规则剪枝" class="section level3">
+<h3><strong>对冗余规则剪枝</strong></h3>
+<p>在支持度和置信度之间选择是关联关系挖掘的主要约束。例如：一方面，我如果我们使用高支持度阈值，我们可能会移除罕见项规则，而不会考虑这些规则是否拥有高置信度。量一方面，如果我们选择使用低置信度阈值，关联关系挖掘会产生大量冗余规则(例如，一个规则是另一个规则的超规则)的集合，这会使得规则难以理解和应用。因此我们需要剪掉冗余规则，以便从生成的规则中发现有用的信息。<br></p>
+<p>首先我们需要确认冗余规则(首先，我们按照提升度对规则排序，使用函数is.subset找出排序后规则的子集，该函数会生成一个itemMatrix对象，我们把矩阵的下三角区域设置为NA。最后，计算生成矩阵的colSums,其中,colSums&gt;=1表明对应的规则是冗余的。)：</p>
+<pre class="r"><code>rules.sorted &lt;- sort(rules, by = &quot;lift&quot;)
+subset.matrix &lt;- is.subset(rules.sorted, rules.sorted, sparse = FALSE )
+subset.matrix[lower.tri(subset.matrix, diag = TRUE)] &lt;-  NA
+redundant &lt;- colSums(subset.matrix, na.rm = TRUE) &gt;= 1
+head(redundant)
+##       {P0014252066,P0014252070}       {P0014252066,P0014252070} 
+##                           FALSE                            TRUE 
+##       {P0014252055,P0014252066}       {P0014252055,P0014252066} 
+##                           FALSE                            TRUE 
+## {P0006587250003,P0006587250014} {P0006587250003,P0006587250014} 
+##                           FALSE                            TRUE</code></pre>
+<p>然后，移除冗余规则(找出冗余规则之后，我们可以从排序好的规则中对其进行剪枝。最后，我们使用inspect函数查看被剪枝的规则)：</p>
+<pre class="r"><code>rules.pruned &lt;- rules.sorted[!redundant]
+inspect(rules.pruned)
+##     lhs                 rhs              support     confidence coverage   
+## [1] {P0014252070}    =&gt; {P0014252066}    0.001321491 0.2704403  0.004886444
+## [2] {P0014252055}    =&gt; {P0014252066}    0.001382956 0.2261307  0.006115738
+## [3] {P0006587250003} =&gt; {P0006587250014} 0.001137097 0.1608696  0.007068441
+##     lift     count
+## [1] 27.32874 43   
+## [2] 22.85113 45   
+## [3] 16.00775 37</code></pre>
+<p><br></p>
+</div>
+<div id="可视化关联规则" class="section level3">
+<h3><strong>可视化关联规则</strong></h3>
+<p>要查看项之间的关系，我们可以可视化关联规则。作为文本展示关联规则的替代方案，我们可以使用arulesViz可视化关联规则。arulesViz程序包是arules程序包的扩展包，提供了许多关联规则的可视化技术。</p>
+<pre class="r"><code>library(arulesViz)
+## Warning: 程辑包&#39;arulesViz&#39;是用R版本4.0.3 来建造的
+## 载入需要的程辑包：grid</code></pre>
+<p>然后生成经过剪枝的规则的散点图(规则是散点图中的点，其中x代表支持度，y代表置信度，点的阴影程度表示规则的提升度。)：</p>
+<pre class="r"><code>plot(rules.pruned)</code></pre>
+<p><img src="../../../cn/post/2018-11-01-r规则和模式挖掘_files/figure-html/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们也可以用分组矩阵的方式给出规则(在分组矩阵中，左边的规则用列标签展示，右边的规则用行标签展示，分组矩阵中气球的大小表示规则的支持度，气球的颜色表示规则的提升度。)：</p>
+<pre class="r"><code>plot(rules.pruned, method = &quot;grouped&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-11-01-r规则和模式挖掘_files/figure-html/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们还可以使用网络图来表示规则(每一个项集表示为一个点，他们的关系表示为边，气球的大小表示分组中规则的支持度，气球的颜色表示规则的提升度。)：</p>
+<pre class="r"><code>plot(rules.pruned, method = &quot;graph&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-11-01-r规则和模式挖掘_files/figure-html/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="使用eclat挖掘频繁项集" class="section level3">
+<h3><strong>使用Eclat挖掘频繁项集</strong></h3>
+<p>Apriori算法执行宽度优先搜索来扫描全体数据集，这是一种直观的易于理解的关联挖掘算法。但是这个算法有两个明显的不足：</p>
+<ul>
+<li><p>它会生成庞大的备选集。</p></li>
+<li><p>它在支持度计算过程中效率较低，因为它需要对数据库多次扫描。</p></li>
+</ul>
+<p>与Apriori不同，Eclat使用等价类、深度优先搜索和集合交集运算，来大幅改善支持度计算的速度。Apriori算法使用水平数据结构来存储事务。而Eclat使用垂直数据结构来存储每一个项的事务ID(tid)列。Eclat通过对两个k项集取交集，判断任意k+1项集的支持度，最终利用频繁项集生成关联规则。<br></p>
+<p>与Apriori算法类似，我们可以使用函数eclat生成满足给定支持度和最大长度的频繁项集：</p>
+<pre class="r"><code>frequentsets &lt;- eclat(trans, parameter = list(support = 0.01, maxlen = 10))
+## Eclat
+## 
+## parameter specification:
+##  tidLists support minlen maxlen            target  ext
+##     FALSE    0.01      1     10 frequent itemsets TRUE
+## 
+## algorithmic control:
+##  sparse sort verbose
+##       7   -2    TRUE
+## 
+## Absolute minimum support count: 325 
+## 
+## create itemset ... 
+## set transactions ...[20054 item(s), 32539 transaction(s)] done [0.03s].
+## sorting and recoding items ... [6 item(s)] done [0.00s].
+## creating sparse bit matrix ... [6 row(s), 32539 column(s)] done [0.00s].
+## writing  ... [6 set(s)] done [0.00s].
+## Creating S4 object  ... done [0.00s].</code></pre>
+<p>然后，获取频繁项集的汇总统计信息(包括最频繁项、项集长度分布、质量度量汇总和挖掘信息等)：</p>
+<pre class="r"><code>summary(frequentsets)
+## set of 6 itemsets
+## 
+## most frequent items:
+##    P0003425855    P0004607050    P0005772981    P0006323656 P0006587250014 
+##              1              1              1              1              1 
+##        (Other) 
+##              1 
+## 
+## element (itemset/transaction) length distribution:sizes
+## 1 
+## 6 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       1       1       1       1       1       1 
+## 
+## summary of quality measures:
+##     support        transIdenticalToItemsets     count      
+##  Min.   :0.01005   Min.   :327.0            Min.   :327.0  
+##  1st Qu.:0.01109   1st Qu.:360.8            1st Qu.:360.8  
+##  Median :0.01461   Median :475.5            Median :475.5  
+##  Mean   :0.01447   Mean   :471.0            Mean   :471.0  
+##  3rd Qu.:0.01782   3rd Qu.:579.8            3rd Qu.:579.8  
+##  Max.   :0.01878   Max.   :611.0            Max.   :611.0  
+## 
+## includes transaction ID lists: FALSE 
+## 
+## mining info:
+##   data ntransactions support
+##  trans         32539    0.01</code></pre>
+<p>最后，根据支持度对频繁项集排序，查看频繁项集：</p>
+<pre class="r"><code>inspect(sort(frequentsets, by = &quot;support&quot;))
+##     items            support    transIdenticalToItemsets count
+## [1] {P0005772981}    0.01877747 611                      611  
+## [2] {P0024239865}    0.01874673 610                      610  
+## [3] {P0004607050}    0.01502812 489                      489  
+## [4] {P0003425855}    0.01419835 462                      462  
+## [5] {P0006587250014} 0.01004948 327                      327  
+## [6] {P0006323656}    0.01004948 327                      327</code></pre>
+<p><br></p>
+</div>
+<div id="使用时序信息创建事务" class="section level3">
+<h3><strong>使用时序信息创建事务</strong></h3>
+<p>除了挖掘事物数据集中有意思的关联之外，我们还可以使用事务的时序信息挖掘有意思的序列模式。接下来我们展示如何从网络流量数据集(数据框)中通过时序信息创建事务。</p>
+<pre class="r"><code>library(arulesSequences)
+## Warning: 程辑包&#39;arulesSequences&#39;是用R版本4.0.3 来建造的</code></pre>
+<p>给R进程加载网络流量数据(包含源用户的IP、请求时间戳、请求URL和状态代码)：</p>
+<pre class="r"><code>setwd(&quot;c:/Users/Boylad/Documents/mydata/R_for_Data_Science_Cookbook&quot;)
+load(&quot;traffic.RData&quot;)</code></pre>
+<p>使用时序信息创建事务(我们使用源IP、时间戳和URL来创建事务。我们把源IP转换为一个序列，然后按照用户序列和时间戳对数据集排序，我们可以使用函数as把列数据转化为一个事物数据集。然后我们添加eventID和sequenceID作为时序信息；sequenceID是事件所属的序列，eventID表示事件发生的时间。生成事务数据集之后，我们可以使用这个数据集进行频繁序列模式挖掘)：</p>
+<pre class="r"><code>traffic_data &lt;- data.frame(item = traffic$Page)
+traffic.tran &lt;- as(traffic_data, &quot;transactions&quot;)
+transactionInfo(traffic.tran)$sequenceID &lt;- traffic$sequence
+transactionInfo(traffic.tran)$eventID &lt;- traffic$Timestamp
+traffic.tran
+## transactions in sparse format with
+##  17 transactions (rows) and
+##  6 items (columns)</code></pre>
+<p>使用inspect查看事务：</p>
+<pre class="r"><code>inspect(head(traffic.tran))
+##     items             transactionID sequenceID eventID   
+## [1] {item=/}          1             1          1458565800
+## [2] {item=/login}     2             1          1458565803
+## [3] {item=/profile}   3             1          1458565811
+## [4] {item=/shop_list} 4             1          1458565814
+## [5] {item=/}          5             2          1458565802
+## [6] {item=/login}     6             2          1458565808</code></pre>
+<p>获取带有时序信息的事务汇总统计信息：</p>
+<pre class="r"><code>summary(traffic.tran)
+## transactions as itemMatrix in sparse format with
+##  17 rows (elements/itemsets/transactions) and
+##  6 columns (items) and a density of 0.1666667 
+## 
+## most frequent items:
+##          item=/     item=/login   item=/profile item=/shop_list   item=/contact 
+##               4               4               4               3               1 
+##         (Other) 
+##               1 
+## 
+## element (itemset/transaction) length distribution:
+## sizes
+##  1 
+## 17 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       1       1       1       1       1       1 
+## 
+## includes extended item information - examples:
+##          labels variables   levels
+## 1        item=/      item        /
+## 2 item=/contact      item /contact
+## 3   item=/login      item   /login
+## 
+## includes extended transaction information - examples:
+##   transactionID sequenceID    eventID
+## 1             1          1 1458565800
+## 2             2          1 1458565803
+## 3             3          1 1458565811</code></pre>
+<p><br></p>
+</div>
+<div id="使用cspade挖掘频繁序列模式" class="section level3">
+<h3><strong>使用cSPADE挖掘频繁序列模式</strong></h3>
+<p>序列模式挖掘的目标是发现事务间的序列关系或模式。我们可以使用模式挖掘结果预测未来事件，或者给用户推荐项目。其中一个最著名的序列模式挖掘方法是SPADE(Sequential PAttern Discovery using Equivalance classes)。SPASE使用垂直序列结构存储ID列，其中数据库的每一个输入序列叫做SID，给定输入序列的每一个事件叫做EID。SPADE会通过Apriori算法的候选生成过程逐层生成模式。SPADE从ID列交集的(n-1)个序列中，生成后续n个序列。如果序列量大于最小支持度(minsup),我们就可以认为序列足够频繁了。当找不出更频繁的序列时，算法会停止。<br></p>
+<pre class="r"><code>frequent_pattern &lt;- cspade(traffic.tran, parameter = list(support = 0.50))
+inspect(frequent_pattern)
+##     items               support 
+##   1 &lt;{item=/}&gt;             1.00 
+##   2 &lt;{item=/login}&gt;        1.00 
+##   3 &lt;{item=/profile}&gt;      0.75 
+##   4 &lt;{item=/shop_list}&gt;    0.75 
+##   5 &lt;{item=/},           
+##      {item=/shop_list}&gt;    0.75 
+##   6 &lt;{item=/login},      
+##      {item=/shop_list}&gt;    0.75 
+##   7 &lt;{item=/},           
+##      {item=/login},      
+##      {item=/shop_list}&gt;    0.75 
+##   8 &lt;{item=/},           
+##      {item=/profile}&gt;      0.75 
+##   9 &lt;{item=/login},      
+##      {item=/profile}&gt;      0.75 
+##  10 &lt;{item=/},           
+##      {item=/login},      
+##      {item=/profile}&gt;      0.75 
+##  11 &lt;{item=/},           
+##      {item=/login}&gt;        1.00 
+## </code></pre>
+<p>然后，查看频繁序列模式的汇总统计信息：</p>
+<pre class="r"><code>summary(frequent_pattern)
+## set of 11 sequences with
+## 
+## most frequent items:
+##          item=/     item=/login   item=/profile item=/shop_list         (Other) 
+##               6               6               4               4              14 
+## 
+## most frequent elements:
+##          {item=/}     {item=/login}   {item=/profile} {item=/shop_list} 
+##                 6                 6                 4                 4 
+##           (Other) 
+##                14 
+## 
+## element (sequence) size distribution:
+## sizes
+## 1 2 3 
+## 4 5 2 
+## 
+## sequence length distribution:
+## lengths
+## 1 2 3 
+## 4 5 2 
+## 
+## summary of quality measures:
+##     support      
+##  Min.   :0.7500  
+##  1st Qu.:0.7500  
+##  Median :0.7500  
+##  Mean   :0.8182  
+##  3rd Qu.:0.8750  
+##  Max.   :1.0000  
+## 
+## includes transaction ID lists: FALSE 
+## 
+## mining info:
+##          data ntransactions nsequences support
+##  traffic.tran            17          4     0.5</code></pre>
+<p>把生成的序列格式数据转换为数据框(以便查看频繁序列模式的序列和支持度，网络设计人员会查看相关模式，以便知道如何改进网站的请求流)：</p>
+<pre class="r"><code>as(frequent_pattern, &quot;data.frame&quot;)
+##                                      sequence support
+## 1                                  &lt;{item=/}&gt;    1.00
+## 2                             &lt;{item=/login}&gt;    1.00
+## 3                           &lt;{item=/profile}&gt;    0.75
+## 4                         &lt;{item=/shop_list}&gt;    0.75
+## 5                &lt;{item=/},{item=/shop_list}&gt;    0.75
+## 6           &lt;{item=/login},{item=/shop_list}&gt;    0.75
+## 7  &lt;{item=/},{item=/login},{item=/shop_list}&gt;    0.75
+## 8                  &lt;{item=/},{item=/profile}&gt;    0.75
+## 9             &lt;{item=/login},{item=/profile}&gt;    0.75
+## 10   &lt;{item=/},{item=/login},{item=/profile}&gt;    0.75
+## 11                   &lt;{item=/},{item=/login}&gt;    1.00</code></pre>
+<p><br></p>
+<p><code>以上内容整理自《R for Data Science Cookbook》</code></p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E4%B8%AD%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%8E%A8%E6%96%AD/">R中的统计推断</a></span>
+  <span class="nav-next"><a href="../../../cn/post/r%E6%9C%89%E7%9B%91%E7%9D%A3%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">R无监督机器学习</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E4%B8%AD%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%8E%A8%E6%96%AD\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/r%E6%9C%89%E7%9B%91%E7%9D%A3%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

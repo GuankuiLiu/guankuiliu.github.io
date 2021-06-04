@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TensorFlow on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/tensorflow/</link>
+    <description>Recent content in TensorFlow on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 04 Jan 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/tensorflow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TensorFlow创建特征列</title>
+      <link>https://shixiangwang.github.io/home/cn/post/tf_feature_column/</link>
+      <pubDate>Sat, 04 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/tf_feature_column/</guid>
+      <description>import numpy as np import pandas as pd import tensorflow as tf from tensorflow import feature_column from tensorflow.keras import layers from sklearn.model_selection import train_test_split 使用Pandas创建数据帧 URL = &amp;#39;https://storage.googleapis.com/applied-dl/heart.csv&amp;#39; dataframe = pd.read_csv(URL) dataframe.head() .dataframe tbody tr th:only-of-type { vertical-align: middle; } .dataframe tbody tr th { vertical-align: top; } .dataframe thead th { text-align: right; } age sex cp</description>
+    </item>
+    
+  </channel>
+</rss>

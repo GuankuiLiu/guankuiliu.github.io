@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>统计概率分布模拟 - Boylad</title>
+    
+     
+    <meta property="og:title" content="统计概率分布模拟 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>统计概率分布模拟</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-27</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="生成随机样本" class="section level3">
+<h3><strong>生成随机样本</strong></h3>
+<p>生成从1到10的随机样本：</p>
+<pre class="r"><code>sample(10)
+##  [1]  4  5  1 10  8  9  7  6  2  3</code></pre>
+<p>如果需要再次生成同样样本，可以首先设置随机种子：</p>
+<pre class="r"><code>set.seed(123)
+sample(10)
+##  [1]  3 10  2  8  6  9  1  7  5  4</code></pre>
+<p>从1到10中随机挑选两个样本：</p>
+<pre class="r"><code>sample(10,2)
+## [1] 10  5</code></pre>
+<p>如果全量和样本大小需要作为参数，可以使用函数sample.int:</p>
+<pre class="r"><code>sample.int(10, size=2) #如果样本和全量的大小都已知，可以使用sample.int
+## [1] 3 9</code></pre>
+<p>可以模仿彩票游戏，从给定的42个全量数据中生成6个随机样本：</p>
+<pre class="r"><code>sample.int(42, 6)
+## [1] 28  9 29 35  8 26</code></pre>
+<p>可以通过设定参数replace为TRUE,用放回的方法生成随机样本：</p>
+<pre class="r"><code>sample(c(1,0), 10, replace = TRUE)
+##  [1] 1 0 1 0 1 0 0 1 1 1</code></pre>
+<p>可以使用函数sample来模拟投硬币的例子：</p>
+<pre class="r"><code>sample(c(&quot;Head&quot;, &quot;Tail&quot;), 10, replace = TRUE)
+##  [1] &quot;Head&quot; &quot;Tail&quot; &quot;Head&quot; &quot;Tail&quot; &quot;Tail&quot; &quot;Head&quot; &quot;Head&quot; &quot;Head&quot; &quot;Head&quot; &quot;Tail&quot;</code></pre>
+<p>可以模拟投掷200次公平的骰子：</p>
+<pre class="r"><code>fair &lt;- sample(c(1:6), 200, replace = TRUE)
+table(fair)
+## fair
+##  1  2  3  4  5  6 
+## 34 32 27 28 37 42</code></pre>
+<p>一个更高级的例子是，模拟投掷一个灌铅的骰子200次：</p>
+<pre class="r"><code>loaded &lt;- sample(c(1:6), 200, replace = TRUE, prob = c(0.1, 0.1 , 0.1, 0.1, 0.1, 0.5))
+table(loaded)
+## loaded
+##   1   2   3   4   5   6 
+##  21  17  14  18  19 111</code></pre>
+<p>默认情况下，每次R进程使用不同的随机种子序列生成不同的模拟结果。这个是根据当前时间和进程ID决定的。通过给函数set.seed设定一个值，伪随机数生成器会给.Random.seed指派一个整数向量。最终，所有的R进程都会使用这个种子序列，生成同样的结果：</p>
+<pre class="r"><code>set.seed(123)
+sample(10)
+##  [1]  3 10  2  8  6  9  1  7  5  4
+sample(10)
+##  [1] 10  5  3  8  1  4  6  9  7  2
+
+set.seed(123)
+sample(10)
+##  [1]  3 10  2  8  6  9  1  7  5  4
+sample(10)
+##  [1] 10  5  3  8  1  4  6  9  7  2</code></pre>
+<p>而且我们可以在控制台中键入.Random.seed查看整数向量：</p>
+<pre class="r"><code>set.seed(123)
+head(.Random.seed)
+## [1]      10403        624 -983674937  643431772 1162448557 -959247990</code></pre>
+<p><br>
+### <strong>理解均匀分布</strong></p>
+<p>首先，可以使用函数runif从均匀分布中创建样本：</p>
+<pre class="r"><code>set.seed(123)
+uniform &lt;- runif(n = 1000, min = 0, max = 1)</code></pre>
+<p>然后，我们绘制均匀分布样本的柱状图：</p>
+<pre class="r"><code>hist(uniform, main = &quot;1000 random variates from a uniform distribution&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>对于均匀分布，我们也可以看到，每个点的概率密度等于1，分布的密度函数等于分布自己：</p>
+<pre class="r"><code>length(dunif(uniform) == 1) 
+## [1] 1000
+length(punif(uniform)  == uniform)
+## [1] 1000</code></pre>
+<p>而且，我们可以使用函数sample模拟如何投掷骰子：</p>
+<pre class="r"><code>fair_dice &lt;- sample(6, 1000, replace = TRUE)
+table(fair_dice)
+## fair_dice
+##   1   2   3   4   5   6 
+## 171 152 177 154 161 185</code></pre>
+<p>我们可以使用条状图可视化每个面的出现情况：</p>
+<pre class="r"><code>barplot(table(fair_dice), main = &quot;Frequency of each side&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" />
+<br>
+### <strong>生成二项随机变量</strong></p>
+<p>首先，我们可以使用rbinom判断投掷10次骰子得到一次点数为6的频率：</p>
+<pre class="r"><code>set.seed(123)
+rbinom(1, 10, 1/6)
+## [1] 1</code></pre>
+<p>然后，我们可以模拟100个赌徒投掷10次骰子，并观察每个赌徒得到几次6点：</p>
+<pre class="r"><code>set.seed(123)
+sim &lt;- rbinom(100, 10, 1/6)
+table(sim)
+## sim
+##  0  1  2  3  4  5 
+## 17 36 23 18  4  2</code></pre>
+<p>另外，我们可以模拟1000个人投掷10次硬币，并计算出正面的总数：</p>
+<pre class="r"><code>set.seed(123)
+sim2 &lt;- rbinom(1000, 10, 1/2)
+table(sim2)
+## sim2
+##   0   1   2   3   4   5   6   7   8   9  10 
+##   2  11  43 126 200 241 213 106  48   9   1
+barplot(table(sim2), main = &quot;A simulation of 1000 people tossing a coin 10 times&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>然后，我们可以使用dbinom获取投掷10次骰子正好得到一个6点的概率：</p>
+<pre class="r"><code>dbinom(1, 10, 1/6)
+## [1] 0.3230112</code></pre>
+<p>如果我们想计算投掷10次骰子少于3次6点的概率，我们可以使用函数pbinom：</p>
+<pre class="r"><code>dbinom(0, 10, 1/6) + dbinom(1, 10, 1/6) + dbinom(2, 10, 1/6) + dbinom(3, 10, 1/6)
+## [1] 0.9302722
+pbinom(3, 10, 1/6)
+## [1] 0.9302722</code></pre>
+<p>除了使用标准的R函数，我们也可以使用gbinom来绘制二项分布：</p>
+<pre class="r"><code>source(&#39;https://www.stat.wisc.edu/~larget/R/prob.R&#39;)
+gbinom(n = 100, p = 0.5, scale = T, a = 45, b = 55)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" />
+<br>
+### <strong>生成泊松随机变量</strong></p>
+<p>可以使用函数rpois生成泊松分布的样本：</p>
+<pre class="r"><code>set.seed(123)
+poisson &lt;- rpois(1000, lambda = 3)</code></pre>
+<p>把泊松分布的样本数据绘制成柱状图：</p>
+<pre class="r"><code>hist(poisson, main = &quot;A histogram of a Possin distribution&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>获取x=2处的分布函数高度：</p>
+<pre class="r"><code>dpois(2, lambda = 3)
+## [1] 0.2240418</code></pre>
+<p>我们可以使用barplot绘制函数dpois中的样本数据：</p>
+<pre class="r"><code>barplot(dpois(0:10, lambda = 3), names = 0:10, main = &quot;A barplot of a Poisson distribution&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>然后使用函数ppois计算从x=1到5覆盖面积的占比：</p>
+<pre class="r"><code>ppois(5, lambda = 3) - ppois(1, lambda = 3)
+## [1] 0.7169338</code></pre>
+<p>我们也可以比较不同的lambda值对应的样本密度图(lambda值越大，柱状图越趋向于正态分布)：</p>
+<pre class="r"><code>set.seed(123)
+poisson1 &lt;- rpois(1000, lambda = 3)
+hist(poisson1, breaks = seq(0, 20, by = 1), col = rgb(1, 0, 0, 1),
+     xlim = c(0, 15), ylim = c(1, 300), 
+     main = &#39;Histograms with different lambda&#39;)
+
+poisson2 &lt;- rpois(1000, lambda = 5)
+hist(poisson2, breaks = seq(0, 20, by = 1), col = rgb(0, 0, 1, 0.6), add = T)
+
+poisson3 &lt;- rpois(1000, lambda = 7)
+hist(poisson3, breaks = seq(0, 20, by = 1), col = rgb(0, 1, 0, 0.2), add = T)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们可以使用概率分位数函数qpois，来转换泊松分布的累积分布：</p>
+<pre class="r"><code>qpois(ppois(2, lambda = 3), lambda = 3)
+## [1] 2</code></pre>
+<p><br></p>
+</div>
+<div id="从正态分布中抽样" class="section level3">
+<h3><strong>从正态分布中抽样</strong></h3>
+<p>首先，使用函数rnorm生成30个和1000个正态分布样本：</p>
+<pre class="r"><code>set.seed(123)
+data1 &lt;- rnorm(30)
+data2 &lt;- rnorm(1000)</code></pre>
+<p>然后，我们使用hist绘制data1和data2的柱状图：</p>
+<pre class="r"><code>par(mfrow = c(1, 2))
+hist(data1, main = &quot;30 samples&quot;)
+hist(data2, main = &quot;1000 samples&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>也可以从样本数据中抽取密度属性，并使用函数lines给柱状图添加密度曲线：</p>
+<pre class="r"><code>par(mfrow = c(1,1))
+hist(data2, main = &quot;Density curve over histogram&quot;, freq = FALSE)
+den2 &lt;- density(data2)
+den2
+## 
+## Call:
+##  density.default(x = data2)
+## 
+## Data: data2 (1000 obs.); Bandwidth &#39;bw&#39; = 0.2187
+## 
+##        x                 y            
+##  Min.   :-3.4658   Min.   :0.0000206  
+##  1st Qu.:-1.6251   1st Qu.:0.0121127  
+##  Median : 0.2156   Median :0.0776974  
+##  Mean   : 0.2156   Mean   :0.1356826  
+##  3rd Qu.: 2.0564   3rd Qu.:0.2424239  
+##  Max.   : 3.8971   Max.   :0.4192901
+lines(x = den2$x, y = den2$y, col = &quot;red&quot;, lwd = 3)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另外，可以在一个密度图和柱状图中比较不同标准差下的分布：</p>
+<pre class="r"><code>set.seed(123)
+data3 &lt;- rnorm(1000, sd = 5)
+data4 &lt;- rnorm(1000, sd = 3)
+plot(density(data3), col = &quot;blue&quot;, ylim = c(0, 0.15), 
+     main = &quot;Density Plot Under Different sd&quot;)
+lines(density(data4), col = &quot;red&quot;, ylim = c(0, 0.15))</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(data3, col = &quot;blue&quot;, main = &quot;Histogram Under Different sd&quot;,
+     ylim = c(0, 300))
+hist(data4, col = &quot;red&quot;, add = TRUE)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-33-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另外，可以在一个密度图和柱状图中比较不同平均值下的分布：</p>
+<pre class="r"><code>set.seed(123)
+data5 &lt;- rnorm(1000, mean = 0)
+plot(density(data5), col = &quot;red&quot;, main = &quot;Density Plot Under Different Mean&quot;)
+data6 &lt;- rnorm(1000, mean = 1)
+lines(density(data6), col = &quot;blue&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(data5, col = &quot;blue&quot;, main = &quot;Histogram Under Different Mean&quot;)
+hist(data6, col = &quot;red&quot;, add = TRUE)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-34-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>此外，如果你想绘制完美的正态曲线，你可以使用函数curve来连接从-3到3的概率分布高度：</p>
+<pre class="r"><code>plot(dnorm, -3, 3, main = &quot;A normal distribution generated from dnorm function&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们也可以把密度曲线下的区域阴影化：</p>
+<pre class="r"><code>plot(dnorm, -3, 3, main = &quot;A normal distribution generated from dnorm function&quot;)
+x = c(-1, seq(-1, 1, 0.1), 1)
+y = c(0, dnorm(seq(-1, 1, 0.1)), 0)
+polygon(x, y, col = &quot;blue&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>为了获取0处的概率分布高度，我们可以使用函数dnorm:</p>
+<pre class="r"><code>dnorm(0)
+## [1] 0.3989423</code></pre>
+<p>另外，为了计算x从-1到1之间的曲线下面积，我们可以使用累积分布函数：</p>
+<pre class="r"><code>pnorm(1) - pnorm(-1)
+## [1] 0.6826895</code></pre>
+<p>为了绘制pnorm的图形，可以使用函数curve:</p>
+<pre class="r"><code>curve(pnorm(x), -3, 3, main = &quot;Cumulative distribution function&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>为了算出一个点，满足分布累积出一个特定的密度值，我们可以使用分位数函数qnorm来反转求知pnorm。从这个意义上讲，我们可以使用qnorm来获取一个正态分布97.5和2.5百分位点的估计值：</p>
+<pre class="r"><code>qnorm(0.975)
+## [1] 1.959964
+qnorm(0.025)
+## [1] -1.959964</code></pre>
+<p><br></p>
+</div>
+<div id="从卡方分布中抽样" class="section level3">
+<h3><strong>从卡方分布中抽样</strong></h3>
+<p>首先，我们使用rchisq生成自由度为10的3个样本：</p>
+<pre class="r"><code>set.seed(123)
+rchisq(3, df = 10)
+## [1]  6.779170 14.757915  3.259122</code></pre>
+<p>我们使用dchisq获取x=3处的密度，其中自由度为10：</p>
+<pre class="r"><code>dchisq(3, df = 10)
+## [1] 0.02353326</code></pre>
+<p>我们还可以使用pchisq和qchisq获取分布的分布函数和分位数函数：</p>
+<pre class="r"><code>pchisq(3, df = 10)
+## [1] 0.01857594
+qchisq(.99, df = 10)
+## [1] 23.20925</code></pre>
+<p>我们还可以增加自由度并比较不同自由度下的图形：</p>
+<pre class="r"><code>set.seed(123)
+x = seq(-5, 5, 0.1)
+op = par(mfrow = c(2, 2))
+curve(dchisq(x, 1), 0, qchisq(0.99, 1), main = &quot;df = 1&quot;)
+curve(dchisq(x, 5), 0, qchisq(.99, 5), main = &quot;df = 5&quot;)
+curve(dchisq(x, 10), 0, qchisq(.99, 10), main = &quot;df = 10&quot;)
+curve(dchisq(x, 50), 0, qchisq(.99, 50), main = &quot;df = 50&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="理解学生t-分布" class="section level3">
+<h3><strong>理解学生t-分布</strong>*</h3>
+<p>首先，我们可以使用rt生成自由度为10的3个样本：</p>
+<pre class="r"><code>set.seed(123)
+rt(3, df = 10)
+## [1] -0.6246844 -1.3782806 -0.1181245</code></pre>
+<p>然后，我们使用dt获取自由度为10、x = 3 处的密度：</p>
+<pre class="r"><code>dt(3, df = 10)
+## [1] 0.01140055</code></pre>
+<p>另外，我们可以可视化自由度为1的学生t-分布：</p>
+<pre class="r"><code>plot(seq(-5, 5, 0.1), dt(seq(-5, 5, 0.1), df = 1), type = &quot;l&quot;,
+     main = &quot;Student&#39;s t-distribution of df = 1&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们也可以使用pt来计算自由度为10、x值从-2到2之间的学生t-分布面积：</p>
+<pre class="r"><code>pt(2, df = 1) - pt(-2, df = 1)
+## [1] 0.7048328</code></pre>
+<p>我们还可以在同一个图中比较正态分布和学生t-分布：</p>
+<pre class="r"><code>x = seq(-5, 5, .1)
+plot(x, dnorm(x), type = &quot;l&quot;, col = &#39;red&#39;, main = &quot;Student&#39;s t-distribution under different df&quot;)
+lines(x, dt(x, df = 1), type = &quot;l&quot;, col = &quot;blue&quot;)
+lines(x, dt(x, df = 5), type = &quot;l&quot;, col = &quot;green&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>除了查找t-分布表，得到累积概率和自由度的最终得分，我们还可以使用分位数函数qt来达到同样的目的：</p>
+<pre class="r"><code>qt(0.95, 5)
+## [1] 2.015048</code></pre>
+<p><br></p>
+</div>
+<div id="从数据集中抽样" class="section level3">
+<h3><strong>从数据集中抽样</strong></h3>
+<p>除了使用函数sample生成随机样本或者从任意隐含的概率分布中获取样本，我们还可以从给定数据集中抽样子集。接下来我们介绍如何从财务数据中抽取子集，首先，安装加载quantmod程序包：</p>
+<pre class="r"><code>#install.packages(&quot;quantmod&quot;)
+library(quantmod)
+## Warning: 程辑包&#39;quantmod&#39;是用R版本4.0.3 来建造的
+## 载入需要的程辑包：xts
+## Warning: 程辑包&#39;xts&#39;是用R版本4.0.3 来建造的
+## 载入需要的程辑包：zoo
+## 
+## 载入程辑包：&#39;zoo&#39;
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric
+## 载入需要的程辑包：TTR
+## Warning: 程辑包&#39;TTR&#39;是用R版本4.0.3 来建造的
+## Registered S3 method overwritten by &#39;quantmod&#39;:
+##   method            from
+##   as.zoo.data.frame zoo
+## Version 0.4-0 included new data defaults. See ?getSymbols.</code></pre>
+<p>然后，我们可以使用getSymbols来获取道琼斯工业指数数据，并从全量数据中抽取2014年数据：</p>
+<pre class="r"><code>getSymbols(&#39;^DJI&#39;)
+## &#39;getSymbols&#39; currently uses auto.assign=TRUE by default, but will
+## use auto.assign=FALSE in 0.5-0. You will still be able to use
+## &#39;loadSymbols&#39; to automatically load data. getOption(&quot;getSymbols.env&quot;)
+## and getOption(&quot;getSymbols.auto.assign&quot;) will still be checked for
+## alternate defaults.
+## 
+## This message is shown once per session and may be disabled by setting 
+## options(&quot;getSymbols.warning4.0&quot;=FALSE). See ?getSymbols for details.
+## [1] &quot;^DJI&quot;
+stock &lt;- DJI[&#39;2014&#39;] #注意DJI的数据类型</code></pre>
+<p>我们可以从数据集中随机选取100个样本：</p>
+<pre class="r"><code>set.seed(5)
+sub &lt;- stock[sample(nrow(stock), 100),]</code></pre>
+<p>另外，你也可以从生成的子集中计算每日变化：</p>
+<pre class="r"><code>sub$change &lt;- (sub$DJI.Close - sub$DJI.Open) / sub$DJI.Open</code></pre>
+<p>制作每日价格变化的柱状图：</p>
+<pre class="r"><code>hist(sub$change, main = &quot;Histogram of daily price change&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另外，我们也可以使用函数sample，按照不同比例将数据分成两组(首先生成0或1的随机样本，然后使用prob参数控制0和1的比例，最终，我们通过抽取数据子集得到了带有集合索引的不同数据集。这个技巧在分离训练数据集和测试数据集时尤为有用)：</p>
+<pre class="r"><code>idx = sample(c(0,1), nrow(stock), prob = c(0.7, 0.3), replace = TRUE)
+first_grp &lt;- stock[idx == 0, ]
+second_grp &lt;- stock[idx == 1, ]
+dim(first_grp)
+## [1] 181   6
+dim(second_grp)
+## [1] 71  6</code></pre>
+<p><br></p>
+</div>
+<div id="模拟随机过程" class="section level3">
+<h3><strong>模拟随机过程</strong></h3>
+<p>随机过程(stochastic process或random process)展示了随机变量系统随时间的演化过程。它是用于模型中的一个或者多个变量是随机变量的情形。接下来我们用R语言模拟一个随机股票交易过程。首先，从道琼斯工业指数数据中抽取2014年数据子集：</p>
+<pre class="r"><code>DJI.2014 &lt;- DJI[&#39;2014&#39;]</code></pre>
+<p>我们可以使用函数sample生成0和1的样本：</p>
+<pre class="r"><code>set.seed(123)
+randIDX &lt;- sample(c(0,1), nrow(DJI.2014), replace = TRUE)</code></pre>
+<p>然后，我们只抽取索引为1的道琼斯工业指数停盘价格，即我们当天买入或卖出的价格：</p>
+<pre class="r"><code>stock &lt;- DJI.2014[which(randIDX == 1), ]$DJI.Close</code></pre>
+<p>我们可以计算每一次交易的返回值：</p>
+<pre class="r"><code>stock$lag_close &lt;- lag(stock$DJI.Close, -1)
+stock$returns &lt;- (stock$lag_close - stock$DJI.Close) / stock$DJI.Close</code></pre>
+<p>使用10000美元作为初始投资资金，我们可以计算每一次交易后的资产：</p>
+<pre class="r"><code>stock$asset &lt;- 0
+fund &lt;- 10000
+for (i in 1:nrow(stock)){
+  fund &lt;- (1 + as.numeric(stock[i, ]$returns)) * fund;
+  stock[i, ]$asset &lt;- fund
+}</code></pre>
+<p>最后，我们使用函数plot可视化我们的返回值(结果显示如果我们在2014年随机买入或卖出，我们很肯能会获利)：</p>
+<pre class="r"><code>plot(stock$asset[which(!is.na(stock$returns))], main = &quot;Return on random trading&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另一个著名的随机过程是布朗运动，下面的代码展示了如何在R中以布朗运动的形式模拟价格变化：</p>
+<pre class="r"><code>set.seed(123)
+brown &lt;- cumsum(rnorm(100, 0, 1))
+brown &lt;- brown - brown[1]
+plot(brown, type = &quot;l&quot;, main = &quot;Brownian notion&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-27-统计概率分布模拟_files/figure-html/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+<p>以上内容整理自《R for Data Science Cookbook》</p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/ggplot2%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96-1/">ggplot2数据可视化（一）</a></span>
+  <span class="nav-next"><a href="../../../cn/post/r%E4%B8%AD%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%8E%A8%E6%96%AD/">R中的统计推断</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/ggplot2%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96-1\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/r%E4%B8%AD%E7%9A%84%E7%BB%9F%E8%AE%A1%E6%8E%A8%E6%96%AD\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

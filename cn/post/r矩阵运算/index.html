@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R矩阵运算 - Boylad</title>
+    
+     
+    <meta property="og:title" content="R矩阵运算 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R矩阵运算</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-04</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="数学公式" class="section level4">
+<h4>数学公式</h4>
+<p>对于<span class="math inline">\(p\)</span>维数据，设<span class="math inline">\(X=(x_1,x_2,\cdots,x_p)\)</span>是<span class="math inline">\(n\times p\)</span>随机向量。</p>
+<ol style="list-style-type: decimal">
+<li><p>期望计算公式:<br>
+若<span class="math inline">\(E(x_i),i=1,2,\cdots,p,\)</span>其中<span class="math inline">\(p\)</span>存在且有限，则X的期望为<span class="math inline">\(E(X)=(E(X_1),E(X_2),\cdots,E(X_p))\)</span>。</p></li>
+<li><p>协方差计算公式：
+向量<span class="math inline">\(X\)</span>的方差—协方差矩阵为：
+<span class="math display">\[\Sigma=var(X)
+=\begin{bmatrix}
+cov(x_1,x_1) &amp; cov(x_1,x_2) &amp; \cdots &amp; cov(x_1,x_p)\\
+cov(x_2,x_1) &amp; cov(x_2,x_2) &amp; \cdots &amp; cov(x_2,x_p)\\
+\vdots &amp; \vdots &amp; \vdots &amp; \vdots\\
+cov(x_p,x_1) &amp; cov(x_p,x_2) &amp; \cdots &amp; cov(x_p,x_p)
+\end{bmatrix}
+=\begin{bmatrix}
+\sigma_{11} &amp; \sigma_{12} &amp; \cdots &amp; \sigma_{1p}\\
+\sigma_{21} &amp; \sigma_{22} &amp; \cdots &amp; \sigma_{2p}\\
+\vdots &amp; \vdots &amp; \vdots &amp; \vdots\\
+\sigma_{p1} &amp; \sigma_{p2} &amp; \cdots &amp; \sigma_{pp}
+\end{bmatrix}\]</span></p></li>
+</ol>
+</div>
+<div id="统计计算" class="section level4">
+<h4>统计计算</h4>
+<p>对于来自<span class="math inline">\(p\)</span>维正太总体<span class="math inline">\(N_p(\mu,\Sigma)\)</span>的一个独立随机样本<span class="math inline">\(x_1,x_2,\cdots,x_n,\)</span>其样本均值向量为<span class="math inline">\(\bar x=\frac{1}{n}\sum_{i=a}^nx_i\)</span>。样本均值向量也可以用样本观测矩阵<span class="math inline">\(X=(x_{ij})_{n\times p}\)</span>表示，于是</p>
+<ol style="list-style-type: decimal">
+<li><p>样本均值向量：<span class="math inline">\(\bar x=\frac{1}{n}\Sigma_{i=1}^nx_i=\frac{1}{n}X&#39;1_n=\frac{1}{n}I_pX&#39;1_n\)</span>
+这里，<span class="math inline">\(I_p\)</span>为单位阵，<span class="math inline">\(1_n=(1,1,\cdots,1)&#39;\)</span>为1矩阵。</p></li>
+<li><p>样本协方差矩阵： <span class="math inline">\(S=\frac{A}{n-1}=\frac{1}{n-1}\Sigma_{i=1}^n(x_i-\bar x)(x_1-\bar x)&#39;\)</span>
+其中，<span class="math inline">\(A\)</span>为样本叉积矩阵：<span class="math inline">\(A=\Sigma_{i=1}^n(x_i-\bar x)(x_i-\bar x)&#39;=X(I_n-\frac{1}{n}J_n)X&#39;\)</span>此处，<span class="math inline">\(I_n\)</span>为n阶单位阵，<span class="math inline">\(J_n\)</span>为<span class="math inline">\(n\)</span>阶1矩阵。</p></li>
+</ol>
+</div>
+<div id="矩阵运算" class="section level4">
+<h4>矩阵运算</h4>
+<ol style="list-style-type: decimal">
+<li><strong>创建一个向量</strong></li>
+</ol>
+<pre class="r"><code>x1 &lt;- c(171,175,159,155,152,158,154,164,168,166,159,164)
+x2 &lt;- c(57,64,41,38,35,44,41,51,57,49,47,46)
+length(x1) 
+## [1] 12
+mode(x1)
+## [1] &quot;numeric&quot;</code></pre>
+<p><span class="math inline">\(x_1、x_2\)</span>分别为行向量，函数<span class="math inline">\(length()\)</span>返回向量的长度，<span class="math inline">\(mode()\)</span>返回向量的类型。</p>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>创建一个矩阵</strong></li>
+</ol>
+<pre class="r"><code>rbind(x1, x2) #按行合并
+##    [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12]
+## x1  171  175  159  155  152  158  154  164  168   166   159   164
+## x2   57   64   41   38   35   44   41   51   57    49    47    46
+cbind(x1, x2) #按列合并
+##        x1 x2
+##  [1,] 171 57
+##  [2,] 175 64
+##  [3,] 159 41
+##  [4,] 155 38
+##  [5,] 152 35
+##  [6,] 158 44
+##  [7,] 154 41
+##  [8,] 164 51
+##  [9,] 168 57
+## [10,] 166 49
+## [11,] 159 47
+## [12,] 164 46
+matrix(x1, nrow = 3, ncol = 4) #利用x1数据创建3x4矩阵，默认按列排列
+##      [,1] [,2] [,3] [,4]
+## [1,]  171  155  154  166
+## [2,]  175  152  164  159
+## [3,]  159  158  168  164
+matrix(x1, nrow = 4, ncol = 3) #利用x1数据创建4x3矩阵
+##      [,1] [,2] [,3]
+## [1,]  171  152  168
+## [2,]  175  158  166
+## [3,]  159  154  159
+## [4,]  155  164  164
+matrix(x1, nrow = 4, ncol = 3, byrow = TRUE) #按行排列
+##      [,1] [,2] [,3]
+## [1,]  171  175  159
+## [2,]  155  152  158
+## [3,]  154  164  168
+## [4,]  166  159  164</code></pre>
+<p>函数<span class="math inline">\(rbind()、cbind()\)</span>可以将两个或两个以上的向量或矩阵合并起来。函数<span class="math inline">\(matrix()\)</span>可以用来创建矩阵。</p>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>矩阵转置</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(1:12, nrow = 3, ncol =4)
+t(A) #求A矩阵的转置
+##      [,1] [,2] [,3]
+## [1,]    1    2    3
+## [2,]    4    5    6
+## [3,]    7    8    9
+## [4,]   10   11   12</code></pre>
+<p>在<span class="math inline">\(R\)</span>中求一个矩阵的转置可以用函数<span class="math inline">\(t()\)</span>或<span class="math inline">\(transpose()\)</span>。</p>
+<ol start="4" style="list-style-type: decimal">
+<li><strong>矩阵相加减</strong></li>
+</ol>
+<pre class="r"><code>A = B &lt;- matrix(1:12, nrow = 3, ncol = 4) #创建两个相同发矩阵
+A + B 
+##      [,1] [,2] [,3] [,4]
+## [1,]    2    8   14   20
+## [2,]    4   10   16   22
+## [3,]    6   12   18   24
+A - B
+##      [,1] [,2] [,3] [,4]
+## [1,]    0    0    0    0
+## [2,]    0    0    0    0
+## [3,]    0    0    0    0</code></pre>
+<p>在<span class="math inline">\(R\)</span>中对同行同列矩阵相加减，可用符号<span class="math inline">\(“+”，“-”\)</span>。</p>
+<ol start="5" style="list-style-type: decimal">
+<li><strong>矩阵乘法</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(1:12, nrow = 3, ncol = 4)
+B &lt;- matrix(1:12, nrow = 4, ncol = 3)
+A %*% B #求矩阵的乘积
+##      [,1] [,2] [,3]
+## [1,]   70  158  246
+## [2,]   80  184  288
+## [3,]   90  210  330</code></pre>
+<p>在<span class="math inline">\(R\)</span>中求<span class="math inline">\(AB\)</span>可用符号“<span class="math inline">\(%*%\)</span>”。</p>
+<ol start="6" style="list-style-type: decimal">
+<li><strong>矩阵对角元素相关运算</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(1:16, nrow = 4, ncol = 4)
+diag(A) #获得矩阵对角元素
+## [1]  1  6 11 16
+diag(diag(A)) #利用对角元素创建对角矩阵
+##      [,1] [,2] [,3] [,4]
+## [1,]    1    0    0    0
+## [2,]    0    6    0    0
+## [3,]    0    0   11    0
+## [4,]    0    0    0   16
+diag(3) #创建3阶单位矩阵
+##      [,1] [,2] [,3]
+## [1,]    1    0    0
+## [2,]    0    1    0
+## [3,]    0    0    1</code></pre>
+<p>函数<span class="math inline">\(diag()\)</span>可以对一个方阵取对角元素，可以对一个向量生成以这个向量为对角元素的对角矩阵，可以对正整数k生成k阶单位矩阵。</p>
+<ol start="7" style="list-style-type: decimal">
+<li><strong>矩阵求逆</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(rnorm(16), 4, 4) #rnorm()函数生成正态随机数
+A
+##            [,1]        [,2]       [,3]        [,4]
+## [1,]  1.2034183 -0.36812205 -0.8442857 -1.39489545
+## [2,]  1.7603200  0.07007718 -0.4247761  1.75006330
+## [3,]  0.1744978 -0.89141886 -1.3684250 -0.66308427
+## [4,] -0.8339537 -0.08090709  0.8276787  0.01198523
+solve(A) #求矩阵的逆
+##            [,1]       [,2]       [,3]        [,4]
+## [1,]  0.5868826  0.3713476 -0.2476397  0.37980901
+## [2,] -0.4142813 -0.6231007 -0.8106786 -2.08269580
+## [3,]  0.5571849  0.3089411 -0.3316737  1.38674998
+## [4,] -0.4384931  0.2978209  0.2010488  0.03795419</code></pre>
+<p>函数<span class="math inline">\(solve()\)</span>可以对矩阵求逆，应用<span class="math inline">\(solve(A,b)\)</span>运算结果可以解线性方程组<span class="math inline">\(Ax=b\)</span>,若<span class="math inline">\(b\)</span>缺失，则系统默认为单位矩阵，因此可用其进行矩阵求逆。</p>
+<ol start="8" style="list-style-type: decimal">
+<li><strong>矩阵的特征值与特征向量</strong></li>
+</ol>
+<pre class="r"><code>(A &lt;- diag(4) + 1)
+##      [,1] [,2] [,3] [,4]
+## [1,]    2    1    1    1
+## [2,]    1    2    1    1
+## [3,]    1    1    2    1
+## [4,]    1    1    1    2
+(A.e &lt;- eigen(A, symmetric = TRUE)) #求矩阵的特征值与特征向量
+## eigen() decomposition
+## $values
+## [1] 5 1 1 1
+## 
+## $vectors
+##      [,1]       [,2]       [,3]       [,4]
+## [1,] -0.5  0.8660254  0.0000000  0.0000000
+## [2,] -0.5 -0.2886751 -0.5773503 -0.5773503
+## [3,] -0.5 -0.2886751 -0.2113249  0.7886751
+## [4,] -0.5 -0.2886751  0.7886751 -0.2113249
+A.e$vectors %*% diag(A.e$values) %*% t(A.e$vectors) #特征向量阵与特征值阵与原矩阵的关系
+##      [,1] [,2] [,3] [,4]
+## [1,]    2    1    1    1
+## [2,]    1    2    1    1
+## [3,]    1    1    2    1
+## [4,]    1    1    1    2</code></pre>
+<p>矩阵<span class="math inline">\(A\)</span>的谱分解为<span class="math inline">\(A=U\Lambda U&#39;\)</span>，其中<span class="math inline">\(\Lambda\)</span>是由<span class="math inline">\(A\)</span>的特征值组成的对角矩阵，<span class="math inline">\(U\)</span>的列为<span class="math inline">\(A\)</span>的特征值对应的特征向量，在<span class="math inline">\(R\)</span>中可以用函数<span class="math inline">\(eigen()\)</span>得到<span class="math inline">\(U\)</span>和<span class="math inline">\(A\)</span>。参数<span class="math inline">\(symmetric\)</span>项指定要分解的矩阵是否为对称矩阵，若不指定，系统将自动检测<span class="math inline">\(x\)</span>是否为对称矩阵。</p>
+<ol start="9" style="list-style-type: decimal">
+<li>**矩阵的<span class="math inline">\(Choleskey\)</span>分解</li>
+</ol>
+<pre class="r"><code>(A.c &lt;- chol(A)) #矩阵的Choleskey分解
+##          [,1]      [,2]      [,3]      [,4]
+## [1,] 1.414214 0.7071068 0.7071068 0.7071068
+## [2,] 0.000000 1.2247449 0.4082483 0.4082483
+## [3,] 0.000000 0.0000000 1.1547005 0.2886751
+## [4,] 0.000000 0.0000000 0.0000000 1.1180340
+t(A.c) %*% A.c #Choleskey分解矩阵V与原矩阵A.c的关系A.c=V&#39;V
+##      [,1] [,2] [,3] [,4]
+## [1,]    2    1    1    1
+## [2,]    1    2    1    1
+## [3,]    1    1    2    1
+## [4,]    1    1    1    2</code></pre>
+<p>对于<strong>正定矩阵</strong><span class="math inline">\(A\)</span>，可对其进行<span class="math inline">\(Choleskey\)</span>分解，即<span class="math inline">\(A=P&#39;P\)</span>,其中，<span class="math inline">\(P\)</span>为上三角矩阵，在<span class="math inline">\(R\)</span>中用函数<span class="math inline">\(chol()\)</span>进行<span class="math inline">\(Choleskey\)</span>分解。</p>
+<ol start="10" style="list-style-type: decimal">
+<li><strong>矩阵奇异值分解</strong></li>
+</ol>
+<pre class="r"><code>(A &lt;- matrix(1:18, 3, 6))
+##      [,1] [,2] [,3] [,4] [,5] [,6]
+## [1,]    1    4    7   10   13   16
+## [2,]    2    5    8   11   14   17
+## [3,]    3    6    9   12   15   18
+A.s &lt;- svd(A) #矩阵的奇异值分解</code></pre>
+<p><span class="math inline">\(A\)</span>为<span class="math inline">\(m\times n\)</span>矩阵，<span class="math inline">\(rank(A)=r\)</span>，可以分解为<span class="math inline">\(A=UD&#39;V\)</span>，其中，<span class="math inline">\(U&#39;U=V&#39;V=I\)</span>。在R中可以用函数<span class="math inline">\(svd()\)</span>进行奇异值分解。</p>
+<ol start="11" style="list-style-type: decimal">
+<li><strong>矩阵QR分解</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(1:16, 4, 4)
+qr(A) #矩阵的QR分解
+## $qr
+##            [,1]        [,2]          [,3]          [,4]
+## [1,] -5.4772256 -12.7801930 -2.008316e+01 -2.738613e+01
+## [2,]  0.3651484  -3.2659863 -6.531973e+00 -9.797959e+00
+## [3,]  0.5477226  -0.3781696  1.601186e-15  2.217027e-15
+## [4,]  0.7302967  -0.9124744 -5.547002e-01 -1.478018e-15
+## 
+## $rank
+## [1] 2
+## 
+## $qraux
+## [1] 1.182574e+00 1.156135e+00 1.832050e+00 1.478018e-15
+## 
+## $pivot
+## [1] 1 2 3 4
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;qr&quot;</code></pre>
+<p><span class="math inline">\(A\)</span>为<span class="math inline">\(m\times n\)</span>矩阵时可以进行QR分解，<span class="math inline">\(A=QR\)</span>，其中，<span class="math inline">\(Q&#39;Q=I\)</span>，在<span class="math inline">\(R\)</span>中可以用函数<span class="math inline">\(qr()\)</span>进行<span class="math inline">\(QR\)</span>分解。</p>
+<ol start="12" style="list-style-type: decimal">
+<li><strong>矩阵<span class="math inline">\(kronecker\)</span>积</strong></li>
+</ol>
+<pre class="r"><code>(A &lt;- matrix(1:4, 2, 2))
+##      [,1] [,2]
+## [1,]    1    3
+## [2,]    2    4
+(B &lt;- matrix(rep(1, 4), 2, 2))
+##      [,1] [,2]
+## [1,]    1    1
+## [2,]    1    1
+kronecker(A, B) #矩阵的kronecker积
+##      [,1] [,2] [,3] [,4]
+## [1,]    1    1    3    3
+## [2,]    1    1    3    3
+## [3,]    2    2    4    4
+## [4,]    2    2    4    4</code></pre>
+<p><span class="math inline">\(n\times m\)</span>矩阵<span class="math inline">\(A\)</span>与<span class="math inline">\(h\times k\)</span>矩阵<span class="math inline">\(B\)</span>的<span class="math inline">\(kronecker\)</span>积为一个<span class="math inline">\(nh\times mk\)</span>维矩阵，在<span class="math inline">\(R\)</span>中，<span class="math inline">\(kronecker\)</span>积可以用函数<span class="math inline">\(kronecker()\)</span>来计算。</p>
+<ol start="13" style="list-style-type: decimal">
+<li><strong>矩阵的维数</strong></li>
+</ol>
+<pre class="r"><code>A &lt;- matrix(1:12, 3, 4)
+dim(A) #矩阵的维数
+## [1] 3 4
+nrow(A) #矩阵的行数
+## [1] 3
+ncol(A) #矩阵的列数
+## [1] 4</code></pre>
+<ol start="14" style="list-style-type: decimal">
+<li><strong>矩阵的行和、列和、行平均与列平均</strong></li>
+</ol>
+<pre class="r"><code>rowSums(A) #矩阵按行求和
+## [1] 22 26 30
+rowMeans(A) #矩阵按行求均值
+## [1] 5.5 6.5 7.5
+colSums(A) #矩阵按列求和
+## [1]  6 15 24 33
+colMeans(A) #矩阵按列求均值
+## [1]  2  5  8 11</code></pre>
+<p>以上操作还可以使用<span class="math inline">\(apply()\)</span>函数来实现
+<span class="math inline">\(apply(X, MARGIN, FUN, \cdots)\)</span>
+其中，<span class="math inline">\(X\)</span>为矩阵，<span class="math inline">\(MARGIN\)</span>用来指定是对行运算还是对列运算，<span class="math inline">\(MARGIN=1\)</span>表示对行运算，<span class="math inline">\(MARGIN=2\)</span>表示对列运算，<span class="math inline">\(FUN\)</span>用来指定运算函数，<span class="math inline">\(“\cdots”\)</span>用来给定<span class="math inline">\(FUN\)</span>中需要的其他参数。例如：</p>
+<pre class="r"><code>apply(A, 1, sum) #矩阵按行求和
+## [1] 22 26 30
+apply(A, 1, mean) #矩阵按行求均值
+## [1] 5.5 6.5 7.5
+apply(A, 2, sum) #矩阵按列求和
+## [1]  6 15 24 33
+apply(A, 2, mean) #矩阵按列求均值
+## [1]  2  5  8 11</code></pre>
+<p><span class="math inline">\(apply()\)</span>函数功能强大，可以用它对矩阵的行或列进行其他运算，例如计算每一列的方差：</p>
+<pre class="r"><code>A &lt;- matrix(rnorm(100), 20, 5)
+apply(A, 2, var) #矩阵按列求方差
+## [1] 0.8356861 0.9044015 0.5197316 1.0184518 1.2818518
+B &lt;- matrix(1:12, 3, 4)
+apply(B, 2, function(x, a)x*a, a=2) #矩阵按列求函数结果
+##      [,1] [,2] [,3] [,4]
+## [1,]    2    8   14   20
+## [2,]    4   10   16   22
+## [3,]    6   12   18   24</code></pre>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20180930/">R作时序图</a></span>
+  <span class="nav-next"><a href="../../../cn/post/%E5%A4%9A%E5%85%83%E6%95%B0%E6%8D%AEr%E4%BD%9C%E5%9B%BE/">R多元数据作图</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20180930\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/%E5%A4%9A%E5%85%83%E6%95%B0%E6%8D%AEr%E4%BD%9C%E5%9B%BE\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

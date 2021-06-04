@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>Fashion-MNIST CNN分类 - Boylad</title>
+    
+     
+    <meta property="og:title" content="Fashion-MNIST CNN分类 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>Fashion-MNIST CNN分类</h1>
+
+
+
+<h3>Boylad &middot 
+2019-12-06</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<p><a href="https://github.com/zalandoresearch/fashion-mnist">Fashion-MNIST</a>数据集比MNIST的难度更大，更有代表性，且与MNIST的数据结构完全相同，同样是60000+10000张28x28的灰度图像，目标也是分成10类：0表示T恤，1表示裤子，2表示套头衫，3表示连衣裙，4表示外套，5表示凉鞋，6表示衬衫，7表示运动鞋，8表示袋包，9表示靴子。本文在<a href="https://mxnet.apache.org">MXNet</a>框架下使用CNN对Fashion-MNIST数据进行分类。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> os
+<span style="color:#f92672">import</span> gzip
+<span style="color:#f92672">import</span> struct
+<span style="color:#f92672">import</span> logging
+<span style="color:#f92672">import</span> mxnet <span style="color:#f92672">as</span> mx
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+
+logging<span style="color:#f92672">.</span>getLogger()<span style="color:#f92672">.</span>setLevel(logging<span style="color:#f92672">.</span>DEBUG)
+</code></pre></div><p>下载数据后，数据预处理：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">read_data</span>(label_url, image_url):
+    <span style="color:#66d9ef">with</span> gzip<span style="color:#f92672">.</span>open(label_url) <span style="color:#66d9ef">as</span> flbl:  <span style="color:#75715e">#打开文件标签</span>
+        magic, num <span style="color:#f92672">=</span> struct<span style="color:#f92672">.</span>unpack(<span style="color:#e6db74">&#39;&gt;II&#39;</span>, flbl<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">8</span>))  <span style="color:#75715e">#读入标签文件头</span>
+        label <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>frombuffer(flbl<span style="color:#f92672">.</span>read(), dtype <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>int8)  <span style="color:#75715e">#读入标签内容</span>
+    <span style="color:#66d9ef">with</span> gzip<span style="color:#f92672">.</span>open(image_url, <span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> fimg:  <span style="color:#75715e">#打开图像文件</span>
+        magic,num,rows,cols <span style="color:#f92672">=</span> struct<span style="color:#f92672">.</span>unpack(<span style="color:#e6db74">&#39;&gt;IIII&#39;</span>, fimg<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">16</span>))  <span style="color:#75715e">#读入图像文件头</span>
+        image <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>frombuffer(fimg<span style="color:#f92672">.</span>read(), dtype <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>uint8)  <span style="color:#75715e">#读入图像内容</span>
+        image <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>reshape(len(label), <span style="color:#ae81ff">1</span>, rows, cols)
+        image <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>astype(np<span style="color:#f92672">.</span>float32) <span style="color:#f92672">/</span> <span style="color:#ae81ff">255.0</span>  <span style="color:#75715e">#归一化</span>
+    <span style="color:#66d9ef">return</span> (label, image)
+
+(train_lbl, train_img) <span style="color:#f92672">=</span> read_data(<span style="color:#e6db74">&#39;train-labels-idx1-ubyte.gz&#39;</span>,
+                                   <span style="color:#e6db74">&#39;train-images-idx3-ubyte.gz&#39;</span>)
+(val_lbl, val_img) <span style="color:#f92672">=</span> read_data(<span style="color:#e6db74">&#39;t10k-labels-idx1-ubyte.gz&#39;</span>, 
+                               <span style="color:#e6db74">&#39;t10k-images-idx3-ubyte.gz&#39;</span>)
+                               
+batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">32</span>
+</code></pre></div><p>查看训练集前18张图片及其标签：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">real_lbl <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;T-shirt/top&#39;</span>, <span style="color:#e6db74">&#39;Trouser&#39;</span>, <span style="color:#e6db74">&#39;Pullover&#39;</span>, <span style="color:#e6db74">&#39;Dress&#39;</span>, <span style="color:#e6db74">&#39;Coat&#39;</span>, <span style="color:#e6db74">&#39;Sandal&#39;</span>,
+            <span style="color:#e6db74">&#39;Shirt&#39;</span>, <span style="color:#e6db74">&#39;Sneaker&#39;</span>, <span style="color:#e6db74">&#39;Bag&#39;</span>, <span style="color:#e6db74">&#39;Ankle boot&#39;</span>]
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">12</span>,<span style="color:#ae81ff">6.3</span>))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">18</span>):
+    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">6</span>,i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+    plt<span style="color:#f92672">.</span>imshow(train_img[i]<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">28</span>,<span style="color:#ae81ff">28</span>), cmap<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gray&#39;</span>)
+    plt<span style="color:#f92672">.</span>title(real_lbl[train_lbl[i]])
+    plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#39;off&#39;</span>)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191206_fashion_MNIST/output_3_0.png" alt="png"></p>
+<p>用于辅助定义网络，深度卷积网络中常用的&quot;卷积-BN-非线性&quot;模块：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">CBA</span>(src, suffix, num_filter, kernel, pad):
+    conv <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>Convolution(data<span style="color:#f92672">=</span>src, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;conv&#39;</span><span style="color:#f92672">+</span>suffix,
+                              kernel<span style="color:#f92672">=</span>(kernel,kernel), pad<span style="color:#f92672">=</span>(pad,pad),
+                              num_filter<span style="color:#f92672">=</span>num_filter)
+    bn <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>BatchNorm(data<span style="color:#f92672">=</span>conv, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;bn&#39;</span><span style="color:#f92672">+</span>suffix, fix_gamma<span style="color:#f92672">=</span>False)
+    act <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>Activation(data<span style="color:#f92672">=</span>bn, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;act&#39;</span><span style="color:#f92672">+</span>suffix, act_type<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>)
+    <span style="color:#66d9ef">return</span> act
+</code></pre></div><p>用于辅助定义网络，在每2个卷积层后加1个池化层：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">LAYER</span>(src, layer, num_filter, pad):
+    conv1 <span style="color:#f92672">=</span> CBA(src, layer<span style="color:#f92672">+</span><span style="color:#e6db74">&#39;1&#39;</span>, num_filter, <span style="color:#ae81ff">3</span>, pad)
+    conv2 <span style="color:#f92672">=</span> CBA(conv1, layer<span style="color:#f92672">+</span><span style="color:#e6db74">&#39;2&#39;</span>, num_filter, <span style="color:#ae81ff">3</span>, pad)
+    pool <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>Pooling(data<span style="color:#f92672">=</span>conv2, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;pool&#39;</span><span style="color:#f92672">+</span>layer, pool_type<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;max&#39;</span>,
+    kernel<span style="color:#f92672">=</span>(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">2</span>), stride<span style="color:#f92672">=</span>(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">2</span>))
+    <span style="color:#66d9ef">return</span> pool
+</code></pre></div><p>CNN架构：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># 设置网络</span>
+data <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>symbol<span style="color:#f92672">.</span>Variable(<span style="color:#e6db74">&#39;data&#39;</span>)
+<span style="color:#75715e"># 将1*28*28变换为32*14*14</span>
+net <span style="color:#f92672">=</span> LAYER(data, <span style="color:#e6db74">&#39;1&#39;</span>, <span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">1</span>)
+<span style="color:#75715e"># 将32*14*14变换为64*7*7</span>
+net <span style="color:#f92672">=</span> LAYER(net, <span style="color:#e6db74">&#39;2&#39;</span>, <span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">1</span>)
+<span style="color:#75715e"># 将64*7*7变换为64*3*3</span>
+net <span style="color:#f92672">=</span> LAYER(net, <span style="color:#e6db74">&#39;3&#39;</span>, <span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">1</span>)
+<span style="color:#75715e"># 将64*3*3变换为128*1*1</span>
+net <span style="color:#f92672">=</span>CBA(net, <span style="color:#e6db74">&#39;4&#39;</span>, <span style="color:#ae81ff">128</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">0</span>)
+<span style="color:#75715e">#  将128*1*1变为10*1*1</span>
+net <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>Convolution(data<span style="color:#f92672">=</span>net, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;final&#39;</span>, kernel<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">1</span>), num_filter<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>)
+<span style="color:#75715e">#  将10*1*1变换为10</span>
+net <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>Flatten(data<span style="color:#f92672">=</span>net, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;flatten&#39;</span>)
+net<span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>SoftmaxOutput(data<span style="color:#f92672">=</span>net, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;softmax&#39;</span>)
+</code></pre></div><p>输出参数情况：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">shape <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;data&#39;</span>: (batch_size, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">28</span>)}
+mx<span style="color:#f92672">.</span>viz<span style="color:#f92672">.</span>print_summary(symbol<span style="color:#f92672">=</span>net, shape<span style="color:#f92672">=</span>shape)
+</code></pre></div><pre><code>     ___________________________________________________________________
+     Layer (type)             Output Shape  Param #     Previous Layer
+     ===================================================================
+     data(null)               1x28x28       0                                     
+     ___________________________________________________________________
+     conv11(Convolution)      32x28x28      320         data            
+     ___________________________________________________________________
+     bn11(BatchNorm)          32x28x28      64          conv11          
+     ___________________________________________________________________
+     act11(Activation)        32x28x28      0           bn11            
+     ___________________________________________________________________
+     conv12(Convolution)      32x28x28      9248        act11           
+     ___________________________________________________________________
+     bn12(BatchNorm)          32x28x28      64          conv12          
+     ___________________________________________________________________
+     act12(Activation)        32x28x28      0           bn12            
+     ___________________________________________________________________
+     pool1(Pooling)           32x14x14      0           act12           
+     ___________________________________________________________________
+     conv21(Convolution)      64x14x14      18496       pool1           
+     ___________________________________________________________________
+     bn21(BatchNorm)          64x14x14      128         conv21          
+     ___________________________________________________________________
+     act21(Activation)        64x14x14      0           bn21            
+     ___________________________________________________________________
+     conv22(Convolution)      64x14x14      36928       act21           
+     ___________________________________________________________________
+     bn22(BatchNorm)          64x14x14      128         conv22          
+     ___________________________________________________________________
+     act22(Activation)        64x14x14      0           bn22            
+     ___________________________________________________________________
+     pool2(Pooling)           64x7x7        0           act22           
+     ___________________________________________________________________
+     conv31(Convolution)      64x7x7        36928       pool2           
+     ___________________________________________________________________
+     bn31(BatchNorm)          64x7x7        128         conv31          
+     ___________________________________________________________________
+     act31(Activation)        64x7x7        0           bn31            
+     ___________________________________________________________________
+     conv32(Convolution)      64x7x7        36928       act31           
+     ___________________________________________________________________
+     bn32(BatchNorm)          64x7x7        128         conv32          
+     ___________________________________________________________________
+     act32(Activation)        64x7x7        0           bn32            
+     ___________________________________________________________________
+     pool3(Pooling)           64x3x3        0           act32           
+     ___________________________________________________________________
+     conv4(Convolution)       128x1x1       73856       pool3           
+     ___________________________________________________________________
+     bn4(BatchNorm)           128x1x1       256         conv4           
+     ___________________________________________________________________
+     act4(Activation)         128x1x1       0           bn4             
+     ___________________________________________________________________
+     final(Convolution)       10x1x1        1290        act4            
+     ___________________________________________________________________
+     flatten(Flatten)         10            0           final           
+     ___________________________________________________________________
+     softmax(SoftmaxOutput)   10            0           flatten         
+     ===================================================================
+     Total params: 214890
+     ___________________________________________________________________
+</code></pre>
+<p>使用GPU：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">module <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>mod<span style="color:#f92672">.</span>Module(symbol <span style="color:#f92672">=</span> net, context <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>gpu(<span style="color:#ae81ff">0</span>))
+</code></pre></div><p>迭代器：测试数据</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">val_iter <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>io<span style="color:#f92672">.</span>NDArrayIter(val_img, val_lbl, batch_size)
+</code></pre></div><p>手动循环40个epoch：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">40</span>):
+    aug_img <span style="color:#f92672">=</span> train_img<span style="color:#f92672">.</span>copy()
+    <span style="color:#75715e">#  修改其中的每幅图像</span>
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(aug_img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]):
+        <span style="color:#75715e">#  有50%的概率左右翻转</span>
+        <span style="color:#66d9ef">if</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>random() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0.5</span>:
+            <span style="color:#75715e"># aug_img[i][0]为第i号样本的0号通道，灰度图像只有0通道</span>
+            <span style="color:#75715e"># fliplr()用于左右翻转</span>
+            aug_img[i][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>fliplr(aug_img[i][<span style="color:#ae81ff">0</span>])
+            
+        <span style="color:#75715e">#  左右移动最多2个像素，注意randint(a,b)的范围为a到b-1</span>
+        amt <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>)
+        <span style="color:#66d9ef">if</span> amt <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>:  <span style="color:#75715e"># 如果需要移动...</span>
+            <span style="color:#66d9ef">if</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>random() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0.5</span>:  <span style="color:#75715e"># 左移动还是右移动？</span>
+                <span style="color:#75715e">#  pad()用于加上外衬，因为移动后减少的区域需补零</span>
+                <span style="color:#75715e">#  然后用[:]取所需要的部分</span>
+                aug_img[i][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>pad(aug_img[i][<span style="color:#ae81ff">0</span>], ((<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>), (amt,<span style="color:#ae81ff">0</span>)),
+                                       mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;constant&#39;</span>)[:, :<span style="color:#f92672">-</span>amt]
+            <span style="color:#66d9ef">else</span>:
+                aug_img[i][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>pad(aug_img[i][<span style="color:#ae81ff">0</span>], ((<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>), (<span style="color:#ae81ff">0</span>, amt)),
+                                       mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;constant&#39;</span>)[:, amt:]
+                
+        <span style="color:#75715e">#  上下移动做多2个像素</span>
+        <span style="color:#66d9ef">if</span> amt <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>:
+            <span style="color:#66d9ef">if</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>random() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0.5</span>:
+                aug_img[i][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>pad(aug_img[i][<span style="color:#ae81ff">0</span>], ((amt,<span style="color:#ae81ff">0</span>), (<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>)), 
+                                       mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;constant&#39;</span>)[:<span style="color:#f92672">-</span>amt, :]
+            <span style="color:#66d9ef">else</span>:
+                aug_img[i][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>pad(aug_img[i][<span style="color:#ae81ff">0</span>], ((<span style="color:#ae81ff">0</span>, amt), (<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>)), 
+                                       mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;constant&#39;</span>)[amt:, :]
+                
+        <span style="color:#75715e">#  随机清零最大5*5的区域</span>
+        x_size <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">6</span>)
+        y_size <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">6</span>)
+        x_begin <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span><span style="color:#f92672">-</span>x_size<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        y_begin <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span><span style="color:#f92672">-</span>y_size<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        aug_img[i][<span style="color:#ae81ff">0</span>][x_begin:x_begin<span style="color:#f92672">+</span>x_size, y_begin:y_begin<span style="color:#f92672">+</span>y_size<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        
+    <span style="color:#75715e"># 每个epoch重设训练数据</span>
+    train_iter <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>io<span style="color:#f92672">.</span>NDArrayIter(aug_img, train_lbl, batch_size, shuffle<span style="color:#f92672">=</span>True)
+    
+    <span style="color:#75715e"># 每个epoch降低学习率</span>
+    lr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.06</span><span style="color:#f92672">*</span>pow(<span style="color:#ae81ff">0.95</span>, epoch)
+    
+    <span style="color:#75715e"># 输出当前epoch信息</span>
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;epoch&#34;</span> <span style="color:#f92672">+</span> str(epoch) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;, learning rate = &#34;</span> <span style="color:#f92672">+</span> str(lr))
+    
+    <span style="color:#75715e"># 训练</span>
+    module<span style="color:#f92672">.</span>fit(train_iter, eval_data<span style="color:#f92672">=</span>val_iter, optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sgd&#39;</span>,
+               optimizer_params<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;learning_rate&#39;</span>:lr},
+               num_epoch<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,  <span style="color:#75715e"># 每次训练1个epoch</span>
+               batch_end_callback <span style="color:#f92672">=</span> mx<span style="color:#f92672">.</span>callback<span style="color:#f92672">.</span>Speedometer(batch_size, 
+                                                            <span style="color:#ae81ff">60000</span><span style="color:#f92672">/</span>batch_size))
+</code></pre></div><p>输出如下：</p>
+<pre><code>epoch0, learning rate = 0.06
+INFO:root:Epoch[0] Train-accuracy=0.953783
+INFO:root:Epoch[0] Time cost=23.421
+INFO:root:Epoch[0] Validation-accuracy=0.940395
+
+epoch1, learning rate = 0.056999999999999995
+INFO:root:Epoch[0] Train-accuracy=0.954700
+INFO:root:Epoch[0] Time cost=23.664
+INFO:root:Epoch[0] Validation-accuracy=0.941294
+
+...
+
+epoch39, learning rate = 0.008116557256743356
+INFO:root:Epoch[0] Train-accuracy=0.965033
+INFO:root:Epoch[0] Time cost=27.186
+INFO:root:Epoch[0] Validation-accuracy=0.943091
+</code></pre>
+<p>网络仅有214890个参数，配合数据增强，在Fashion-MNIST上可实现94.3%的准确率。</p>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191130_cats_v.s._dogs/">Cats v.s. Dogs CNN分类</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191207_100_doors_open_close/">100扇门的打开与关闭</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191130_cats_v.s._dogs\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191207_100_doors_open_close\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

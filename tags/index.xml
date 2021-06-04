@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/</link>
+    <description>Recent content in Tags on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 04 Jan 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TensorFlow</title>
+      <link>https://shixiangwang.github.io/home/tags/tensorflow/</link>
+      <pubDate>Sat, 04 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/tensorflow/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>baseplot</title>
+      <link>https://shixiangwang.github.io/home/tags/baseplot/</link>
+      <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/baseplot/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Regression</title>
+      <link>https://shixiangwang.github.io/home/tags/regression/</link>
+      <pubDate>Sat, 14 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/regression/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RPython</title>
+      <link>https://shixiangwang.github.io/home/tags/rpython/</link>
+      <pubDate>Sat, 07 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/rpython/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MXNet</title>
+      <link>https://shixiangwang.github.io/home/tags/mxnet/</link>
+      <pubDate>Fri, 06 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/mxnet/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Keras</title>
+      <link>https://shixiangwang.github.io/home/tags/keras/</link>
+      <pubDate>Sat, 30 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/keras/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MNIST</title>
+      <link>https://shixiangwang.github.io/home/tags/mnist/</link>
+      <pubDate>Sun, 17 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/mnist/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>R</title>
+      <link>https://shixiangwang.github.io/home/tags/r/</link>
+      <pubDate>Fri, 14 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ML</title>
+      <link>https://shixiangwang.github.io/home/tags/ml/</link>
+      <pubDate>Sat, 10 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/ml/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Classification</title>
+      <link>https://shixiangwang.github.io/home/tags/classification/</link>
+      <pubDate>Fri, 28 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/tags/classification/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

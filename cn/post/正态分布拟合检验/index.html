@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>正态分布拟合检验 - Boylad</title>
+    
+     
+    <meta property="og:title" content="正态分布拟合检验 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>正态分布拟合检验</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-11</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<p>根据<a href="https://en.wikipedia.org/wiki/Central_limit_theorem"><span class="math inline">\(Lindburg-Levy\space Central\space Limit \space Theorem\)</span></a>很容易证明：如果
+<span class="math inline">\(X_1,X_2,\cdots ,X_{12}\)</span>都是在<strong>[0,1)</strong>上服从均匀分布的<span class="math inline">\(i.i.d\)</span>随机变量，则<span class="math inline">\(Y\equiv X_1+X_2+ \cdots + X_{12}-6\)</span>近似服从标准正态分布。<br></p>
+<p>根据这个原理，我们先通过R软件生成100个近似服从标准正态分布的随机数。代码如下：</p>
+<pre class="r"><code>set.seed(123456)  #设定随机数种子为123456
+nor_100 &lt;- 1:100
+for (i in 1:100){
+  nor_100[i] &lt;- sum(runif(12)) - 6
+}
+nor_100
+##   [1]  0.022384421  0.409195104  0.602395218  1.562694982  1.331292246
+##   [6] -2.985364296  0.007460991 -2.051920805 -0.533705457 -1.074096658
+##  [11] -0.688919044  0.554265918 -0.244318465 -0.734843765 -0.418217143
+##  [16]  1.149336254  0.929157292 -0.471460050  0.396235578 -0.877917859
+##  [21] -0.465563944  0.015427586  1.029458184  0.238252372  0.504198010
+##  [26] -0.260234837  1.538483847 -0.337819220 -0.189583970 -0.069517873
+##  [31]  0.463195686 -2.237649822 -0.313140458 -0.860949000  0.355996459
+##  [36]  0.259968906  2.083642828 -0.646033075  1.189157123 -0.241012939
+##  [41] -0.267470645 -1.638833288  0.178162610  1.005590949 -0.732858682
+##  [46]  0.371165029  0.413610096  1.814861185  0.337113872  1.125640202
+##  [51] -1.111297486 -2.184245256  1.179916502  0.604818944  1.736887636
+##  [56] -0.813974933  1.255968337 -0.560258657 -1.229802620 -0.317383847
+##  [61] -1.092542613  1.038906273  2.973158229  0.325855812 -0.874664855
+##  [66] -1.860244125 -0.338917627 -0.367559094 -0.697731983  0.381179258
+##  [71]  1.115229933 -0.358848311 -0.754317933 -0.450560875 -1.610090753
+##  [76] -0.324834281 -0.636276308 -0.767578846  0.336733144  0.019797274
+##  [81] -1.711779713  0.710324753  1.188670146  1.181941096 -0.363347217
+##  [86]  0.537016871 -0.101238159  1.591355491 -1.590564997  1.175761278
+##  [91]  1.097913412  0.736679110  1.002301730 -0.786508943  0.826216599
+##  [96]  0.843783007  0.695919832 -0.206358687 -2.099859705 -0.463495698</code></pre>
+<p>然后，我们大致看一下这100个随机数的统计特征：</p>
+<pre class="r"><code>summary(nor_100)
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+## -2.98536 -0.65675 -0.03103  0.00429  0.75906  2.97316
+sd(nor_100)
+## [1] 1.056205
+plot(nor_100, xlab = &quot;Numbers&quot;, ylab = &quot;Values&quot;, col = &quot;red&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-11-正态分布拟合检验_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>可以看到，我们所生成的100个随机数的均值为-0.03103，标准差为1.056205，与标准正态分布的均值和标准差非常接近。并且，这些随机数的最小值为-2.98536 ，最大值为2.97316，正如散点图所显示的那样，介于三倍<span class="math inline">\(\sigma\)</span>之间。接下来，我们通过<span class="math inline">\(QQ\)</span>图直观地看一下，这些随机数是否服从标准正态分布。</p>
+<pre class="r"><code>qqnorm(nor_100)
+qqline(nor_100, col = &quot;blue&quot;, lwd = 3)</code></pre>
+<p><img src="../../../cn/post/2018-10-11-正态分布拟合检验_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>在<span class="math inline">\(QQ\)</span>图上，所有的随机数点都在<span class="math inline">\(QQ\)</span>线附近，也说明这100个随机数近似服从标准正态分布。最后我们用<a href="https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test"><span class="math inline">\(Shapiro-Wilk\)</span></a>检验（<span class="math inline">\(W\)</span>检验）这些随机数。</p>
+<pre class="r"><code>shapiro.test(nor_100)
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  nor_100
+## W = 0.98907, p-value = 0.5899</code></pre>
+<p><span class="math inline">\(Shapiro-Wilk\)</span>检验的<span class="math inline">\(P\)</span>值=0.5899，所以不拒绝原假设，即认为我们生成的这100个随机数服从</p>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/%E5%A4%9A%E5%85%83%E6%95%B0%E6%8D%AEr%E4%BD%9C%E5%9B%BE/">R多元数据作图</a></span>
+  <span class="nav-next"><a href="../../../cn/post/%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E8%AF%86%E5%88%AB%E9%AB%98%E9%A3%8E%E9%99%A9%E9%93%B6%E8%A1%8C%E8%B4%B7%E6%AC%BE/">决策树算法识别高风险银行贷款</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/%E5%A4%9A%E5%85%83%E6%95%B0%E6%8D%AEr%E4%BD%9C%E5%9B%BE\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/%E5%86%B3%E7%AD%96%E6%A0%91%E7%AE%97%E6%B3%95%E8%AF%86%E5%88%AB%E9%AB%98%E9%A3%8E%E9%99%A9%E9%93%B6%E8%A1%8C%E8%B4%B7%E6%AC%BE\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

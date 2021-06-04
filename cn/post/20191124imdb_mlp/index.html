@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>电影评论&amp;新闻主题文本分类 - Boylad</title>
+    
+     
+    <meta property="og:title" content="电影评论&amp;新闻主题文本分类 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>电影评论&amp;新闻主题文本分类</h1>
+
+
+
+<h3>Boylad &middot 
+2019-11-24</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<h2 id="imdb电影评论分类二分类1">IMDB电影评论分类(二分类)<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h2>
+<p>IMDB数据集有50000条<code>highly-polarized</code>（高度极端化的）评论，其中训练集与测试集各有25000条评论，每个集合中正面评论与负面评论各占50%。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">from</span> keras.datasets <span style="color:#f92672">import</span> imdb
+<span style="color:#f92672">from</span> keras <span style="color:#f92672">import</span> models, layers, optimizers, losses, metrics
+
+(train_data,train_labels),(test_data,test_labels) <span style="color:#f92672">=</span> imdb<span style="color:#f92672">.</span>load_data(num_words<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
+</code></pre></div><p><code>num_words=10000</code>意味着仅保留训练集中出现频率最高的10000个单词，其余的单词将会被丢弃。训练集与测试集中的电影评论已经用数字按序列进行了编码，每个数字编码一个单词。训练集与测试集的标签编码为0和1，其中0表示负面评论，1表示正面评论。训练集中第一条评论及标签如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;训练集第一条电影评论：&#39;</span>, <span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, train_data[<span style="color:#ae81ff">0</span>])
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;训练集第一条电影评论的标签：&#39;</span>, train_labels[<span style="color:#ae81ff">0</span>])
+</code></pre></div><pre><code>训练集第一条电影评论： 
+ [1, 14, 22, 16, 43, 530, 973, 1622, 1385, 65, 458, 4468, 66, 3941, 4, 173, 36,
+ 256, 5, 25, 100, 43, 838, 112, 50, 670, 2, 9, 35, 480, 284, 5, 150, 4, 172, 112,
+ 167, 2, 336, 385, 39, 4, 172, 4536, 1111, 17, 546, 38, 13, 447, 4, 192, 50, 16, 
+ 6, 147, 2025, 19, 14, 22, 4, 1920, 4613, 469, 4, 22, 71, 87, 12, 16, 43, 530, 38,
+ 76, 15, 13, 1247, 4, 22, 17, 515, 17, 12, 16, 626, 18, 2, 5, 62, 386, 12, 8,
+ 316, 8, 106, 5, 4, 2223, 5244, 16, 480, 66, 3785, 33, 4, 130, 12, 16, 38, 619,
+ 5, 25, 124, 51, 36, 135, 48, 25, 1415, 33, 6, 22, 12, 215, 28, 77, 52, 5, 14,
+ 407, 16, 82, 2, 8, 4, 107, 117, 5952, 15, 256, 4, 2, 7, 3766, 5, 723, 36, 71,
+ 43, 530, 476, 26, 400, 317, 46, 7, 4, 2, 1029, 13, 104, 88, 4, 381, 15, 297, 98,
+ 32, 2071, 56, 26, 141, 6, 194, 7486, 18, 4, 226, 22, 21, 134, 476, 26, 480, 5,
+ 144, 30, 5535, 18, 51, 36, 28, 224, 92, 25, 104, 4, 226, 65, 16, 38, 1334, 88,
+ 12, 16, 283, 5, 16, 4472, 113, 103, 32, 15, 16, 5345, 19, 178, 32]
+
+ 训练集第一条电影评论的标签：
+ 1
+</code></pre>
+<p>因为保留的是训练集出现评率最高的10000个单词，所以在训练集上所有电影评论中，单词的最大编码为9999。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">max([max(sequence) <span style="color:#66d9ef">for</span> sequence <span style="color:#f92672">in</span> train_data])
+</code></pre></div><pre><code>9999
+</code></pre>
+<p>下面的代码提供了对电影评论解码的方式，其中<code>word_index</code>为解码字典，它提供了每个单词(key)的编码数字(value)。将训练集的第一条评论解码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># word_index is a dictionary mapping words to an integer index</span>
+word_index <span style="color:#f92672">=</span> imdb<span style="color:#f92672">.</span>get_word_index()
+<span style="color:#75715e"># We reverse it, mapping integer indices to words</span>
+reverse_word_index <span style="color:#f92672">=</span> dict([(value, key) <span style="color:#66d9ef">for</span> (key, value) <span style="color:#f92672">in</span> word_index<span style="color:#f92672">.</span>items()])
+<span style="color:#75715e"># We decode the review; note that our indices were offset by 3, because 0, 1</span>
+<span style="color:#75715e">#and 2 are reserved indices for &#34;padding&#34;, &#34;start of sequence&#34;, and &#34;unknown&#34;.</span>
+decoded_review <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39; &#39;</span><span style="color:#f92672">.</span>join([reverse_word_index<span style="color:#f92672">.</span>get(i<span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>,<span style="color:#e6db74">&#39;?&#39;</span>) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> train_data[<span style="color:#ae81ff">0</span>]])
+decoded_review
+</code></pre></div><pre><code>&quot;? this film was just brilliant casting location scenery story direction everyone's
+really suited the part they played and you could just imagine being there robert ?
+is an amazing actor and now the same being director ? father came from the same
+scottish island as myself so i loved the fact there was a real connection with this
+film the witty remarks throughout the film were great it was just brilliant so much
+that i bought the film as soon as it was released for ? and would recommend it to
+everyone to watch and the fly fishing was amazing really cried at the end it was so
+sad and you know what they say if you cry at a film it must have been good and this
+definitely was also ? to the two little boy's that played the ? of norman and paul
+they were just brilliant children are often left out of the ? list i think because
+the stars that play them all grown up are such a big profile for the whole film but
+these children are amazing and should be praised for what they have done don't you
+think the whole story was so lovely because it was true and was someone's life
+after all that was shared with us all&quot;
+</code></pre>
+<p>为了将训练集输入MLP需要先将其转成<code>tensor</code>。这里我们自定义了函数<code>ectorize_sequences</code>对输入数据进行矢量化处理（类似one-hot编码）。训练集编码后的第一条评论如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">vectorize_sequences</span>(sequences, dimension<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>):
+    results <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((len(sequences), dimension))
+    <span style="color:#66d9ef">for</span> i ,sequence <span style="color:#f92672">in</span> enumerate(sequences):
+        results[i, sequence] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.</span>
+    <span style="color:#66d9ef">return</span> results
+
+x_train <span style="color:#f92672">=</span> vectorize_sequences(train_data)
+x_test <span style="color:#f92672">=</span> vectorize_sequences(test_data)
+<span style="color:#66d9ef">print</span>(x_train[<span style="color:#ae81ff">0</span>])
+</code></pre></div><pre><code>[0. 1. 1. ... 0. 0. 0.]
+</code></pre>
+<p>将标签矢量化：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">y_train <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(train_labels)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+y_test <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(test_labels)<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>)
+</code></pre></div><p>构建MLP。因为是二分类问题，输出层维度为1，激活函数用<code>Sigmoid</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">16</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+</code></pre></div><p>编译模型，优化器用<code>RMSprop</code>，损失函数用<code>binary_crossentropy</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span>optimizers<span style="color:#f92672">.</span>RMSprop(lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>),
+              loss<span style="color:#f92672">=</span>losses<span style="color:#f92672">.</span>binary_crossentropy,
+              metrics <span style="color:#f92672">=</span> [metrics<span style="color:#f92672">.</span>binary_accuracy])
+</code></pre></div><p>取测试集的前10000条评论及其标签作为验证集，余下的为测试集。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">x_val <span style="color:#f92672">=</span> x_train[:<span style="color:#ae81ff">10000</span>]
+partial_x_train <span style="color:#f92672">=</span> x_train[<span style="color:#ae81ff">10000</span>:]
+
+y_val <span style="color:#f92672">=</span> y_train[:<span style="color:#ae81ff">10000</span>]
+partial_y_train <span style="color:#f92672">=</span> y_train[<span style="color:#ae81ff">10000</span>:]
+</code></pre></div><p>训练MLP：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit(partial_x_train, partial_y_train, epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                   batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>, validation_data<span style="color:#f92672">=</span>(x_val, y_val))
+</code></pre></div><p><code>model.fit</code>返回一个<code>history</code>对象，其中的<code>history</code>以字典的形式记录了训练过程中的一些信息。字典的键如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">history<span style="color:#f92672">.</span>history<span style="color:#f92672">.</span>keys()
+</code></pre></div><pre><code>dict_keys(['val_loss', 'val_binary_accuracy', 'loss', 'binary_accuracy'])
+</code></pre>
+<p>训练过程中，Loss与Accuracy在训练集与验证集上的变化情况：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;binary_accuracy&#39;</span>]
+val_acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_binary_accuracy&#39;</span>]
+loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+val_loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+
+epochs <span style="color:#f92672">=</span> range(<span style="color:#ae81ff">1</span>, len(acc) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">4</span>))
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">121</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training loss&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_loss, <span style="color:#e6db74">&#39;r&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#34;Training and validation loss&#34;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">122</span>)
+acc_values <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;binary_accuracy&#39;</span>]
+val_acc_values <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_binary_accuracy&#39;</span>]
+
+plt<span style="color:#f92672">.</span>plot(epochs, acc, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training acc&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_acc, <span style="color:#e6db74">&#39;r&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation acc&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191124_imdb_mlp/output_23_0.png" alt="png"></p>
+<p>从上图可以看出，这里存在两个主要问题：</p>
+<ul>
+<li>首先，模型严重过拟合。</li>
+<li>其次，验证集上的损失函数不降反升。</li>
+</ul>
+<p>本文暂时不提供此问题的后续解决办法。在测试集上评估训练出来的MLP：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>evaluate(x_test, y_test)
+</code></pre></div><pre><code>25000/25000 [==============================] - 1s 59us/step
+[0.7437253212714195, 0.8511199951171875]
+</code></pre>
+<p>可见，这个不太好的MLP在测试集上能达到85.1%的预测准确率。其对测试集的预测结果如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>predict(x_test)
+</code></pre></div><pre><code>array([[0.00663328],
+       [0.99999934],
+       [0.8203349 ],
+       ...,
+       [0.00185019],
+       [0.04305837],
+       [0.8595511 ]], dtype=float32)
+</code></pre>
+<h2 id="路透社新闻主题分类多分类1">路透社新闻主题分类(多分类)<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h2>
+<p>路透社新闻数据集包含了一系列的新闻及其对应的46个主题。在训练集中，每个主题的新闻至少有10条。训练集有8982条新闻，测试集有2246条新闻。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">(train_data, train_labels), (test_data, test_labels)
+                                       <span style="color:#f92672">=</span> reuters<span style="color:#f92672">.</span>load_data(num_words<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>)
+</code></pre></div><p>这里的新闻和IMDB电影评论的编码方式是一样的，因此在这里采用同样的方法处理之：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">vectorize_sequences</span>(sequences, dimension<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>):
+    results <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((len(sequences), dimension))
+    <span style="color:#66d9ef">for</span> i, sequence <span style="color:#f92672">in</span> enumerate(sequences):
+        results[i, sequence] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.</span>
+    <span style="color:#66d9ef">return</span> results
+
+x_train <span style="color:#f92672">=</span> vectorize_sequences(train_data)
+x_test <span style="color:#f92672">=</span> vectorize_sequences(test_data)
+</code></pre></div><p>不同之处在于，IMDB电影评论分类是一个单标签、二分类问题，路透社新闻主题是一个单标签、多分类问题，因此我们需要在这里对多分类标签one-hot编码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">one_hot_train_labels <span style="color:#f92672">=</span> to_categorical(train_labels)
+one_hot_test_labels <span style="color:#f92672">=</span> to_categorical(test_labels)
+</code></pre></div><p>由于输出空间是46维的，为了减少信息丢失，我们将在中间层使用更多的神经元。因为这里是多(<code>46</code>)分类问题，因此输出层有<code>46</code>个神经元，且激活函数用<code>Softmax</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">64</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10000</span>,)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">64</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">46</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;softmax&#39;</span>))
+</code></pre></div><p>编译模型时损失函数用<code>categorical_crossentropy</code>，交叉熵在这里测量网络输出的概率分布与标签的真实分布之间的距离，我们优化的目标就是使这个距离尽可能小。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>,
+              loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;categorical_crossentropy&#39;</span>,
+              metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;accuracy&#39;</span>])
+</code></pre></div><p>从测试集中取出一部分作为验证集：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">x_val <span style="color:#f92672">=</span> x_train[:<span style="color:#ae81ff">1000</span>]
+partial_x_train <span style="color:#f92672">=</span> x_train[<span style="color:#ae81ff">1000</span>:]
+
+y_val <span style="color:#f92672">=</span> one_hot_train_labels[:<span style="color:#ae81ff">1000</span>]
+partial_y_train <span style="color:#f92672">=</span> one_hot_train_labels[<span style="color:#ae81ff">1000</span>:]
+</code></pre></div><p>训练MLP：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit(partial_x_train,
+                    partial_y_train,
+                    epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+                    batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>,
+                    validation_data<span style="color:#f92672">=</span>(x_val, y_val))
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+val_loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;accuracy&#39;</span>]
+val_acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_accuracy&#39;</span>]
+epochs <span style="color:#f92672">=</span> range(<span style="color:#ae81ff">1</span>, len(loss) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)
+
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">4</span>))
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">121</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training loss&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_loss, <span style="color:#e6db74">&#39;r&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">122</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, acc, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training acc&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_acc, <span style="color:#e6db74">&#39;r&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation acc&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>draw()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191124_imdb_mlp/output_14_0.png" alt="png"></p>
+<p>从上图来看，过拟合依然很严重（本文不处理过拟合问题）。模型在测试集上的准确率为78.45%。而<code>随机</code>猜测的话，准确率约为18.70%。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">results <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>evaluate(x_test, one_hot_test_labels)
+results
+
+test_labels_copy <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>copy(test_labels)
+np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>shuffle(test_labels_copy)
+float(np<span style="color:#f92672">.</span>sum(np<span style="color:#f92672">.</span>array(test_labels) <span style="color:#f92672">==</span> np<span style="color:#f92672">.</span>array(test_labels_copy)))<span style="color:#f92672">/</span>len(test_labels)
+</code></pre></div><pre><code>2246/2246 [==============================] - 0s 213us/step
+[1.2605379232846512, 0.777827262878418]
+
+0.18699910952804988
+</code></pre>
+<p>在测试集上进行预测。以测试集的第一条新闻为例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">predictions <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>predict(x_test)
+<span style="color:#66d9ef">print</span>(predictions[<span style="color:#ae81ff">0</span>])
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;测试集中第一条新闻预测概率最大类别：&#39;</span>, np<span style="color:#f92672">.</span>argmax(predictions[<span style="color:#ae81ff">0</span>]))
+</code></pre></div><pre><code>[4.80769995e-05 2.41823582e-05 6.53409870e-06 3.85235429e-01
+ 5.96243203e-01 2.56278732e-08 8.46131752e-06 9.75931471e-06
+ 4.78585204e-03 7.96324343e-07 5.27540033e-06 2.50866666e-04
+ 5.08730545e-06 2.26869561e-05 8.39701624e-06 3.56125906e-06
+ 5.28250472e-04 6.13580050e-06 3.81557174e-06 6.02525193e-03
+ 6.20968500e-03 8.49447897e-05 1.73399343e-07 8.12980124e-06
+ 1.19534127e-06 2.99812586e-06 5.80627884e-08 7.93678737e-06
+ 2.35581028e-05 9.96108702e-06 1.76731864e-05 5.79861990e-08
+ 1.69704163e-05 1.66173027e-06 1.58278708e-05 1.31563875e-05
+ 5.15696483e-05 1.13537044e-06 2.78967036e-07 3.02351982e-04
+ 6.56175558e-08 3.55363568e-06 4.78143829e-06 1.15967751e-08
+ 9.18917553e-10 4.61979965e-07]
+测试集中第一条新闻预测概率最大类别： 4
+</code></pre>
+<p>可以看出，我们训练的模型，有59.62%的把握认为测试集中第一条新闻属于类别标签4。</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>本文整理自：<em>Deep Learning with Python</em> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191117mnist_mlp/">MNIST手写字体分类</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191126boston_preice_regression/">波士顿房价预测</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191117mnist_mlp\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191126boston_preice_regression\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

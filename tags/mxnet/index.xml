@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MXNet on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/mxnet/</link>
+    <description>Recent content in MXNet on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 06 Dec 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/mxnet/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Fashion-MNIST CNN分类</title>
+      <link>https://shixiangwang.github.io/home/cn/post/20191206_fashion_mnist/</link>
+      <pubDate>Fri, 06 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/20191206_fashion_mnist/</guid>
+      <description>Fashion-MNIST数据集比MNIST的难度更大，更有代表性，且与MNIST的数据结构完全相同，同样是60000+10000张28x2</description>
+    </item>
+    
+  </channel>
+</rss>

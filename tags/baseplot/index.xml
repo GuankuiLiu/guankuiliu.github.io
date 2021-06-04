@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>baseplot on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/baseplot/</link>
+    <description>Recent content in baseplot on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 15 Dec 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/baseplot/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Matplotlib作图</title>
+      <link>https://shixiangwang.github.io/home/cn/post/matplotlib_graph-01/</link>
+      <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/matplotlib_graph-01/</guid>
+      <description>import numpy as np import matplotlib.pyplot as plt plt.figure(figsize=(5, 3), dpi=80) X = np.linspace(-np.pi, np.pi, 256, endpoint=True) C,S = np.cos(X), np.sin(X) plt.xlim(X.min()*1.2, X.max()*1.1) plt.xticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi], [r&amp;#39;$-\pi$&amp;#39;, r&amp;#39;$-\pi/2$&amp;#39;, r&amp;#39;$0$&amp;#39;, r&amp;#39;$\pi/2$&amp;#39;, r&amp;#39;$\pi$&amp;#39;]) plt.ylim(C.min()*1.1, C.max()*1.1) plt.yticks([-1, 0, 1], [r&amp;#39;$-1$&amp;#39;, r&amp;#39;$0$&amp;#39;, r&amp;#39;$+1$&amp;#39;]) plt.plot(X, C, color=&amp;#39;blue&amp;#39;, linewidth=2.5, linestyle=&amp;#39;-&amp;#39;) plt.plot(X, S, color=&amp;#39;red&amp;#39;, linewidth=2.5, linestyle=&amp;#39;-.&amp;#39;) plt.show() plt.figure(figsize=(8, 5), dpi=80) ax = plt.subplot(111) ax.spines[&amp;#39;right&amp;#39;].set_color(&amp;#39;none&amp;#39;) ax.spines[&amp;#39;top&amp;#39;].set_color(&amp;#39;none&amp;#39;) ax.xaxis.set_ticks_position(&amp;#39;bottom&amp;#39;) ax.spines[&amp;#39;bottom&amp;#39;].set_position((&amp;#39;data&amp;#39;, 0)) # 位置：数据空</description>
+    </item>
+    
+    <item>
+      <title>For Test</title>
+      <link>https://shixiangwang.github.io/home/en/post/for-test/</link>
+      <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/en/post/for-test/</guid>
+      <description> What I see in Nature is a magnificient structure that we can comprehend only very imperfectly, and that must fill a thinking person with a feeling of humility.
+——Albert Einstein
+ </description>
+    </item>
+    
+    <item>
+      <title>R基础知识（二）</title>
+      <link>https://shixiangwang.github.io/home/cn/post/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C/</link>
+      <pubDate>Mon, 03 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/r%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86-%E4%BA%8C/</guid>
+      <description>基础操作 #把1,2,...,100这个整数向量赋值到X X &amp;lt;- 1:100 #同上，只不过显示出来 (X &amp;lt;- 1:100) ## [1] 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ## [19] 19 20 21 22</description>
+    </item>
+    
+    <item>
+      <title>R作时序图</title>
+      <link>https://shixiangwang.github.io/home/cn/post/20180930/</link>
+      <pubDate>Sun, 30 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/20180930/</guid>
+      <description>今天晚上的时间序列分析课上，当我看到演示PPT上的几幅时间序列图像的时候，顿时心血来潮，于是我随手选择了一个名为milk.txt的纯文本文件</description>
+    </item>
+    
+  </channel>
+</rss>

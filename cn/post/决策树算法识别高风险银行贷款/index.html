@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>决策树算法识别高风险银行贷款 - Boylad</title>
+    
+     
+    <meta property="og:title" content="决策树算法识别高风险银行贷款 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>决策树算法识别高风险银行贷款</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-12</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="数据收集" class="section level3">
+<h3>数据收集</h3>
+<p>数据集来自UCI机器学习数据仓库，这些数据表示从德国的一个信贷机构获得的贷款，数据由汉堡大学的Hans Hofman捐赠。该信贷数据集包含了1000个贷款案例、一个用来表示贷款特征和贷款申请者特征的数值特征与名义特征的组合，一个类变量表示贷款是否陷入违约。</p>
+</div>
+<div id="探索和准备数据" class="section level3">
+<h3>探索和准备数据</h3>
+<p>导入数据，由于数据中的大多数特征为名义特征(变量)，所以忽略stringsAsFactors选项(即使用默认的TRUE)。</p>
+<pre class="r"><code>credit &lt;- read.csv(&quot;C:/Users/Boylad/Documents/mydata/Machine_Learning_with_R/credit.csv&quot;)
+str(credit) #查看数据框的结构
+## &#39;data.frame&#39;:    1000 obs. of  17 variables:
+##  $ checking_balance    : chr  &quot;&lt; 0 DM&quot; &quot;1 - 200 DM&quot; &quot;unknown&quot; &quot;&lt; 0 DM&quot; ...
+##  $ months_loan_duration: int  6 48 12 42 24 36 24 36 12 30 ...
+##  $ credit_history      : chr  &quot;critical&quot; &quot;good&quot; &quot;critical&quot; &quot;good&quot; ...
+##  $ purpose             : chr  &quot;furniture/appliances&quot; &quot;furniture/appliances&quot; &quot;education&quot; &quot;furniture/appliances&quot; ...
+##  $ amount              : int  1169 5951 2096 7882 4870 9055 2835 6948 3059 5234 ...
+##  $ savings_balance     : chr  &quot;unknown&quot; &quot;&lt; 100 DM&quot; &quot;&lt; 100 DM&quot; &quot;&lt; 100 DM&quot; ...
+##  $ employment_duration : chr  &quot;&gt; 7 years&quot; &quot;1 - 4 years&quot; &quot;4 - 7 years&quot; &quot;4 - 7 years&quot; ...
+##  $ percent_of_income   : int  4 2 2 2 3 2 3 2 2 4 ...
+##  $ years_at_residence  : int  4 2 3 4 4 4 4 2 4 2 ...
+##  $ age                 : int  67 22 49 45 53 35 53 35 61 28 ...
+##  $ other_credit        : chr  &quot;none&quot; &quot;none&quot; &quot;none&quot; &quot;none&quot; ...
+##  $ housing             : chr  &quot;own&quot; &quot;own&quot; &quot;own&quot; &quot;other&quot; ...
+##  $ existing_loans_count: int  2 1 1 1 2 1 1 1 1 2 ...
+##  $ job                 : chr  &quot;skilled&quot; &quot;skilled&quot; &quot;unskilled&quot; &quot;skilled&quot; ...
+##  $ dependents          : int  1 1 2 2 2 2 1 1 1 1 ...
+##  $ phone               : chr  &quot;yes&quot; &quot;no&quot; &quot;no&quot; &quot;no&quot; ...
+##  $ default             : chr  &quot;no&quot; &quot;yes&quot; &quot;no&quot; &quot;no&quot; ...</code></pre>
+<p>可以看到预期的1000个观察值和17个特征(变量)，这是因子和整数数据类型的组合。</p>
+<pre class="r"><code>table(credit$checking_balance)
+## 
+##     &lt; 0 DM   &gt; 200 DM 1 - 200 DM    unknown 
+##        274         63        269        394
+table(credit$savings_balance)
+## 
+##      &lt; 100 DM     &gt; 1000 DM  100 - 500 DM 500 - 1000 DM       unknown 
+##           603            48           103            63           183</code></pre>
+<p>特征(变量)checking_balance和savings_balance表示支票和储蓄账户余额，由于贷款数据是从德国获取的，所以货币以德国马克(Deutsche Mark,DK)为单位。较大的支票和储蓄账户余额应该与较小的贷款违约可能相联系，这看起来是一个安全的假设。有些贷款期限(months_loan_duration)和信贷申请的金额(amount)。</p>
+<pre class="r"><code>summary(credit$months_loan_duration)
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     4.0    12.0    18.0    20.9    24.0    72.0
+summary(credit$amount)
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     250    1366    2320    3271    3972   18424</code></pre>
+<p>贷款金额介于250～18420马克之间，贷款期限为4～72个月，其贷款期限的中位数为18个月，贷款金额的中位数为2320马克。</p>
+<pre class="r"><code>table(credit$default)
+## 
+##  no yes 
+## 700 300</code></pre>
+<p>变量default表示贷款申请者是否未能符合约定付款条件而陷入违约。所有申请贷款的有约30%陷入违约。银行贷款给违约率高的客户是不可取的，因为，这意味着很有可能银行不能完全收回它的投资。</p>
+<pre class="r"><code>set.seed(12345)
+credit_rand &lt;- credit[order(runif(1000)), ]</code></pre>
+<p>在将数据化分为训练数据集和测试数据集之前，我们先对信贷数据随机排列。set.seed()函数可以用来在一个预定义的序列中生成随机数，从随机数种子(这里设为12345)的位置开始。这样可以确保重复分析时得到同样的结果。命令runif(1000)依据均匀分布生成一个含有1000个介于0～1之间的随机数列表。order()函数返回按升序或降序排序后的1000个随机数的位置索引，我们利用这些位置索引来筛选credit数据框中的行，并保存在一个名为credit_rand的新数据框中。</p>
+<pre class="r"><code>summary(credit$amount)
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     250    1366    2320    3271    3972   18424
+summary(credit_rand$amount)
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     250    1366    2320    3271    3972   18424</code></pre>
+<p>为了确认我们得到的是相同的数据，只是排序不同，我们在两个数据框之间比较特征amount。</p>
+<pre class="r"><code>head(credit$amount)
+## [1] 1169 5951 2096 7882 4870 9055
+head(credit_rand$amount)
+## [1] 1199 2576 1103 4020 1501 1568</code></pre>
+<p>我们可以使用head()函数来查看每一个数据框中的前几个值，虽然前几个值不同，但由于由summary()函数得到的主要统计量是相同的，所以这表明我们随机排序的做法是正确的。</p>
+<pre class="r"><code>credit_train &lt;- credit_rand[1:900, ]
+credit_test &lt;- credit_rand[901:1000,]</code></pre>
+<p>将随机排列的数据划分为训练数据(90%或者900条记录)和测试数据集(10%或者100条记录)
+，如果不出意外，在每一个数据集中应该有大约30%的违约贷款。</p>
+<pre class="r"><code>prop.table(table(credit_train$default))
+## 
+##        no       yes 
+## 0.7022222 0.2977778
+prop.table(table(credit_test$default))
+## 
+##   no  yes 
+## 0.68 0.32</code></pre>
+<p>这似乎是一个相当平衡的分割，现在可以建立决策树了。</p>
+</div>
+<div id="基于数据训练模型" class="section level3">
+<h3>基于数据训练模型</h3>
+<p>我们将使用C50添加包中的C5.0算法来训练决策树。C5.0算法提供了更多的调整一个特定学习问题模型的方法，有更多的选项可供选择。library(C50)后，命令<code>?C5.0Control</code>可以查看更多关于如何精细调整模型的细节。对于我们信贷审批的第一次迭代，我们将使用默认的C5.0配置。在credit_train中，第17列是类别变量default，所以需要将它作为一个自变量从训练数据中排出(作为真正的训练数据)，但把它用为分类的目标因子向量(训练集的标签)。</p>
+<pre class="r"><code>str(credit_train[17])
+## &#39;data.frame&#39;:    900 obs. of  1 variable:
+##  $ default: chr  &quot;yes&quot; &quot;no&quot; &quot;no&quot; &quot;no&quot; ...
+library(C50)
+## Warning: 程辑包&#39;C50&#39;是用R版本4.0.3 来建造的
+credit_model &lt;- C5.0(credit_train[-17], as.factor(credit_train$default))
+credit_model
+## 
+## Call:
+## C5.0.default(x = credit_train[-17], y = as.factor(credit_train$default))
+## 
+## Classification Tree
+## Number of samples: 900 
+## Number of predictors: 16 
+## 
+## Tree size: 67 
+## 
+## Non-standard options: attempt to group attributes</code></pre>
+<p>决策树的基本数据包括：生成决策树的函数调用、特征数(即predictors)和用于决策树增长的案例(Samples)，同时列出树的大小为67，表明该树有67个决策。查看决策可以调用summary()函数：</p>
+<pre class="r"><code>summary(credit_model)
+## 
+## Call:
+## C5.0.default(x = credit_train[-17], y = as.factor(credit_train$default))
+## 
+## 
+## C5.0 [Release 2.07 GPL Edition]      Sun Oct 18 23:53:40 2020
+## -------------------------------
+## 
+## Class specified by attribute `outcome&#39;
+## 
+## Read 900 cases (17 attributes) from undefined.data
+## 
+## Decision tree:
+## 
+## checking_balance = unknown: no (358/44)
+## checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+## :...credit_history in {perfect,very good}:
+##     :...dependents &gt; 1: yes (10/1)
+##     :   dependents &lt;= 1:
+##     :   :...savings_balance = &lt; 100 DM: yes (39/11)
+##     :       savings_balance in {500 - 1000 DM,unknown,&gt; 1000 DM}: no (8/1)
+##     :       savings_balance = 100 - 500 DM:
+##     :       :...checking_balance = &lt; 0 DM: no (1)
+##     :           checking_balance in {1 - 200 DM,&gt; 200 DM}: yes (5/1)
+##     credit_history in {critical,good,poor}:
+##     :...months_loan_duration &lt;= 11: no (87/14)
+##         months_loan_duration &gt; 11:
+##         :...savings_balance = &gt; 1000 DM: no (13)
+##             savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM,unknown}:
+##             :...checking_balance = &gt; 200 DM:
+##                 :...dependents &gt; 1: yes (3)
+##                 :   dependents &lt;= 1:
+##                 :   :...credit_history in {good,poor}: no (23/3)
+##                 :       credit_history = critical:
+##                 :       :...amount &lt;= 2337: yes (3)
+##                 :           amount &gt; 2337: no (6)
+##                 checking_balance = 1 - 200 DM:
+##                 :...savings_balance = unknown: no (34/6)
+##                 :   savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM}:
+##                 :   :...months_loan_duration &gt; 45: yes (11/1)
+##                 :       months_loan_duration &lt;= 45:
+##                 :       :...other_credit = store:
+##                 :           :...age &lt;= 35: yes (4)
+##                 :           :   age &gt; 35: no (2)
+##                 :           other_credit = none:
+##                 :           :...job = unemployed: no (1)
+##                 :           :   job = unskilled: [S1]
+##                 :           :   job = management:
+##                 :           :   :...amount &lt;= 7511: no (10/3)
+##                 :           :   :   amount &gt; 7511: yes (7)
+##                 :           :   job = skilled:
+##                 :           :   :...dependents &lt;= 1: no (55/15)
+##                 :           :       dependents &gt; 1:
+##                 :           :       :...age &lt;= 34: no (3)
+##                 :           :           age &gt; 34: yes (4)
+##                 :           other_credit = bank:
+##                 :           :...years_at_residence &lt;= 1: no (3)
+##                 :               years_at_residence &gt; 1:
+##                 :               :...existing_loans_count &lt;= 1: yes (5)
+##                 :                   existing_loans_count &gt; 1:
+##                 :                   :...percent_of_income &lt;= 2: no (4/1)
+##                 :                       percent_of_income &gt; 2: yes (3)
+##                 checking_balance = &lt; 0 DM:
+##                 :...job = management: no (26/6)
+##                     job = unemployed: yes (4/1)
+##                     job = unskilled:
+##                     :...employment_duration in {4 - 7 years,
+##                     :   :                       unemployed}: no (4)
+##                     :   employment_duration = &gt; 7 years:
+##                     :   :...other_credit in {none,bank}: no (5/1)
+##                     :   :   other_credit = store: yes (2)
+##                     :   employment_duration = &lt; 1 year:
+##                     :   :...other_credit in {none,store}: yes (11/2)
+##                     :   :   other_credit = bank: no (1)
+##                     :   employment_duration = 1 - 4 years:
+##                     :   :...age &lt;= 39: no (14/3)
+##                     :       age &gt; 39:
+##                     :       :...credit_history in {critical,good}: yes (3)
+##                     :           credit_history = poor: no (1)
+##                     job = skilled:
+##                     :...credit_history = poor:
+##                         :...savings_balance in {&lt; 100 DM,100 - 500 DM,
+##                         :   :                   500 - 1000 DM}: yes (8)
+##                         :   savings_balance = unknown: no (1)
+##                         credit_history = critical:
+##                         :...other_credit = store: no (0)
+##                         :   other_credit = bank: yes (4)
+##                         :   other_credit = none:
+##                         :   :...savings_balance in {100 - 500 DM,
+##                         :       :                   unknown}: no (1)
+##                         :       savings_balance = 500 - 1000 DM: yes (1)
+##                         :       savings_balance = &lt; 100 DM:
+##                         :       :...months_loan_duration &lt;= 13:
+##                         :           :...percent_of_income &lt;= 3: yes (3)
+##                         :           :   percent_of_income &gt; 3: no (3/1)
+##                         :           months_loan_duration &gt; 13:
+##                         :           :...amount &lt;= 5293: no (10/1)
+##                         :               amount &gt; 5293: yes (2)
+##                         credit_history = good:
+##                         :...existing_loans_count &gt; 1: yes (5)
+##                             existing_loans_count &lt;= 1:
+##                             :...other_credit = store: no (2)
+##                                 other_credit = bank:
+##                                 :...percent_of_income &lt;= 2: yes (2)
+##                                 :   percent_of_income &gt; 2: no (6/1)
+##                                 other_credit = none: [S2]
+## 
+## SubTree [S1]
+## 
+## employment_duration in {&gt; 7 years,4 - 7 years,unemployed}: no (8)
+## employment_duration in {1 - 4 years,&lt; 1 year}: yes (11/3)
+## 
+## SubTree [S2]
+## 
+## savings_balance = 100 - 500 DM: yes (3)
+## savings_balance = 500 - 1000 DM: no (1)
+## savings_balance = unknown:
+## :...phone = no: yes (9/1)
+## :   phone = yes: no (3/1)
+## savings_balance = &lt; 100 DM:
+## :...percent_of_income &lt;= 1: no (4)
+##     percent_of_income &gt; 1:
+##     :...phone = yes: yes (10/1)
+##         phone = no:
+##         :...purpose in {education,business,car0,renovations}: yes (3)
+##             purpose = car:
+##             :...percent_of_income &lt;= 3: no (2)
+##             :   percent_of_income &gt; 3: yes (6/1)
+##             purpose = furniture/appliances:
+##             :...years_at_residence &lt;= 1: no (4)
+##                 years_at_residence &gt; 1:
+##                 :...housing = rent: yes (2)
+##                     housing = other: no (1)
+##                     housing = own:
+##                     :...amount &lt;= 1778: no (3)
+##                         amount &gt; 1778:
+##                         :...years_at_residence &lt;= 3: yes (6)
+##                             years_at_residence &gt; 3: no (3/1)
+## 
+## 
+## Evaluation on training data (900 cases):
+## 
+##      Decision Tree   
+##    ----------------  
+##    Size      Errors  
+## 
+##      66  125(13.9%)   &lt;&lt;
+## 
+## 
+##     (a)   (b)    &lt;-classified as
+##    ----  ----
+##     609    23    (a): class no
+##     102   166    (b): class yes
+## 
+## 
+##  Attribute usage:
+## 
+##  100.00% checking_balance
+##   60.22% credit_history
+##   53.22% months_loan_duration
+##   49.44% savings_balance
+##   30.89% job
+##   25.89% other_credit
+##   17.78% dependents
+##    9.67% existing_loans_count
+##    7.22% percent_of_income
+##    6.67% employment_duration
+##    5.78% phone
+##    5.56% amount
+##    3.78% years_at_residence
+##    3.44% age
+##    3.33% purpose
+##    1.67% housing
+## 
+## 
+## Time: 0.0 secs</code></pre>
+<p>前四行可以用通俗易懂的语言来表达：</p>
+<ul>
+<li>如果支票账户余额是未知的，则归类为<strong>不太可能违约</strong>。</li>
+<li>否则，如果账户余额少于0马克，或者1～200马克之间，或者超过200马克，或者<span class="math inline">\(\cdots \cdots\)</span></li>
+<li>信用记录非常好，甚至完美，或者<span class="math inline">\(\cdots \cdots\)</span></li>
+<li>有多个受抚养人，就归类为<strong>很有可能违约</strong>。
+括号中的数字表示符合该决策准则的案例的数量以及根据该决策不正确分类的案例的数量。例如，在第一行中，(358/44)表示有358个案例符合该决策条件，有44个案例被错误地归类为no，也就是说不太可能违约。换句话所，就是有44个申请者确实违约了，尽管模型的预测与此相反。有些决策树中的决策似乎没有逻辑意义，它们可能反映了数据中的一个真实模式，或者它们可能是统计中的异常值。<br><br></li>
+</ul>
+<p>在决策树之后输出了一个混淆矩阵，这是一个交叉列表，表示模型对训练数据错误分类的记录数：字段Errors说明模型对除了900个训练案例中的125个案列以外的所有案例进行了正确的分类，错误率为13.9%。共有23个真实值为no的个案被错误地归类为yes(错误肯定)，而有102个真实值为yes的个案被错误地归类为no(错误否定)。</p>
+</div>
+<div id="评估模型的性能" class="section level3">
+<h3>评估模型的性能</h3>
+<p>众所周知，决策树有一种过度拟合训练数据集的倾向，由于这个原因，训练数据集中的错误率可能过于乐观，因此，基于测试数据集来评估决策时模型是非常重要的。为了将决策树应用于测试数据集，我们使用predict()函数：</p>
+<pre class="r"><code>credit_pred &lt;- predict(credit_model, credit_test)</code></pre>
+<p>这样就创建了一个预测分类值向量，我们我们可以使用gmodels添加包中的CrossTable()函数将它与真实的分类值比较，设定参数prop.c和prop.r为FALSE来删除表中列与行的百分比，剩余的百分比(prop.t)表示单元格中的记录站总记录数的百分比。</p>
+<pre class="r"><code>library(gmodels)
+## Warning: 程辑包&#39;gmodels&#39;是用R版本4.0.3 来建造的
+CrossTable(credit_test$default, credit_pred,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c(&#39;actual default&#39;, &#39;predicted default&#39;))
+## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  100 
+## 
+##  
+##                | predicted default 
+## actual default |        no |       yes | Row Total | 
+## ---------------|-----------|-----------|-----------|
+##             no |        57 |        11 |        68 | 
+##                |     0.570 |     0.110 |           | 
+## ---------------|-----------|-----------|-----------|
+##            yes |        16 |        16 |        32 | 
+##                |     0.160 |     0.160 |           | 
+## ---------------|-----------|-----------|-----------|
+##   Column Total |        73 |        27 |       100 | 
+## ---------------|-----------|-----------|-----------|
+## 
+## </code></pre>
+<p>可以看到，在100个贷款申请者的记录测试中，我们的模型正确预测了57个申请者确实没有违约，而16个申请者确实违约率，模型的准确率为73%，而错误率为27%。在测试数据上模型的性能略差，但这并不意外，因为对于未知的数据，模型的性能往往会差些。另外需要注意的是，该模型只是正确预测了测试数据中32个贷款违约者的50%，遗憾的是，这种类型的错误是一个潜在的非常严重的错误。</p>
+</div>
+<div id="提高模型的性能" class="section level3">
+<h3>提高模型的性能</h3>
+<p>我们的模型的错误率很肯能过高而不能将其应用于实时的信用评估申请中。事实上，如果该模型对每一个测试案例的预测结果为“没有违约”(no default)，那么此时模型的正确率为68%，——结果并不比我们的模型差太多。我们需要调整C5.0算法，来提高模型的性能。<br></p>
+<p>C5.0()函数可以轻松地将boosting算法添加到C5.0决策树中，只需要添加一个额外的 参数trails，表示在模型增强团队中使用的独立决策树是数量。参数trails设置了一个上限，如果该算法识别出额外的实验似乎并没有提高模型的准确性，那么它将停止添加决策树。我们将开始于10个实验(trails=10)——一个已经成为事实标准的数字，因为研究表明，这能降低关于预测数据大约25%的错误率。</p>
+<pre class="r"><code>credit_boost10 &lt;- C5.0(credit_train[-17], as.factor(credit_train$default), trials = 10)</code></pre>
+<p>在查看由此生成的模型时，可以看到添加了一些用来标识变化的额外的行。</p>
+<pre class="r"><code>credit_boost10
+## 
+## Call:
+## C5.0.default(x = credit_train[-17], y = as.factor(credit_train$default),
+##  trials = 10)
+## 
+## Classification Tree
+## Number of samples: 900 
+## Number of predictors: 16 
+## 
+## Number of boosting iterations: 10 
+## Average tree size: 51.8 
+## 
+## Non-standard options: attempt to group attributes</code></pre>
+<p>通过10此迭代，决策树不变小。查看所有的10棵决策树。</p>
+<pre class="r"><code>summary(credit_boost10)
+## 
+## Call:
+## C5.0.default(x = credit_train[-17], y = as.factor(credit_train$default),
+##  trials = 10)
+## 
+## 
+## C5.0 [Release 2.07 GPL Edition]      Sun Oct 18 23:53:40 2020
+## -------------------------------
+## 
+## Class specified by attribute `outcome&#39;
+## 
+## Read 900 cases (17 attributes) from undefined.data
+## 
+## -----  Trial 0:  -----
+## 
+## Decision tree:
+## 
+## checking_balance = unknown: no (358/44)
+## checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+## :...credit_history in {perfect,very good}:
+##     :...dependents &gt; 1: yes (10/1)
+##     :   dependents &lt;= 1:
+##     :   :...savings_balance = &lt; 100 DM: yes (39/11)
+##     :       savings_balance in {500 - 1000 DM,unknown,&gt; 1000 DM}: no (8/1)
+##     :       savings_balance = 100 - 500 DM:
+##     :       :...checking_balance = &lt; 0 DM: no (1)
+##     :           checking_balance in {1 - 200 DM,&gt; 200 DM}: yes (5/1)
+##     credit_history in {critical,good,poor}:
+##     :...months_loan_duration &lt;= 11: no (87/14)
+##         months_loan_duration &gt; 11:
+##         :...savings_balance = &gt; 1000 DM: no (13)
+##             savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM,unknown}:
+##             :...checking_balance = &gt; 200 DM:
+##                 :...dependents &gt; 1: yes (3)
+##                 :   dependents &lt;= 1:
+##                 :   :...credit_history in {good,poor}: no (23/3)
+##                 :       credit_history = critical:
+##                 :       :...amount &lt;= 2337: yes (3)
+##                 :           amount &gt; 2337: no (6)
+##                 checking_balance = 1 - 200 DM:
+##                 :...savings_balance = unknown: no (34/6)
+##                 :   savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM}:
+##                 :   :...months_loan_duration &gt; 45: yes (11/1)
+##                 :       months_loan_duration &lt;= 45:
+##                 :       :...other_credit = store:
+##                 :           :...age &lt;= 35: yes (4)
+##                 :           :   age &gt; 35: no (2)
+##                 :           other_credit = none:
+##                 :           :...job = unemployed: no (1)
+##                 :           :   job = unskilled: [S1]
+##                 :           :   job = management:
+##                 :           :   :...amount &lt;= 7511: no (10/3)
+##                 :           :   :   amount &gt; 7511: yes (7)
+##                 :           :   job = skilled:
+##                 :           :   :...dependents &lt;= 1: no (55/15)
+##                 :           :       dependents &gt; 1:
+##                 :           :       :...age &lt;= 34: no (3)
+##                 :           :           age &gt; 34: yes (4)
+##                 :           other_credit = bank:
+##                 :           :...years_at_residence &lt;= 1: no (3)
+##                 :               years_at_residence &gt; 1:
+##                 :               :...existing_loans_count &lt;= 1: yes (5)
+##                 :                   existing_loans_count &gt; 1:
+##                 :                   :...percent_of_income &lt;= 2: no (4/1)
+##                 :                       percent_of_income &gt; 2: yes (3)
+##                 checking_balance = &lt; 0 DM:
+##                 :...job = management: no (26/6)
+##                     job = unemployed: yes (4/1)
+##                     job = unskilled:
+##                     :...employment_duration in {4 - 7 years,
+##                     :   :                       unemployed}: no (4)
+##                     :   employment_duration = &gt; 7 years:
+##                     :   :...other_credit in {none,bank}: no (5/1)
+##                     :   :   other_credit = store: yes (2)
+##                     :   employment_duration = &lt; 1 year:
+##                     :   :...other_credit in {none,store}: yes (11/2)
+##                     :   :   other_credit = bank: no (1)
+##                     :   employment_duration = 1 - 4 years:
+##                     :   :...age &lt;= 39: no (14/3)
+##                     :       age &gt; 39:
+##                     :       :...credit_history in {critical,good}: yes (3)
+##                     :           credit_history = poor: no (1)
+##                     job = skilled:
+##                     :...credit_history = poor:
+##                         :...savings_balance in {&lt; 100 DM,100 - 500 DM,
+##                         :   :                   500 - 1000 DM}: yes (8)
+##                         :   savings_balance = unknown: no (1)
+##                         credit_history = critical:
+##                         :...other_credit = store: no (0)
+##                         :   other_credit = bank: yes (4)
+##                         :   other_credit = none:
+##                         :   :...savings_balance in {100 - 500 DM,
+##                         :       :                   unknown}: no (1)
+##                         :       savings_balance = 500 - 1000 DM: yes (1)
+##                         :       savings_balance = &lt; 100 DM:
+##                         :       :...months_loan_duration &lt;= 13:
+##                         :           :...percent_of_income &lt;= 3: yes (3)
+##                         :           :   percent_of_income &gt; 3: no (3/1)
+##                         :           months_loan_duration &gt; 13:
+##                         :           :...amount &lt;= 5293: no (10/1)
+##                         :               amount &gt; 5293: yes (2)
+##                         credit_history = good:
+##                         :...existing_loans_count &gt; 1: yes (5)
+##                             existing_loans_count &lt;= 1:
+##                             :...other_credit = store: no (2)
+##                                 other_credit = bank:
+##                                 :...percent_of_income &lt;= 2: yes (2)
+##                                 :   percent_of_income &gt; 2: no (6/1)
+##                                 other_credit = none: [S2]
+## 
+## SubTree [S1]
+## 
+## employment_duration in {&gt; 7 years,4 - 7 years,unemployed}: no (8)
+## employment_duration in {1 - 4 years,&lt; 1 year}: yes (11/3)
+## 
+## SubTree [S2]
+## 
+## savings_balance = 100 - 500 DM: yes (3)
+## savings_balance = 500 - 1000 DM: no (1)
+## savings_balance = unknown:
+## :...phone = no: yes (9/1)
+## :   phone = yes: no (3/1)
+## savings_balance = &lt; 100 DM:
+## :...percent_of_income &lt;= 1: no (4)
+##     percent_of_income &gt; 1:
+##     :...phone = yes: yes (10/1)
+##         phone = no:
+##         :...purpose in {education,business,car0,renovations}: yes (3)
+##             purpose = car:
+##             :...percent_of_income &lt;= 3: no (2)
+##             :   percent_of_income &gt; 3: yes (6/1)
+##             purpose = furniture/appliances:
+##             :...years_at_residence &lt;= 1: no (4)
+##                 years_at_residence &gt; 1:
+##                 :...housing = rent: yes (2)
+##                     housing = other: no (1)
+##                     housing = own:
+##                     :...amount &lt;= 1778: no (3)
+##                         amount &gt; 1778:
+##                         :...years_at_residence &lt;= 3: yes (6)
+##                             years_at_residence &gt; 3: no (3/1)
+## 
+## -----  Trial 1:  -----
+## 
+## Decision tree:
+## 
+## checking_balance in {&lt; 0 DM,1 - 200 DM}:
+## :...savings_balance in {500 - 1000 DM,&gt; 1000 DM}: no (29/8.6)
+## :   savings_balance = 100 - 500 DM:
+## :   :...credit_history in {critical,poor,perfect}: no (18/3.2)
+## :   :   credit_history in {good,very good}: yes (30.5/9.5)
+## :   savings_balance = unknown:
+## :   :...credit_history in {critical,poor,perfect}: no (16.6)
+## :   :   credit_history in {good,very good}:
+## :   :   :...job in {unskilled,unemployed}: no (7.9/0.8)
+## :   :       job = management: yes (9.3/2.4)
+## :   :       job = skilled:
+## :   :       :...purpose in {business,car0,renovations}: yes (0)
+## :   :           purpose = education: no (3.2)
+## :   :           purpose in {car,furniture/appliances}:
+## :   :           :...months_loan_duration &lt;= 18: yes (16.2/3.2)
+## :   :               months_loan_duration &gt; 18: no (16.5/7)
+## :   savings_balance = &lt; 100 DM:
+## :   :...months_loan_duration &gt; 47: yes (24.3/3.1)
+## :       months_loan_duration &lt;= 47:
+## :       :...job = unemployed: yes (7/3.1)
+## :           job = unskilled:
+## :           :...housing = own: no (66.4/20.3)
+## :           :   housing in {rent,other}: yes (14.2/4.7)
+## :           job = skilled:
+## :           :...percent_of_income &gt; 2: yes (109.5/40.2)
+## :           :   percent_of_income &lt;= 2:
+## :           :   :...employment_duration in {&gt; 7 years,4 - 7 years,
+## :           :       :                       &lt; 1 year}: yes (36/15)
+## :           :       employment_duration in {1 - 4 years,
+## :           :                               unemployed}: no (31.3/7)
+## :           job = management:
+## :           :...existing_loans_count &gt; 2: no (3.2)
+## :               existing_loans_count &lt;= 2:
+## :               :...employment_duration in {&gt; 7 years,
+## :                   :                       1 - 4 years}: yes (30.3/7.1)
+## :                   employment_duration in {4 - 7 years,
+## :                   :                       &lt; 1 year}: no (9.4/0.8)
+## :                   employment_duration = unemployed:
+## :                   :...percent_of_income &lt;= 2: no (4.7)
+## :                       percent_of_income &gt; 2: yes (13.9/4)
+## checking_balance in {unknown,&gt; 200 DM}:
+## :...other_credit in {store,bank}:
+##     :...purpose = renovations: yes (0)
+##     :   purpose in {furniture/appliances,car0}: no (31.4/6.9)
+##     :   purpose in {car,education,business}:
+##     :   :...percent_of_income &lt;= 1: no (7/2.3)
+##     :       percent_of_income &gt; 1: yes (44.8/11.1)
+##     other_credit = none:
+##     :...credit_history in {critical,perfect}: no (116.7/10.1)
+##         credit_history in {good,poor,very good}:
+##         :...existing_loans_count &gt; 1:
+##             :...employment_duration = 4 - 7 years: no (7.9)
+##             :   employment_duration in {&gt; 7 years,1 - 4 years,&lt; 1 year,
+##             :   :                       unemployed}:
+##             :   :...job in {management,unemployed}: yes (6.9)
+##             :       job in {unskilled,skilled}:
+##             :       :...years_at_residence &lt;= 1: yes (4.6)
+##             :           years_at_residence &gt; 1:
+##             :           :...years_at_residence &lt;= 3: no (15.7/2.3)
+##             :               years_at_residence &gt; 3: yes (15.5/4)
+##             existing_loans_count &lt;= 1:
+##             :...credit_history = poor: yes (9.3/2.4)
+##                 credit_history = very good: no (1.6/0.8)
+##                 credit_history = good:
+##                 :...phone = yes: no (54.4/4.6)
+##                     phone = no:
+##                     :...job in {management,unemployed}: no (2.4)
+##                         job = unskilled:
+##                         :...checking_balance = &gt; 200 DM: yes (10.1/2.4)
+##                         :   checking_balance = unknown:
+##                         :   :...percent_of_income &lt;= 3: no (9.5)
+##                         :       percent_of_income &gt; 3: yes (9.3/2.4)
+##                         job = skilled:
+##                         :...savings_balance in {100 - 500 DM,500 - 1000 DM,
+##                             :                   unknown,
+##                             :                   &gt; 1000 DM}: no (23.7)
+##                             savings_balance = &lt; 100 DM:
+##                             :...years_at_residence &lt;= 2: no (19.6/4.6)
+##                                 years_at_residence &gt; 2: yes (12.4/3.2)
+## 
+## -----  Trial 2:  -----
+## 
+## Decision tree:
+## 
+## months_loan_duration &lt;= 8:
+## :...existing_loans_count &gt; 1: no (19.1)
+## :   existing_loans_count &lt;= 1:
+## :   :...amount &lt;= 3161: no (45.5/7.7)
+## :       amount &gt; 3161: yes (6.3/0.6)
+## months_loan_duration &gt; 8:
+## :...checking_balance = unknown:
+##     :...other_credit = bank:
+##     :   :...age &lt;= 44: yes (40.5/11.9)
+##     :   :   age &gt; 44: no (11.5/1.9)
+##     :   other_credit in {none,store}:
+##     :   :...age &gt; 30: no (147.2/21.8)
+##     :       age &lt;= 30:
+##     :       :...amount &gt; 6458: yes (16/2.6)
+##     :           amount &lt;= 6458:
+##     :           :...age &lt;= 22: yes (17.4/5.9)
+##     :               age &gt; 22: no (62.8/15.3)
+##     checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+##     :...employment_duration = 4 - 7 years:
+##         :...months_loan_duration &lt;= 22: no (44.7/6.7)
+##         :   months_loan_duration &gt; 22:
+##         :   :...job in {unskilled,skilled,unemployed}: yes (35.9/15.8)
+##         :       job = management: no (4.6/0.6)
+##         employment_duration = unemployed:
+##         :...months_loan_duration &gt; 33: no (11.4)
+##         :   months_loan_duration &lt;= 33:
+##         :   :...phone = no: yes (11/2.7)
+##         :       phone = yes: no (15.5/6.5)
+##         employment_duration = &gt; 7 years:
+##         :...amount &gt; 6948: yes (13/1.3)
+##         :   amount &lt;= 6948:
+##         :   :...purpose in {education,business,car0}: yes (22.8/7.8)
+##         :       purpose = renovations: no (1.3)
+##         :       purpose = car:
+##         :       :...job = unemployed: no (0)
+##         :       :   job = unskilled: yes (6.9)
+##         :       :   job in {skilled,management}:
+##         :       :   :...years_at_residence &lt;= 1: yes (2.5)
+##         :       :       years_at_residence &gt; 1: no (28.6/7.1)
+##         :       purpose = furniture/appliances:
+##         :       :...other_credit in {store,bank}: yes (7.3/2.1)
+##         :           other_credit = none:
+##         :           :...job in {unskilled,skilled,unemployed}: no (29.2/3.4)
+##         :               job = management: yes (5.1/1.3)
+##         employment_duration = 1 - 4 years:
+##         :...savings_balance = &gt; 1000 DM: no (6.4)
+##         :   savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM,unknown}:
+##         :   :...housing = other: yes (12/1.9)
+##         :       housing in {own,rent}:
+##         :       :...credit_history in {poor,perfect,very good}: no (29.3/8.6)
+##         :           credit_history = critical:
+##         :           :...months_loan_duration &lt;= 16: no (10.6/0.6)
+##         :           :   months_loan_duration &gt; 16: yes (14.5/4.1)
+##         :           credit_history = good:
+##         :           :...phone = no: yes (81.6/33.5)
+##         :               phone = yes: no (30.2/11)
+##         employment_duration = &lt; 1 year:
+##         :...savings_balance in {100 - 500 DM,500 - 1000 DM}: yes (15.6/3.4)
+##             savings_balance in {unknown,&gt; 1000 DM}: no (9.1/1.9)
+##             savings_balance = &lt; 100 DM:
+##             :...housing = other: no (4.7)
+##                 housing in {own,rent}:
+##                 :...years_at_residence &gt; 1: yes (41.6/11)
+##                     years_at_residence &lt;= 1:
+##                     :...job in {unskilled,management}: no (13.9/4.9)
+##                         job = unemployed: yes (2.1)
+##                         job = skilled:
+##                         :...percent_of_income &lt;= 3: yes (12.3/3.3)
+##                             percent_of_income &gt; 3: no (9.7/0.6)
+## 
+## -----  Trial 3:  -----
+## 
+## Decision tree:
+## 
+## amount &gt; 11054:
+## :...credit_history in {critical,good,perfect,very good}: yes (26.4/3.9)
+## :   credit_history = poor: no (3.7)
+## amount &lt;= 11054:
+## :...employment_duration = 4 - 7 years:
+##     :...age &lt;= 22: yes (7.7/1.3)
+##     :   age &gt; 22:
+##     :   :...checking_balance = unknown: no (41.5/1.6)
+##     :       checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+##     :       :...purpose in {furniture/appliances,education,business,
+##     :           :           car0}: no (52.1/10.6)
+##     :           purpose = renovations: yes (1.3)
+##     :           purpose = car:
+##     :           :...amount &lt;= 1715: yes (14/3.4)
+##     :               amount &gt; 1715: no (20.6/3.2)
+##     employment_duration in {&gt; 7 years,1 - 4 years,&lt; 1 year,unemployed}:
+##     :...credit_history = very good: yes (40.8/17.3)
+##         credit_history = perfect:
+##         :...other_credit in {none,bank}: no (25.8/11.7)
+##         :   other_credit = store: yes (4.5)
+##         credit_history = critical:
+##         :...other_credit = store: no (9.9/4.6)
+##         :   other_credit = none:
+##         :   :...purpose in {car,furniture/appliances,business,car0,
+##         :   :   :           renovations}: no (132.6/29.1)
+##         :   :   purpose = education: yes (15.1/4.9)
+##         :   other_credit = bank:
+##         :   :...job in {unskilled,skilled,unemployed}: yes (18.1/6.5)
+##         :       job = management: no (4.8)
+##         credit_history = poor:
+##         :...phone = no:
+##         :   :...age &lt;= 46: no (26.1/3.8)
+##         :   :   age &gt; 46: yes (7.7/1.1)
+##         :   phone = yes:
+##         :   :...dependents &lt;= 1: yes (31.1/8.9)
+##         :       dependents &gt; 1: no (3.5)
+##         credit_history = good:
+##         :...existing_loans_count &gt; 1:
+##             :...job = unskilled: no (2.9)
+##             :   job in {management,unemployed}: yes (4.1)
+##             :   job = skilled:
+##             :   :...percent_of_income &gt; 3: no (10.3/1.1)
+##             :       percent_of_income &lt;= 3:
+##             :       :...months_loan_duration &lt;= 24: yes (19.3/1.7)
+##             :           months_loan_duration &gt; 24: no (2.6)
+##             existing_loans_count &lt;= 1:
+##             :...months_loan_duration &gt; 33:
+##                 :...percent_of_income &lt;= 2: no (13.6/3.3)
+##                 :   percent_of_income &gt; 2: yes (33.7/7.8)
+##                 months_loan_duration &lt;= 33:
+##                 :...purpose in {education,renovations}: yes (22.2/9)
+##                     purpose in {business,car0}: no (18.4/1.8)
+##                     purpose = car:
+##                     :...checking_balance in {unknown,&gt; 200 DM}: no (33.6/5.6)
+##                     :   checking_balance in {&lt; 0 DM,1 - 200 DM}:
+##                     :   :...employment_duration = &lt; 1 year: yes (16.6/2.2)
+##                     :       employment_duration = unemployed: no (7.1)
+##                     :       employment_duration in {&gt; 7 years,1 - 4 years}:
+##                     :       :...housing = rent: no (7.8/2.4)
+##                     :           housing = other: yes (3.9/1.1)
+##                     :           housing = own:
+##                     :           :...phone = no: yes (17.1/5.6)
+##                     :               phone = yes: no (8.8/1.3)
+##                     purpose = furniture/appliances:
+##                     :...savings_balance in {100 - 500 DM,500 - 1000 DM,
+##                         :                   &gt; 1000 DM}: no (30.9/8.4)
+##                         savings_balance = unknown:
+##                         :...checking_balance in {&lt; 0 DM,
+##                         :   :                    1 - 200 DM}: yes (18.5/5.7)
+##                         :   checking_balance in {unknown,
+##                         :                        &gt; 200 DM}: no (5.9)
+##                         savings_balance = &lt; 100 DM:
+##                         :...job in {skilled,management}: no (96.2/30.7)
+##                             job = unemployed: yes (0.5)
+##                             job = unskilled:
+##                             :...checking_balance in {unknown,
+##                                 :                    &gt; 200 DM}: yes (10.7/2.1)
+##                                 checking_balance in {&lt; 0 DM,1 - 200 DM}:
+##                                 :...phone = no: no (25.3/5)
+##                                     phone = yes: yes (3.1/0.5)
+## 
+## -----  Trial 4:  -----
+## 
+## Decision tree:
+## 
+## checking_balance in {unknown,&gt; 200 DM}:
+## :...employment_duration in {&gt; 7 years,4 - 7 years}: no (137.6/26.1)
+## :   employment_duration in {1 - 4 years,&lt; 1 year,unemployed}:
+## :   :...job = management:
+## :       :...years_at_residence &lt;= 3: yes (25.4/6)
+## :       :   years_at_residence &gt; 3: no (3.3)
+## :       job in {unskilled,skilled,unemployed}:
+## :       :...months_loan_duration &lt;= 16:
+## :           :...dependents &gt; 1: no (10.9)
+## :           :   dependents &lt;= 1:
+## :           :   :...job in {skilled,unemployed}: no (44.1/6.8)
+## :           :       job = unskilled:
+## :           :       :...existing_loans_count &lt;= 1: yes (15.9/5.2)
+## :           :           existing_loans_count &gt; 1: no (6.9)
+## :           months_loan_duration &gt; 16:
+## :           :...housing = rent: yes (17.4/4.5)
+## :               housing in {own,other}:
+## :               :...other_credit in {store,bank}: yes (22.7/8.3)
+## :                   other_credit = none:
+## :                   :...percent_of_income &lt;= 1: yes (5.6/1.4)
+## :                       percent_of_income &gt; 1:
+## :                       :...months_loan_duration &lt;= 18: yes (16.6/7.1)
+## :                           months_loan_duration &gt; 18: no (29.7/2)
+## checking_balance in {&lt; 0 DM,1 - 200 DM}:
+## :...savings_balance in {unknown,&gt; 1000 DM}: no (92.2/28)
+##     savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM}:
+##     :...months_loan_duration &gt; 47: yes (33.3/6)
+##         months_loan_duration &lt;= 47:
+##         :...dependents &gt; 1:
+##             :...credit_history = critical: no (13.2/1.1)
+##             :   credit_history in {poor,perfect,very good}: yes (9.8/1.9)
+##             :   credit_history = good:
+##             :   :...percent_of_income &lt;= 3: no (20.1/4.8)
+##             :       percent_of_income &gt; 3: yes (14.9/4.9)
+##             dependents &lt;= 1:
+##             :...housing = other: no (24.7/10.5)
+##                 housing = rent:
+##                 :...credit_history = poor: no (5/0.4)
+##                 :   credit_history = perfect: yes (5.7)
+##                 :   credit_history in {critical,good,very good}:
+##                 :   :...phone = yes:
+##                 :       :...amount &lt;= 2613: no (3.3/0.4)
+##                 :       :   amount &gt; 2613: yes (21.4/2.4)
+##                 :       phone = no:
+##                 :       :...job in {unskilled,management}: no (10.9/2.6)
+##                 :           job = unemployed: yes (0.4)
+##                 :           job = skilled:
+##                 :           :...months_loan_duration &lt;= 13: yes (11.7/1)
+##                 :               months_loan_duration &gt; 13: no (22.6/9.5)
+##                 housing = own:
+##                 :...years_at_residence &lt;= 1: no (56.4/20)
+##                     years_at_residence &gt; 1:
+##                     :...job = unemployed: no (2)
+##                         job = management:
+##                         :...checking_balance = &lt; 0 DM: no (8.1/2.6)
+##                         :   checking_balance = 1 - 200 DM: yes (19.2/4.5)
+##                         job = unskilled:
+##                         :...purpose in {education,business,car0,
+##                         :   :           renovations}: no (5.8)
+##                         :   purpose in {car,furniture/appliances}:
+##                         :   :...months_loan_duration &lt;= 11: no (10.9/2)
+##                         :       months_loan_duration &gt; 11: yes (38.6/7.8)
+##                         job = skilled:
+##                         :...savings_balance in {100 - 500 DM,
+##                             :                   500 - 1000 DM}: no (23/5.7)
+##                             savings_balance = &lt; 100 DM:
+##                             :...other_credit in {store,bank}: yes (15.5/3.4)
+##                                 other_credit = none:
+##                                 :...years_at_residence &gt; 2: no (59/24.7)
+##                                     years_at_residence &lt;= 2:
+##                                     :...months_loan_duration &lt;= 8: no (3.3)
+##                                         months_loan_duration &gt; 8: [S1]
+## 
+## SubTree [S1]
+## 
+## credit_history in {critical,good,very good}: yes (30.2/6.9)
+## credit_history in {poor,perfect}: no (2.9)
+## 
+## -----  Trial 5:  -----
+## 
+## Decision tree:
+## 
+## checking_balance in {unknown,&gt; 200 DM}:
+## :...purpose = car0: no (1.6)
+## :   purpose = renovations: yes (7/2.6)
+## :   purpose = education:
+## :   :...savings_balance in {&lt; 100 DM,500 - 1000 DM,unknown,
+## :   :   :                   &gt; 1000 DM}: no (22.6/4.4)
+## :   :   savings_balance = 100 - 500 DM: yes (5.8/0.9)
+## :   purpose = business:
+## :   :...job in {unskilled,skilled}: no (26.2/8.4)
+## :   :   job in {management,unemployed}: yes (11.6/2.9)
+## :   purpose = car:
+## :   :...other_credit in {none,store}:
+## :   :   :...amount &lt;= 11760: no (80.1/15.5)
+## :   :   :   amount &gt; 11760: yes (2.6)
+## :   :   other_credit = bank:
+## :   :   :...housing = own: yes (15.9/5)
+## :   :       housing in {rent,other}: no (9.4/3.2)
+## :   purpose = furniture/appliances:
+## :   :...age &gt; 44: no (20.7)
+## :       age &lt;= 44:
+## :       :...credit_history in {critical,poor,very good}: no (48.3/11)
+## :           credit_history = perfect: yes (2.2/0.7)
+## :           credit_history = good:
+## :           :...existing_loans_count &lt;= 1: no (64.6/20.5)
+## :               existing_loans_count &gt; 1: yes (13.8/3.2)
+## checking_balance in {&lt; 0 DM,1 - 200 DM}:
+## :...checking_balance = &lt; 0 DM:
+##     :...job = unemployed: yes (6.2/2)
+##     :   job = skilled:
+##     :   :...months_loan_duration &lt;= 11: no (15.8/4.4)
+##     :   :   months_loan_duration &gt; 11:
+##     :   :   :...dependents &lt;= 1: yes (141.1/43.6)
+##     :   :       dependents &gt; 1:
+##     :   :       :...existing_loans_count &lt;= 1: no (16.2/6.2)
+##     :   :           existing_loans_count &gt; 1: yes (5.8/0.8)
+##     :   job = management:
+##     :   :...percent_of_income &lt;= 1: yes (3.7)
+##     :   :   percent_of_income &gt; 1:
+##     :   :   :...percent_of_income &lt;= 2: no (4)
+##     :   :       percent_of_income &gt; 2:
+##     :   :       :...employment_duration in {&gt; 7 years,
+##     :   :           :                       1 - 4 years}: yes (17.6/6.3)
+##     :   :           employment_duration in {4 - 7 years,&lt; 1 year,
+##     :   :                                   unemployed}: no (13.6/1.8)
+##     :   job = unskilled:
+##     :   :...purpose in {education,business,car0}: no (6.4/0.4)
+##     :       purpose = renovations: yes (2.3)
+##     :       purpose = car:
+##     :       :...phone = no: yes (23.8/7.8)
+##     :       :   phone = yes: no (3.7)
+##     :       purpose = furniture/appliances:
+##     :       :...percent_of_income &lt;= 1: no (2.8)
+##     :           percent_of_income &gt; 1:
+##     :           :...other_credit in {store,bank}: yes (5.9/1.4)
+##     :               other_credit = none:
+##     :               :...months_loan_duration &lt;= 15: no (7.9/0.9)
+##     :                   months_loan_duration &gt; 15: yes (12.5/2.8)
+##     checking_balance = 1 - 200 DM:
+##     :...savings_balance = 500 - 1000 DM: yes (8.6/3.1)
+##         savings_balance in {unknown,&gt; 1000 DM}: no (58.6/19.2)
+##         savings_balance = 100 - 500 DM:
+##         :...credit_history in {critical,poor}: no (13.9/2.2)
+##         :   credit_history in {perfect,very good}: yes (9.4/1.1)
+##         :   credit_history = good:
+##         :   :...months_loan_duration &lt;= 30: no (14.9/4.8)
+##         :       months_loan_duration &gt; 30: yes (5.5)
+##         savings_balance = &lt; 100 DM:
+##         :...months_loan_duration &gt; 42: yes (9.2)
+##             months_loan_duration &lt;= 42:
+##             :...amount &gt; 9283: yes (7.9)
+##                 amount &lt;= 9283:
+##                 :...amount &gt; 5433:
+##                     :...amount &lt;= 8133: no (16.4)
+##                     :   amount &gt; 8133: yes (5.3/1.8)
+##                     amount &lt;= 5433:
+##                     :...months_loan_duration &gt; 22: yes (42.2/11.8)
+##                         months_loan_duration &lt;= 22:
+##                         :...amount &gt; 1965:
+##                             :...percent_of_income &lt;= 3: no (20.9/0.9)
+##                             :   percent_of_income &gt; 3: yes (2.4/0.4)
+##                             amount &lt;= 1965:
+##                             :...percent_of_income &lt;= 3:
+##                                 :...months_loan_duration &lt;= 7: no (2)
+##                                 :   months_loan_duration &gt; 7: yes (23.1/3.9)
+##                                 percent_of_income &gt; 3:
+##                                 :...existing_loans_count &gt; 1: no (7.9)
+##                                     existing_loans_count &lt;= 1:
+##                                     :...age &lt;= 29: no (15.2/1.8)
+##                                         age &gt; 29: yes (14.9/3.9)
+## 
+## -----  Trial 6:  -----
+## 
+## Decision tree:
+## 
+## housing in {rent,other}:
+## :...job = unemployed: no (5/2.5)
+## :   job = unskilled:
+## :   :...housing = other: yes (8.1/0.6)
+## :   :   housing = rent:
+## :   :   :...months_loan_duration &lt;= 33: no (32.8/12.7)
+## :   :       months_loan_duration &gt; 33: yes (3.9)
+## :   job = management:
+## :   :...amount &lt;= 3275: no (13.6)
+## :   :   amount &gt; 3275:
+## :   :   :...months_loan_duration &lt;= 28: yes (17.1/3.7)
+## :   :       months_loan_duration &gt; 28: no (17.5/4.4)
+## :   job = skilled:
+## :   :...percent_of_income &lt;= 2:
+## :       :...credit_history in {critical,poor,very good}: no (24.3/8.6)
+## :       :   credit_history = perfect: yes (1.1)
+## :       :   credit_history = good:
+## :       :   :...existing_loans_count &gt; 1: yes (7.8)
+## :       :       existing_loans_count &lt;= 1:
+## :       :       :...percent_of_income &lt;= 1: yes (16.8/6.7)
+## :       :           percent_of_income &gt; 1: no (13.6/1.2)
+## :       percent_of_income &gt; 2:
+## :       :...years_at_residence &lt;= 1: no (7.6/1.7)
+## :           years_at_residence &gt; 1:
+## :           :...phone = no: yes (61.5/15.4)
+## :               phone = yes:
+## :               :...other_credit = store: yes (3.2)
+## :                   other_credit = bank: no (7.2/1.4)
+## :                   other_credit = none:
+## :                   :...percent_of_income &lt;= 3: yes (10.7/2.3)
+## :                       percent_of_income &gt; 3:
+## :                       :...checking_balance = &lt; 0 DM: yes (7.5/1)
+## :                           checking_balance in {1 - 200 DM,unknown,
+## :                                                &gt; 200 DM}: no (12.2/1.7)
+## housing = own:
+## :...savings_balance = &gt; 1000 DM: no (19.9/1.4)
+##     savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM,unknown}:
+##     :...credit_history = very good:
+##         :...amount &gt; 5381: yes (4.5)
+##         :   amount &lt;= 5381:
+##         :   :...other_credit = none: yes (5.3/0.8)
+##         :       other_credit in {store,bank}: no (19.4/6.1)
+##         credit_history = perfect:
+##         :...other_credit = store: yes (3.5)
+##         :   other_credit in {none,bank}:
+##         :   :...percent_of_income &gt; 3: yes (7.9/2.1)
+##         :       percent_of_income &lt;= 3:
+##         :       :...age &lt;= 30: yes (7.5/2.8)
+##         :           age &gt; 30: no (13.3/0.7)
+##         credit_history = critical:
+##         :...years_at_residence &lt;= 1: no (9.9)
+##         :   years_at_residence &gt; 1:
+##         :   :...age &gt; 35: no (66.6/8.5)
+##         :       age &lt;= 35:
+##         :       :...checking_balance in {&lt; 0 DM,&gt; 200 DM}: yes (21.7/9.3)
+##         :           checking_balance = 1 - 200 DM:
+##         :           :...months_loan_duration &lt;= 15: no (4.3/0.9)
+##         :           :   months_loan_duration &gt; 15: yes (18.8/4.1)
+##         :           checking_balance = unknown:
+##         :           :...other_credit = none: no (22.7/2)
+##         :               other_credit in {store,bank}: yes (12.5/3.6)
+##         credit_history = poor:
+##         :...savings_balance in {500 - 1000 DM,unknown}: no (6.6)
+##         :   savings_balance in {&lt; 100 DM,100 - 500 DM}:
+##         :   :...years_at_residence &lt;= 1: yes (8.2/0.3)
+##         :       years_at_residence &gt; 1:
+##         :       :...percent_of_income &lt;= 1: no (7.5)
+##         :           percent_of_income &gt; 1:
+##         :           :...job in {management,unemployed}: yes (12.3/0.3)
+##         :               job in {unskilled,skilled}:
+##         :               :...existing_loans_count &lt;= 1: yes (4.1/0.7)
+##         :                   existing_loans_count &gt; 1: no (18/6.1)
+##         credit_history = good:
+##         :...purpose = education: yes (18.3/7.1)
+##             purpose in {car0,renovations}: no (12.2/5.6)
+##             purpose = business:
+##             :...months_loan_duration &lt;= 18: no (10)
+##             :   months_loan_duration &gt; 18: yes (9/3.9)
+##             purpose = furniture/appliances:
+##             :...employment_duration = unemployed: yes (11.9/1.5)
+##             :   employment_duration in {&gt; 7 years,1 - 4 years,4 - 7 years,
+##             :   :                       &lt; 1 year}:
+##             :   :...months_loan_duration &gt; 33:
+##             :       :...years_at_residence &lt;= 1: no (4.4/0.8)
+##             :       :   years_at_residence &gt; 1: yes (18.9/3.9)
+##             :       months_loan_duration &lt;= 33:
+##             :       :...phone = no: no (124.5/43.9)
+##             :           phone = yes:
+##             :           :...years_at_residence &gt; 3: no (10.1/1.4)
+##             :               years_at_residence &lt;= 3:
+##             :               :...job = unskilled: yes (3.5/0.8)
+##             :                   job in {management,unemployed}: no (1.5)
+##             :                   job = skilled:
+##             :                   :...amount &lt;= 1393: no (4.3)
+##             :                       amount &gt; 1393: yes (23.1/5.9)
+##             purpose = car:
+##             :...existing_loans_count &gt; 1: no (4.3)
+##                 existing_loans_count &lt;= 1:
+##                 :...checking_balance in {unknown,&gt; 200 DM}: no (25.2/3.2)
+##                     checking_balance in {&lt; 0 DM,1 - 200 DM}:
+##                     :...dependents &gt; 1: no (8.1/1.8)
+##                         dependents &lt;= 1:
+##                         :...amount &lt;= 1103: yes (9.1)
+##                             amount &gt; 1103:
+##                             :...percent_of_income &lt;= 1: no (5.1/1.6)
+##                                 percent_of_income &gt; 1:
+##                                 :...amount &lt;= 1213: no (5.9)
+##                                     amount &gt; 1213:
+##                                     :...years_at_residence &lt;= 1: yes (5.5)
+##                                         years_at_residence &gt; 1: [S1]
+## 
+## SubTree [S1]
+## 
+## months_loan_duration &lt;= 13: no (8.2/1.4)
+## months_loan_duration &gt; 13: yes (11.4/2.5)
+## 
+## -----  Trial 7:  -----
+## 
+## Decision tree:
+## 
+## credit_history = critical:
+## :...other_credit = store: yes (10.8/5.4)
+## :   other_credit = bank:
+## :   :...housing = rent: yes (4.9)
+## :   :   housing in {own,other}:
+## :   :   :...phone = yes: no (7.7/0.2)
+## :   :       phone = no:
+## :   :       :...existing_loans_count &lt;= 1: yes (5.6)
+## :   :           existing_loans_count &gt; 1: no (15.8/4.7)
+## :   other_credit = none:
+## :   :...checking_balance = unknown:
+## :       :...amount &lt;= 6967: no (48.1/2.7)
+## :       :   amount &gt; 6967: yes (7.9/2.4)
+## :       checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+## :       :...savings_balance in {100 - 500 DM,unknown,&gt; 1000 DM}: no (21.7/5.2)
+## :           savings_balance = 500 - 1000 DM: yes (6.6/1.7)
+## :           savings_balance = &lt; 100 DM:
+## :           :...dependents &gt; 1: no (11.6/2.1)
+## :               dependents &lt;= 1:
+## :               :...amount &gt; 7308: yes (4.6)
+## :                   amount &lt;= 7308:
+## :                   :...employment_duration in {1 - 4 years,4 - 7 years,
+## :                       :                       unemployed}: no (33.6/8.4)
+## :                       employment_duration = &lt; 1 year: yes (11.8/5.2)
+## :                       employment_duration = &gt; 7 years:
+## :                       :...existing_loans_count &lt;= 1: no (4.2)
+## :                           existing_loans_count &gt; 1:
+## :                           :...existing_loans_count &gt; 2: no (2.9)
+## :                               existing_loans_count &lt;= 2:
+## :                               :...age &lt;= 30: no (4.3)
+## :                                   age &gt; 30:
+## :                                   :...age &lt;= 61: yes (15.6/2.3)
+## :                                       age &gt; 61: no (3.9)
+## credit_history in {good,poor,perfect,very good}:
+## :...savings_balance = 500 - 1000 DM: no (33.5/10.5)
+##     savings_balance = &gt; 1000 DM:
+##     :...purpose in {car,furniture/appliances,car0}: no (11.9)
+##     :   purpose in {education,business,renovations}: yes (8/1.7)
+##     savings_balance = 100 - 500 DM:
+##     :...purpose in {furniture/appliances,education}: yes (31.6/10.7)
+##     :   purpose in {business,car0,renovations}: no (12.8/1.9)
+##     :   purpose = car:
+##     :   :...checking_balance in {&lt; 0 DM,unknown}: no (8.2)
+##     :       checking_balance in {1 - 200 DM,&gt; 200 DM}:
+##     :       :...amount &lt;= 2746: yes (10.3)
+##     :           amount &gt; 2746: no (8.4/2.7)
+##     savings_balance = unknown:
+##     :...months_loan_duration &lt;= 9: no (8.5)
+##     :   months_loan_duration &gt; 9:
+##     :   :...employment_duration = 4 - 7 years: no (13.4/1.1)
+##     :       employment_duration in {&gt; 7 years,1 - 4 years,&lt; 1 year,unemployed}:
+##     :       :...purpose in {education,business,renovations}: no (20.2/5.1)
+##     :           purpose = car0: yes (2.8/0.6)
+##     :           purpose = furniture/appliances:
+##     :           :...months_loan_duration &gt; 33: no (3)
+##     :           :   months_loan_duration &lt;= 33:
+##     :           :   :...amount &lt;= 1459: no (5.4/0.7)
+##     :           :       amount &gt; 1459: yes (22.4/6.5)
+##     :           purpose = car:
+##     :           :...job = unskilled: yes (6.2/0.8)
+##     :               job in {management,unemployed}: no (5.2/1.2)
+##     :               job = skilled:
+##     :               :...employment_duration in {&lt; 1 year,
+##     :                   :                       unemployed}: no (5)
+##     :                   employment_duration in {&gt; 7 years,1 - 4 years}:
+##     :                   :...amount &lt;= 6615: no (17.7/7.1)
+##     :                       amount &gt; 6615: yes (8/0.2)
+##     savings_balance = &lt; 100 DM:
+##     :...amount &gt; 9283: yes (22.8/2.4)
+##         amount &lt;= 9283:
+##         :...percent_of_income &lt;= 1: no (49.3/15.7)
+##             percent_of_income &gt; 1:
+##             :...credit_history = very good: yes (23.1/4.7)
+##                 credit_history = poor:
+##                 :...months_loan_duration &lt;= 16: no (9.3/1.2)
+##                 :   months_loan_duration &gt; 16: yes (32.6/6.2)
+##                 credit_history = perfect:
+##                 :...housing in {rent,other}: yes (5.5)
+##                 :   housing = own:
+##                 :   :...other_credit in {none,bank}: no (17.4/4.8)
+##                 :       other_credit = store: yes (2.9)
+##                 credit_history = good:
+##                 :...existing_loans_count &gt; 1:
+##                     :...age &lt;= 26: yes (4.2)
+##                     :   age &gt; 26: no (15.8)
+##                     existing_loans_count &lt;= 1:
+##                     :...purpose in {education,renovations}: yes (19.9/4.4)
+##                         purpose in {business,car0}: no (13.2/4)
+##                         purpose = car:
+##                         :...other_credit in {store,bank}: yes (7.7/1.7)
+##                         :   other_credit = none:
+##                         :   :...age &lt;= 25: yes (11.8/1.2)
+##                         :       age &gt; 25: no (37.5/13.4)
+##                         purpose = furniture/appliances:
+##                         :...dependents &gt; 1:
+##                             :...months_loan_duration &lt;= 13: no (3.9)
+##                             :   months_loan_duration &gt; 13: yes (18.2/3.3)
+##                             dependents &lt;= 1:
+##                             :...years_at_residence &lt;= 1:
+##                                 :...amount &lt;= 1391: yes (7.7/2.7)
+##                                 :   amount &gt; 1391: no (19.3/0.7)
+##                                 years_at_residence &gt; 1:
+##                                 :...age &lt;= 22: yes (15.5/1.2)
+##                                     age &gt; 22: [S1]
+## 
+## SubTree [S1]
+## 
+## employment_duration in {&gt; 7 years,4 - 7 years,unemployed}: no (29.3/8.6)
+## employment_duration = &lt; 1 year: yes (17.8/8.4)
+## employment_duration = 1 - 4 years:
+## :...other_credit = store: no (1.9)
+##     other_credit = bank: yes (5.1)
+##     other_credit = none:
+##     :...housing = rent: no (5)
+##         housing = other: yes (0.7)
+##         housing = own:
+##         :...months_loan_duration &gt; 30: yes (7.5/1)
+##             months_loan_duration &lt;= 30:
+##             :...months_loan_duration &gt; 21: no (5.5)
+##                 months_loan_duration &lt;= 21:
+##                 :...percent_of_income &lt;= 3: yes (15.8/5.3)
+##                     percent_of_income &gt; 3: no (9.6/2.8)
+## 
+## -----  Trial 8:  -----
+## 
+## Decision tree:
+## 
+## checking_balance = unknown:
+## :...months_loan_duration &lt;= 8: no (14.7)
+## :   months_loan_duration &gt; 8:
+## :   :...other_credit = bank:
+## :       :...years_at_residence &gt; 2: no (26.1/8.6)
+## :       :   years_at_residence &lt;= 2:
+## :       :   :...dependents &lt;= 1: yes (25.8/6.5)
+## :       :       dependents &gt; 1: no (2.3)
+## :       other_credit in {none,store}:
+## :       :...age &lt;= 23:
+## :           :...savings_balance = &lt; 100 DM: yes (18/3.6)
+## :           :   savings_balance in {100 - 500 DM,500 - 1000 DM,unknown,
+## :           :                       &gt; 1000 DM}: no (7)
+## :           age &gt; 23:
+## :           :...employment_duration = 4 - 7 years: no (22.4)
+## :               employment_duration in {&gt; 7 years,1 - 4 years,&lt; 1 year,
+## :               :                       unemployed}:
+## :               :...purpose in {car,furniture/appliances,education,car0,
+## :                   :           renovations}: no (130.2/25.6)
+## :                   purpose = business:
+## :                   :...existing_loans_count &lt;= 1: no (6.5/1.6)
+## :                       existing_loans_count &gt; 1: yes (15.1/4.8)
+## checking_balance in {&lt; 0 DM,1 - 200 DM,&gt; 200 DM}:
+## :...credit_history = poor:
+##     :...percent_of_income &lt;= 1: no (5.9)
+##     :   percent_of_income &gt; 1:
+##     :   :...employment_duration in {&gt; 7 years,&lt; 1 year,
+##     :       :                       unemployed}: yes (17.7/4.3)
+##     :       employment_duration in {1 - 4 years,4 - 7 years}: no (17.7/3.3)
+##     credit_history = perfect:
+##     :...percent_of_income &gt; 3: yes (10.9)
+##     :   percent_of_income &lt;= 3:
+##     :   :...housing = own: no (14.6/3.7)
+##     :       housing in {rent,other}: yes (4.9)
+##     credit_history = very good:
+##     :...age &lt;= 23: no (4.7)
+##     :   age &gt; 23:
+##     :   :...amount &lt;= 409: no (3.7)
+##     :       amount &gt; 409: yes (35.8/7.5)
+##     credit_history = critical:
+##     :...other_credit = store: no (5.6/0.5)
+##     :   other_credit = bank: yes (14/6.2)
+##     :   other_credit = none:
+##     :   :...percent_of_income &lt;= 1: no (10.8/3.3)
+##     :       percent_of_income &gt; 1:
+##     :       :...phone = yes: no (41.8/13.6)
+##     :           phone = no:
+##     :           :...amount &lt;= 2122: no (39.7/13.3)
+##     :               amount &gt; 2122: yes (24.4/7.3)
+##     credit_history = good:
+##     :...savings_balance = &gt; 1000 DM: no (6.6)
+##         savings_balance in {&lt; 100 DM,100 - 500 DM,500 - 1000 DM,unknown}:
+##         :...amount &gt; 8648: yes (19.7/2.8)
+##             amount &lt;= 8648:
+##             :...months_loan_duration &lt;= 7: no (18.2/2.2)
+##                 months_loan_duration &gt; 7:
+##                 :...purpose in {education,business,car0,
+##                     :           renovations}: no (39.7/12.1)
+##                     purpose = car:
+##                     :...employment_duration = unemployed: no (5.5)
+##                     :   employment_duration in {&gt; 7 years,1 - 4 years,
+##                     :   :                       4 - 7 years,&lt; 1 year}:
+##                     :   :...job in {unskilled,skilled}: yes (81.2/24.6)
+##                     :       job in {management,unemployed}: no (9.6/2.2)
+##                     purpose = furniture/appliances:
+##                     :...housing = other: no (11.8/4.2)
+##                         housing = own:
+##                         :...employment_duration in {4 - 7 years,
+##                         :   :                       unemployed}: yes (23.1/8)
+##                         :   employment_duration = &gt; 7 years:
+##                         :   :...other_credit = none: no (16.1/4.7)
+##                         :   :   other_credit in {store,bank}: yes (5.9)
+##                         :   employment_duration = 1 - 4 years:
+##                         :   :...dependents &lt;= 1: yes (65.5/30.5)
+##                         :   :   dependents &gt; 1: no (6.5/1.4)
+##                         :   employment_duration = &lt; 1 year:
+##                         :   :...years_at_residence &gt; 2: yes (8)
+##                         :       years_at_residence &lt;= 2:
+##                         :       :...age &lt;= 22: yes (7.3/1.4)
+##                         :           age &gt; 22: no (15.7)
+##                         housing = rent:
+##                         :...age &gt; 39: no (3.8)
+##                             age &lt;= 39:
+##                             :...months_loan_duration &gt; 33: no (2.2)
+##                                 months_loan_duration &lt;= 33:
+##                                 :...amount &lt;= 3448: yes (27.4/5.5)
+##                                     amount &gt; 3448: no (2.7)
+## 
+## -----  Trial 9:  -----
+## 
+## Decision tree:
+## 
+## checking_balance in {unknown,&gt; 200 DM}:
+## :...months_loan_duration &lt;= 8: no (16)
+## :   months_loan_duration &gt; 8:
+## :   :...other_credit = bank:
+## :       :...purpose in {education,business,renovations}: yes (13/5.3)
+## :       :   purpose = car0: no (2.3)
+## :       :   purpose = car:
+## :       :   :...credit_history in {critical,poor,perfect,
+## :       :   :   :                  very good}: yes (17.3/2.2)
+## :       :   :   credit_history = good: no (6.7/1)
+## :       :   purpose = furniture/appliances:
+## :       :   :...months_loan_duration &lt;= 13: yes (7.1/2.2)
+## :       :       months_loan_duration &gt; 13: no (14.8/2.1)
+## :       other_credit in {none,store}:
+## :       :...employment_duration in {&gt; 7 years,unemployed}: no (65.8/14.6)
+## :           employment_duration = 1 - 4 years:
+## :           :...job in {unskilled,skilled,unemployed}: no (76.3/17.4)
+## :           :   job = management: yes (14.7/6.3)
+## :           employment_duration = &lt; 1 year:
+## :           :...amount &lt;= 6681: no (39.2/12.6)
+## :           :   amount &gt; 6681: yes (6.6)
+## :           employment_duration = 4 - 7 years:
+## :           :...existing_loans_count &gt; 2: yes (2.7)
+## :               existing_loans_count &lt;= 2:
+## :               :...months_loan_duration &lt;= 9: yes (2.8/0.2)
+## :                   months_loan_duration &gt; 9: no (24.2/1.4)
+## checking_balance in {&lt; 0 DM,1 - 200 DM}:
+## :...savings_balance = 500 - 1000 DM: yes (16.5/7.9)
+##     savings_balance = &gt; 1000 DM: no (11.4/1.6)
+##     savings_balance = 100 - 500 DM:
+##     :...credit_history in {critical,poor}: no (16/2.8)
+##     :   credit_history in {good,perfect,very good}: yes (37.2/13.6)
+##     savings_balance = unknown:
+##     :...credit_history in {critical,poor,perfect}: no (14.8)
+##     :   credit_history in {good,very good}:
+##     :   :...months_loan_duration &gt; 42: no (4.9)
+##     :       months_loan_duration &lt;= 42:
+##     :       :...job in {unskilled,unemployed}: no (10.5/1)
+##     :           job = management: yes (6.8/0.7)
+##     :           job = skilled:
+##     :           :...purpose in {business,car0,renovations}: yes (0)
+##     :               purpose = education: no (4.1)
+##     :               purpose in {car,furniture/appliances}:
+##     :               :...amount &lt;= 1597: yes (12.9/1.3)
+##     :                   amount &gt; 1597:
+##     :                   :...years_at_residence &lt;= 1: no (4.2)
+##     :                       years_at_residence &gt; 1:
+##     :                       :...months_loan_duration &gt; 27: yes (5.3)
+##     :                           months_loan_duration &lt;= 27:
+##     :                           :...age &lt;= 25: yes (2.8)
+##     :                               age &gt; 25: no (15.9/3.3)
+##     savings_balance = &lt; 100 DM:
+##     :...months_loan_duration &gt; 47: yes (25.3/4.1)
+##         months_loan_duration &lt;= 47:
+##         :...purpose = car0: no (7.1/1.4)
+##             purpose = renovations: yes (15/4.7)
+##             purpose = education:
+##             :...checking_balance = &lt; 0 DM: yes (12.2/2.1)
+##             :   checking_balance = 1 - 200 DM: no (8/2.7)
+##             purpose = business:
+##             :...other_credit = bank: no (4.8)
+##             :   other_credit in {none,store}:
+##             :   :...existing_loans_count &lt;= 2: yes (20.3/7.5)
+##             :       existing_loans_count &gt; 2: no (2)
+##             purpose = car:
+##             :...dependents &gt; 1:
+##             :   :...years_at_residence &lt;= 1: yes (2.1)
+##             :   :   years_at_residence &gt; 1: no (17.7/3.4)
+##             :   dependents &lt;= 1:
+##             :   :...employment_duration in {&gt; 7 years,4 - 7 years,
+##             :       :                       &lt; 1 year}: yes (54.9/17.6)
+##             :       employment_duration = unemployed: no (12.9/5.4)
+##             :       employment_duration = 1 - 4 years:
+##             :       :...years_at_residence &lt;= 2: yes (9.9/3.8)
+##             :           years_at_residence &gt; 2: no (23.1/5.4)
+##             purpose = furniture/appliances:
+##             :...credit_history in {poor,perfect,very good}: yes (24.8/9)
+##                 credit_history = critical:
+##                 :...other_credit = store: no (1.5)
+##                 :   other_credit = bank: yes (0.4)
+##                 :   other_credit = none:
+##                 :   :...amount &lt;= 1199: no (7.2)
+##                 :       amount &gt; 1199:
+##                 :       :...years_at_residence &lt;= 1: no (2.1)
+##                 :           years_at_residence &gt; 1:
+##                 :           :...amount &gt; 4473: yes (4.9)
+##                 :               amount &lt;= 4473:
+##                 :               :...months_loan_duration &lt;= 18: yes (16/5.2)
+##                 :                   months_loan_duration &gt; 18: no (6.5)
+##                 credit_history = good:
+##                 :...months_loan_duration &lt;= 7: no (9.2)
+##                     months_loan_duration &gt; 7:
+##                     :...phone = yes:
+##                         :...housing = other: yes (4.5)
+##                         :   housing in {own,rent}:
+##                         :   :...months_loan_duration &lt;= 30: yes (19.1/7.9)
+##                         :       months_loan_duration &gt; 30: no (3.1)
+##                         phone = no:
+##                         :...dependents &gt; 1: yes (14.7/6)
+##                             dependents &lt;= 1:
+##                             :...percent_of_income &lt;= 1: yes (8.7/2.2)
+##                                 percent_of_income &gt; 1:
+##                                 :...years_at_residence &lt;= 2: no (48.1/10.5)
+##                                     years_at_residence &gt; 2:
+##                                     :...other_credit in {store,
+##                                         :                bank}: yes (5.6/1.1)
+##                                         other_credit = none: [S1]
+## 
+## SubTree [S1]
+## 
+## employment_duration = &lt; 1 year: yes (4.1)
+## employment_duration = unemployed: no (0.6)
+## employment_duration in {&gt; 7 years,1 - 4 years,4 - 7 years}:
+## :...months_loan_duration &lt;= 8: yes (2.5)
+##     months_loan_duration &gt; 8:
+##     :...age &lt;= 23: yes (2.9)
+##         age &gt; 23: no (17.2/1.8)
+## 
+## 
+## Evaluation on training data (900 cases):
+## 
+## Trial        Decision Tree   
+## -----      ----------------  
+##    Size      Errors  
+## 
+##    0     66  125(13.9%)
+##    1     40  205(22.8%)
+##    2     39  199(22.1%)
+##    3     44  206(22.9%)
+##    4     40  193(21.4%)
+##    5     50  177(19.7%)
+##    6     62  191(21.2%)
+##    7     68  189(21.0%)
+##    8     45  194(21.6%)
+##    9     64  169(18.8%)
+## boost             29( 3.2%)   &lt;&lt;
+## 
+## 
+##     (a)   (b)    &lt;-classified as
+##    ----  ----
+##     631     1    (a): class no
+##      28   240    (b): class yes
+## 
+## 
+##  Attribute usage:
+## 
+##  100.00% checking_balance
+##  100.00% months_loan_duration
+##  100.00% credit_history
+##  100.00% amount
+##  100.00% employment_duration
+##  100.00% housing
+##   99.11% purpose
+##   98.11% savings_balance
+##   87.89% other_credit
+##   87.78% job
+##   79.89% age
+##   76.11% percent_of_income
+##   75.22% years_at_residence
+##   73.89% existing_loans_count
+##   68.67% phone
+##   67.33% dependents
+## 
+## 
+## Time: 0.0 secs</code></pre>
+<p>在900个训练案列中，该分类器犯了31个错误，错误率为3.4%。我们注意到在加入boosting算法之前，训练案例的错误率为13.9%。因此，这是很大的提高。接下来我们关注在测试数据集中的表现。</p>
+<pre class="r"><code>credit_boost_pred10 &lt;- predict(credit_boost10, credit_test)
+CrossTable(credit_test$default, credit_boost_pred10, prop.chisq = FALSE,
+           prop.c = FALSE, prop.r = FALSE,
+           dnn = c(&#39;actual default&#39;, &#39;predicted default&#39;))
+## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  100 
+## 
+##  
+##                | predicted default 
+## actual default |        no |       yes | Row Total | 
+## ---------------|-----------|-----------|-----------|
+##             no |        59 |         9 |        68 | 
+##                |     0.590 |     0.090 |           | 
+## ---------------|-----------|-----------|-----------|
+##            yes |        16 |        16 |        32 | 
+##                |     0.160 |     0.160 |           | 
+## ---------------|-----------|-----------|-----------|
+##   Column Total |        75 |        25 |       100 | 
+## ---------------|-----------|-----------|-----------|
+## 
+## </code></pre>
+<p>在增强模型的性能后，总的错误率由之前的27%下降到现在的23%。另一方面，模型在预测贷款违约方面仍然做得不好，有15/32=47%是错误的。缺乏更大的提高可能是由于我们采用的是一个相对较小的训练数据集，也可能这本身就是一个很难解决的问题。尽管如此，如果需要提高准确性，那还是值得尝试一下boosting算法。<br></p>
+<p>给一个很有可能违约的申请者一笔贷款是一种很严重的错误。一种减少错误地否定申请者数量的方法是拒绝大量处于边界线的申请者。为了防止一颗决策树犯更严重的错误，C5.0算法能够允许我们将一个乘法因子分别配到不同类型的错误上。这些乘法因子设定在一个<strong>代价矩阵</strong>中，用来指定每种错误相对于其他任何错误有多少倍的严重性。假设我们认为一个贷款违约者使银行损失了4倍，不亚于一个错失的机遇，则代价矩阵可以定义为：</p>
+<pre class="r"><code>error_cost &lt;- matrix(c(0, 1, 4, 0), nrow = 2)
+error_cost
+##      [,1] [,2]
+## [1,]    0    4
+## [2,]    1    0</code></pre>
+<p>这样就创建了一个2行2列的矩阵，它与<strong>混淆矩阵</strong>相比，排列上稍有不同。行名和列名中的代码1表示no，2表示yes。行用来表示预测值，列用来表示实际值。正如该矩阵所定义的，当该算法正确地将一个案例分类为no或者yes时，此时没有分配代价，但是相对于代价为1的错误肯定(false pisitive)的案例，错误否定(false negative)的案例的代价为4。为了看到这样做是如何影响分类的，我们将通过使用C5.0()函数中的参数costs，将其应用到我们的决策树中。</p>
+<pre class="r"><code>credit_cost &lt;- C5.0(credit_train[-17], as.factor(credit_train$default), costs = error_cost)
+## Warning: no dimnames were given for the cost matrix; the factor levels will be
+## used
+credit_cost_pred &lt;- predict(credit_cost, credit_test)
+CrossTable(credit_test$default, credit_cost_pred, prop.chisq = FALSE,
+           prop.c = FALSE, prop.r = FALSE,
+           dnn = c(&#39;actual default&#39;, &#39;predicted default&#39;))
+## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  100 
+## 
+##  
+##                | predicted default 
+## actual default |        no |       yes | Row Total | 
+## ---------------|-----------|-----------|-----------|
+##             no |        42 |        26 |        68 | 
+##                |     0.420 |     0.260 |           | 
+## ---------------|-----------|-----------|-----------|
+##            yes |         6 |        26 |        32 | 
+##                |     0.060 |     0.260 |           | 
+## ---------------|-----------|-----------|-----------|
+##   Column Total |        48 |        52 |       100 | 
+## ---------------|-----------|-----------|-----------|
+## 
+## </code></pre>
+<p>相对于最好的增强模型的23%,这里为32%。然而，错误的类型却相差很大。前面的模型对几乎一半的贷款违约者错误分类，而在这个模型中，只有25%的贷款违约者被预测为非违约者。如果我们的代价估算是准确的，那么增加错误肯定为代价，减少错误否定的这种折中是可以接受的。<br></p>
+<p>以上案例整理自《Machine Learning with R》by Brett Lantz</p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83%E6%8B%9F%E5%90%88%E6%A3%80%E9%AA%8C/">正态分布拟合检验</a></span>
+  <span class="nav-next"><a href="../../../cn/post/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E7%AE%97%E6%B3%95%E8%BF%87%E6%BB%A4%E6%89%8B%E6%9C%BA%E5%9E%83%E5%9C%BE%E7%9F%AD%E4%BF%A1/">朴素贝叶斯算法过滤手机垃圾短信</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83%E6%8B%9F%E5%90%88%E6%A3%80%E9%AA%8C\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E7%AE%97%E6%B3%95%E8%BF%87%E6%BB%A4%E6%89%8B%E6%9C%BA%E5%9E%83%E5%9C%BE%E7%9F%AD%E4%BF%A1\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

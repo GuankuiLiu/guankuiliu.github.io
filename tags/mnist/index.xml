@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MNIST on Guankui Liu | Boylad</title>
+    <link>https://shixiangwang.github.io/home/tags/mnist/</link>
+    <description>Recent content in MNIST on Guankui Liu | Boylad</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 17 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/mnist/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MNIST手写字体分类</title>
+      <link>https://shixiangwang.github.io/home/cn/post/20191117mnist_mlp/</link>
+      <pubDate>Sun, 17 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://shixiangwang.github.io/home/cn/post/20191117mnist_mlp/</guid>
+      <description>下面的代码训练了一个多层感知机(Multilayer Perceptron, MLP)，在MNIST1数据集上做手写字体分类。训练集有60000张28x28像素的灰</description>
+    </item>
+    
+  </channel>
+</rss>

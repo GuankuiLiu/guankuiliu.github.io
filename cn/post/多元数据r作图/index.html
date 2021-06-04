@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R多元数据作图 - Boylad</title>
+    
+     
+    <meta property="og:title" content="R多元数据作图 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R多元数据作图</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-05</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="均值条图" class="section level3">
+<h3>均值条图</h3>
+<pre class="r"><code>data &lt;- read.table(&quot;clipboard&quot;, header = TRUE)
+barplot(apply(data, 1, mean), las = 2) #按行作均值条形图，las设置轴标签方向</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>barplot(apply(data, 2, mean)) #按列作均值条形图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<pre class="r"><code>barplot(apply(data[2:8], 2, mean)) #去掉第一列后的数据按列作均值条形图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-1-3.png" width="672" /></p>
+<pre class="r"><code>barplot(apply(data, 2, median)) #按列作中位数条形图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-1-4.png" width="672" /></p>
+<pre class="r"><code>pie(apply(data, 2, median)) #按列作均值饼图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-1-5.png" width="672" /></p>
+<p>均值条图通常用来比较个变量在不同观察单位上的均值变化大小。从上图可以看到，贵州、甘肃、青海居民消费水平要低于北京、上海和广东，居民在食品方面的支出远大于其他方面。</p>
+</div>
+<div id="箱线图" class="section level3">
+<h3>箱线图</h3>
+<pre class="r"><code>boxplot(data) #按列作箱线图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>boxplot(data, horizontal = TRUE) #箱线图中图形按水平放置</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<p>从上图中可以看出，食品消费支出远高于其他项目。</p>
+</div>
+<div id="星相图" class="section level3">
+<h3>星相图</h3>
+<p>星相图是雷达图的多元表示形式，它将每个变量的各个观测单位的数值表示为一个图形，<span class="math inline">\(n\)</span>个观察单位就有<span class="math inline">\(n\)</span>个图，每个图的每个角表示每个变量。参数<span class="math inline">\(full\)</span>表示图形形状，<span class="math inline">\(draw.segments\)</span>表示分支形状,<span class="math inline">\(key.loc\)</span>定位图例。</p>
+<pre class="r"><code>stars(data, full = TRUE, 
+      key.loc = c(13, 1.5)) #具有图例的360度形象图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>stars(data, full = FALSE, 
+      key.loc = c(13, 1.5)) #具有图例的360度形象图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<pre class="r"><code>stars(data, full = TRUE, draw.segments = TRUE, 
+      key.loc = c(13, 1.5)) #具有图例的360度彩色圆形形象图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
+<pre class="r"><code>stars(data, full = FALSE, draw.segments = TRUE, 
+      key.loc = c(13, 1.5)) #具有图例的180度彩色圆形形象图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-3-4.png" width="672" /></p>
+<p>从图中可以看出，北京、上海、广东、浙江四个地区的消费情况较为突出，其他地区的消费状况则大致相同。</p>
+</div>
+<div id="脸谱图" class="section level3">
+<h3>脸谱图</h3>
+<p>利用<span class="math inline">\(p\)</span>个指标的数值就可以勾画出一个人的脸谱，而这些脸谱之间的差异，反映了所对应的样品之间的差异特性。参数<span class="math inline">\(nrow.plot\)</span>表示图形显示行数，<span class="math inline">\(ncolplot\)</span>表示图形显示列数,<span class="math inline">\(print.info\)</span>显示变量对应脸部元素信息。</p>
+<pre class="r"><code>library(aplpack) 
+faces(data, ncol.plot = 7, print.info = FALSE) #按每行7个作脸谱图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>faces(data[,2:8], ncol.plot = 7, 
+      print.info = FALSE) #去掉第一个变量按每行7个作脸谱图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<pre class="r"><code>faces(data[c(1,9,19,28,29,30), ], 
+      print.info = FALSE) #选择某些观测数据作脸谱图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
+</div>
+<div id="调和曲线图" class="section level3">
+<h3>调和曲线图</h3>
+<p>调和曲线图是<span class="math inline">\(D.F.Andrews\)</span>于1972年提出的三角多项式做图法，所以又称为三角多项式图，其思想是把高维空间中的一个样本点对应于二维平面上的一条曲线。
+设<span class="math inline">\(p\)</span>维数据<span class="math inline">\(x=(x_1,x_2,\cdots,x_p)&#39;\)</span>，对应的曲线是：
+<span class="math display">\[f_x(t)=\frac{x_1}{\sqrt2}+x_2\sin t+x_3\cos t+x_4\sin2t+\cdots\hspace{1cm}(-\pi\le t\le\pi)\]</span>
+<span class="math inline">\(n\)</span>次观测对应<span class="math inline">\(n\)</span>条曲线，画在同一平面上就是一张调和曲线图。当各变脸的数值太悬殊时，最好先标准化后再作图。这种图对聚类分析的帮助很大，如果选择聚类统计量为距离的话，同类的曲线非常靠近导致拧在一起，不同的曲线拧成不同的线，非常直观。使用<a href="http://yihui.name">大神</a>编的<span class="math inline">\(MSG\)</span>包中的<span class="math inline">\(andrews\_curve()\)</span>函数作调和曲线图:</p>
+<pre class="r"><code>library(MSG)
+andrews_curve(data)</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>andrews_curve(data[c(1, 9, 19, 28, 29,30),]) #选择某些列做图</code></pre>
+<p><img src="../../../cn/post/2018-10-05-多元数据r作图_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+<p>以上内容整理自<a href="http://www.icourse163.org/course/JNU-1002335007">《多元统计分析及R语言建模》</a>第三章</p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97/">R矩阵运算</a></span>
+  <span class="nav-next"><a href="../../../cn/post/%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83%E6%8B%9F%E5%90%88%E6%A3%80%E9%AA%8C/">正态分布拟合检验</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83%E6%8B%9F%E5%90%88%E6%A3%80%E9%AA%8C\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>线性回归与局部加权线性回归 - Boylad</title>
+    
+     
+    <meta property="og:title" content="线性回归与局部加权线性回归 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>线性回归与局部加权线性回归</h1>
+
+
+
+<h3>Boylad &middot 
+2019-12-14</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<h2 id="线性回归1">线性回归<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h2>
+<p>如果自变量有p个，线性回归模型的形式为：</p>
+<p>$$y=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_px_p+\epsilon$$</p>
+<p>如果有n个样本，则线性模型的样本形式为：</p>
+<p><code>$$y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}+\epsilon_i, \ \ i=1,2,\cdots,n.$$</code></p>
+<p>如果记</p>
+<p><code>$$\mathbf y=\left[ \begin{array}{ccc} y_1\\ y_2\\ \vdots\\ y_n \end{array} \right]; \ \   \mathbf X=\left[ \begin{array}{ccc} 1 &amp; x_{11} &amp; x_{12} &amp; \cdots &amp; x_{1p} \\ 1 &amp; x_{21} &amp; x_{22} &amp; \cdots &amp; x_{2p} \\ \vdots &amp; \vdots &amp; \vdots &amp; \cdots &amp; \vdots \\ 1 &amp; x_{n1} &amp; x_{n2} &amp; \cdots &amp; x_{np}  \end{array}\right]; \ \  \mathbf{\beta}=\left[ \begin{array}{ccc} \beta_0 \\ \beta_1 \\ \vdots \\ \beta_p \end{array} \right]; \ \  \mathbf{\epsilon}=\left[ \begin{array}{ccc} \epsilon_0 \\ \epsilon_1 \\ \vdots \\ \epsilon_p \end{array} \right]$$</code></p>
+<p>则矩阵形式为：
+$$\mathbf{y=X\beta+\epsilon}$$</p>
+<p>根据最小二乘估计：</p>
+<p>$$\mathbf{\hat\beta=(X^TX)^{-1}X^Ty}$$
+其中，<code>$\mathbf{y}$</code> 为列向量。</p>
+<p>因变量的拟合值为：
+$$\mathbf{\hat y=X\hat\beta=X(X^TX)^{-1}X^Ty}$$</p>
+<p>数据有200行，前5行数据如下所示。回归时，用前2列数据作为自变量，第3列数据作为因变量。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> numpy <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">import</span> pandas <span style="color:#f92672">as</span> pd
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+
+<span style="color:#66d9ef">for</span> i, line <span style="color:#f92672">in</span> enumerate(open(<span style="color:#e6db74">&#39;ex0.txt&#39;</span>)<span style="color:#f92672">.</span>readlines()):
+    <span style="color:#66d9ef">if</span> i <span style="color:#f92672">&lt;=</span><span style="color:#ae81ff">4</span>:
+        curLine <span style="color:#f92672">=</span> line<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">&#39;</span>)
+        <span style="color:#66d9ef">print</span>(curLine)
+</code></pre></div><pre><code>['1.000000', '0.067732', '3.176513']
+['1.000000', '0.427810', '3.816464']
+['1.000000', '0.995731', '4.550095']
+['1.000000', '0.738336', '4.256571']
+['1.000000', '0.981083', '4.560815']
+</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">loaddataSet</span>(filename):
+    numfeat <span style="color:#f92672">=</span> len(open(filename)<span style="color:#f92672">.</span>readline()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">&#39;</span>))<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>  <span style="color:#75715e"># numfeat=2</span>
+    dataMat <span style="color:#f92672">=</span> [];labelsVec <span style="color:#f92672">=</span> []
+    file <span style="color:#f92672">=</span> open(filename)
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> file<span style="color:#f92672">.</span>readlines():
+        lineArr <span style="color:#f92672">=</span> []
+        curLine <span style="color:#f92672">=</span> line<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">&#39;</span>)
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(numfeat):
+            lineArr<span style="color:#f92672">.</span>append(float(curLine[i]))
+        dataMat<span style="color:#f92672">.</span>append(lineArr)
+        labelsVec<span style="color:#f92672">.</span>append(float(curLine[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]))
+    <span style="color:#66d9ef">return</span> dataMat, labelsVec
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">standRegression</span>(xArr, yArr):
+    <span style="color:#e6db74">&#39;&#39;&#39;用正规方程组求回归系数系数&#39;&#39;&#39;</span>
+    xMat <span style="color:#f92672">=</span> mat(xArr)  <span style="color:#75715e"># mat()将list转换为矩阵，(200,2)</span>
+    yMat <span style="color:#f92672">=</span> mat(yArr)  <span style="color:#75715e"># (1,200) 行向量(矩阵)</span>
+    xTx <span style="color:#f92672">=</span> xMat<span style="color:#f92672">.</span>T <span style="color:#f92672">*</span> xMat    <span style="color:#75715e"># (2,200)*(200,2)=2x2</span>
+    <span style="color:#66d9ef">if</span> linalg<span style="color:#f92672">.</span>det(xTx) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0.0</span>:
+        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;this matrix is singular,cannot do inverse</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+        <span style="color:#66d9ef">return</span>
+    sigma <span style="color:#f92672">=</span> xTx<span style="color:#f92672">.</span>I <span style="color:#f92672">*</span> (xMat<span style="color:#f92672">.</span>T <span style="color:#f92672">*</span> yMat<span style="color:#f92672">.</span>T)
+    <span style="color:#66d9ef">return</span> sigma
+</code></pre></div><p>在正规方程中，如果 <code>$\mathbf{X^TX}$</code> 不可逆，可能有两个原因：</p>
+<ol>
+<li>有冗余feature ，譬如有两个feature联系非常紧密甚至线性相关，需删除冗余的feature。</li>
+<li>feature太多，feature的数目n大于样本总数m。需删除一些feature 或者做 <code>regularization</code>。</li>
+</ol>
+<p>自变量用1维（原本是2维）在二维平面上进行线性回归可视化：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">dataMat,labelsVec <span style="color:#f92672">=</span> loaddataSet(<span style="color:#e6db74">&#39;ex0.txt&#39;</span>)
+sigma <span style="color:#f92672">=</span> standRegression(dataMat, labelsVec)  <span style="color:#75715e">#（2,1）矩阵</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">PlotLine</span>(xMat,yMat,sigma):
+                
+    plt<span style="color:#f92672">.</span>scatter(<span style="color:#75715e"># flatten()将(200,1)变成(1,200);A[0]又将其变为(200,),numpy.ndarray</span>
+                xMat[:,<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>flatten()<span style="color:#f92672">.</span>A[<span style="color:#ae81ff">0</span>],  
+                <span style="color:#75715e"># flatten()将(200,1)变成(1,200);A[0]又将其变为(200,),numpy.ndarray</span>
+                yMat<span style="color:#f92672">.</span>T[:,<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>flatten()<span style="color:#f92672">.</span>A[<span style="color:#ae81ff">0</span>])  
+    xCopy <span style="color:#f92672">=</span> xMat<span style="color:#f92672">.</span>copy()  
+    xCopy<span style="color:#f92672">.</span>sort(<span style="color:#ae81ff">0</span>)
+    yHat <span style="color:#f92672">=</span> xCopy<span style="color:#f92672">*</span>sigma  <span style="color:#75715e"># (200,2)x(2,1)</span>
+    plt<span style="color:#f92672">.</span>plot(xCopy[:,<span style="color:#ae81ff">1</span>], yHat, <span style="color:#e6db74">&#39;r&#39;</span>)
+    plt<span style="color:#f92672">.</span>show()
+    
+PlotLine(mat(dataMat), mat(labelsVec), sigma)
+</code></pre></div><p><img src="../../post/imgs/20191214_lr_lwlr/output_10_0.png" alt="png"></p>
+<h2 id="局部加权线性回归1">局部加权线性回归<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></h2>
+<p>局部加权线性回归(locally weighted linear regression, <code>LWLR</code>)算法，流程如下：</p>
+<ol>
+<li>
+<p>Fit <code>$\beta$</code> to minimize <code>$\displaystyle{\sum_iw^{(i)}(y_i-\beta^Tx^{(i)})^2}$</code></p>
+</li>
+<li>
+<p>Output <code>$\beta^Tx$</code></p>
+</li>
+</ol>
+<p>该算法中，给待预测点附近的每个点赋予一定的权重，然后在其上进行基于最小方差进行普通线性回归。<code>正规方程</code>变为 <code>$\mathbf{\hat\beta=(X^TX)^{-1}X^TWy}$</code> ，W为权重对角阵。LWLR使用<code>核</code>来赋予权重，最常用的是高斯核：
+$$w^{(i)}=exp \left (-\frac{(x^{(i)}-x)^2}{2k^2}\right)$$
+很明显，点 <code>$x$</code> 与 <code>$x^{(i)}$</code> 越近，权重越大。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">lwlr</span>(testPoint, xArr, yArr, k <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span>):
+    xMat <span style="color:#f92672">=</span> mat(xArr);
+    yMat <span style="color:#f92672">=</span> mat(yArr)<span style="color:#f92672">.</span>T
+    m <span style="color:#f92672">=</span> shape(xMat)[<span style="color:#ae81ff">0</span>]  <span style="color:#75715e"># shape(xMat)=（200,2）</span>
+    weights <span style="color:#f92672">=</span> mat(eye(m))
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(m):
+        diffMat <span style="color:#f92672">=</span> testPoint <span style="color:#f92672">-</span> xMat[i,:]  <span style="color:#75715e"># 取第i行,作差</span>
+        <span style="color:#75715e"># weights为对角阵,diffMat*diffMat.T行向量乘以列向量</span>
+        weights[i,i] <span style="color:#f92672">=</span> exp(diffMat <span style="color:#f92672">*</span> diffMat<span style="color:#f92672">.</span>T<span style="color:#f92672">/</span>(<span style="color:#f92672">-</span><span style="color:#ae81ff">2.0</span><span style="color:#f92672">*</span>k<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span>))  
+    xTWx <span style="color:#f92672">=</span> xMat<span style="color:#f92672">.</span>T <span style="color:#f92672">*</span> (weights <span style="color:#f92672">*</span> xMat)
+    <span style="color:#66d9ef">if</span> linalg<span style="color:#f92672">.</span>det(xTWx)<span style="color:#f92672">==</span><span style="color:#ae81ff">0.0</span>:
+        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;this matrix is singular,cannot do inverse</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+        <span style="color:#66d9ef">return</span>
+    sigma <span style="color:#f92672">=</span> xTWx<span style="color:#f92672">.</span>I <span style="color:#f92672">*</span> (xMat<span style="color:#f92672">.</span>T <span style="color:#f92672">*</span> (weights <span style="color:#f92672">*</span> yMat))
+    <span style="color:#66d9ef">return</span> testPoint <span style="color:#f92672">*</span> sigma
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">lwlrTest</span>(testArr, xArr, yArr, k <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span>):
+    m <span style="color:#f92672">=</span> shape(testArr)[<span style="color:#ae81ff">0</span>]
+    yHat <span style="color:#f92672">=</span> zeros(m)
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(m):
+        yHat[i] <span style="color:#f92672">=</span> lwlr(testArr[i], xArr, yArr, k)
+    <span style="color:#66d9ef">return</span> yHat
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">PlotLine1</span>(testArr, xArr, yArr, k <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span>):
+    xMat <span style="color:#f92672">=</span> mat(xArr)
+    yMat <span style="color:#f92672">=</span> mat(yArr)
+    yHat <span style="color:#f92672">=</span> lwlrTest(testArr, xArr, yArr,k)
+    srtInd <span style="color:#f92672">=</span> xMat[:,<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>argsort(<span style="color:#ae81ff">0</span>)
+    xsort <span style="color:#f92672">=</span> xMat[srtInd][:,<span style="color:#ae81ff">0</span>,:]
+    plt<span style="color:#f92672">.</span>scatter(xMat[:,<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>flatten()<span style="color:#f92672">.</span>A[<span style="color:#ae81ff">0</span>], yMat<span style="color:#f92672">.</span>T[:,<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>flatten()<span style="color:#f92672">.</span>A[<span style="color:#ae81ff">0</span>], s <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>,<span style="color:#e6db74">&#39;r&#39;</span>)
+    plt<span style="color:#f92672">.</span>plot(xsort[:,<span style="color:#ae81ff">1</span>], yHat[srtInd], label <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;k=&#34;</span> <span style="color:#f92672">+</span> str(k))
+    plt<span style="color:#f92672">.</span>legend()
+</code></pre></div><p>自变量用1维（原本是二维）在二维平面上进行LWLR可视化：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">4</span>))
+<span style="color:#66d9ef">for</span> iid, i <span style="color:#f92672">in</span> enumerate([<span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">0.01</span>, <span style="color:#ae81ff">0.003</span>]):
+    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">3</span>, iid<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+    PlotLine1(testArr<span style="color:#f92672">=</span>dataMat, xArr<span style="color:#f92672">=</span>dataMat, yArr<span style="color:#f92672">=</span>labelsVec, k<span style="color:#f92672">=</span>i)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191214_lr_lwlr/output_14_0.png" alt="png"></p>
+<p>k=1.0欠拟合，k=0.003过拟合，当k=0.01时相对是是比较好的回归。</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>本文整理自：https://www.cnblogs.com/xiaoboge/p/9404140.html <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191207_100_doors_open_close/">100扇门的打开与关闭</a></span>
+  <span class="nav-next"><a href="../../../cn/post/matplotlib_graph-01/">Matplotlib作图</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191207_100_doors_open_close\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/matplotlib_graph-01\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

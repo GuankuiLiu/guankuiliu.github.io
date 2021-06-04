@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>R数据预处理 - Boylad</title>
+    
+     
+    <meta property="og:title" content="R数据预处理 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>R数据预处理</h1>
+
+
+
+<h3>Boylad &middot 
+2018-12-14</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="重命名数据变量" class="section level3">
+<h3><strong>重命名数据变量</strong></h3>
+<p>数据框允许用户根据行名和列名选取和过滤数据。由于并不是所有的数据集都包含行名和列名，因此我们需要使用内置的命名函数重命名数据集。读取文件：</p>
+<pre class="r"><code>setwd(&quot;c:/Users/Boylad/Documents/mydata/R_for_Data_Science_Cookbook&quot;)
+employees &lt;- read.csv(&quot;employees.csv&quot;, header = FALSE)
+salaries &lt;- read.csv(&quot;salaries.csv&quot;, header = FALSE)</code></pre>
+<p>使用函数names()查看数据集的列名：</p>
+<pre class="r"><code>names(employees)
+## [1] &quot;V1&quot; &quot;V2&quot; &quot;V3&quot; &quot;V4&quot; &quot;V5&quot; &quot;V6&quot;
+names(salaries)
+## [1] &quot;V1&quot; &quot;V2&quot; &quot;V3&quot; &quot;V4&quot;</code></pre>
+<p>接着，使用给定的名称向量重命名列:</p>
+<pre class="r"><code>names(employees) &lt;- c(&quot;emp_no&quot;, &quot;birth_date&quot;, &quot;first_name&quot;, &quot;last_name&quot;, &quot;gender&quot;,
+                      &quot;hire_date&quot;)
+names(employees)
+## [1] &quot;emp_no&quot;     &quot;birth_date&quot; &quot;first_name&quot; &quot;last_name&quot;  &quot;gender&quot;    
+## [6] &quot;hire_date&quot;</code></pre>
+<p>除了使用函数names,还可以使用函数colnames重命名列：</p>
+<pre class="r"><code>colnames(salaries) &lt;- c(&quot;emp_no&quot;, &quot;salary&quot;, &quot;from_date&quot;, &quot;to_date&quot;)
+names(salaries)
+## [1] &quot;emp_no&quot;    &quot;salary&quot;    &quot;from_date&quot; &quot;to_date&quot;</code></pre>
+<p>除了改变列名，我们也可以使用函数rownames改变行名：</p>
+<pre class="r"><code>rownames(salaries) &lt;- 1:length(salaries$emp_no)
+head(salaries)
+##   emp_no salary  from_date    to_date
+## 1  10001  60117 1986-06-26 1987-06-26
+## 2  10001  62102 1987-06-26 1988-06-25
+## 3  10001  66074 1988-06-25 1989-06-25
+## 4  10001  66596 1989-06-25 1990-06-25
+## 5  10001  66961 1990-06-25 1991-06-25
+## 6  10001  71046 1991-06-25 1992-06-24</code></pre>
+<p>为了避免使用colnames和rownames两个函数确定行名和列名，我们也可以使用函数dimnames在一次操作中同时修改行名和列名(list的第一个输入向量代表行名，第二个输入向量代表列名)：</p>
+<pre class="r"><code>dimnames(employees) &lt;- list(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                             c(&quot;emp_no&quot;, &quot;birth_date&quot;, &quot;first_name&quot;,
+                               &quot;last_name&quot;, &quot;gender&quot;, &quot;hire_date&quot;))
+head(employees)
+##   emp_no birth_date first_name last_name gender  hire_date
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26
+## 2  10002 1964-06-02    Bezalel    Simmel      F 1985-11-21
+## 3  10003 1959-12-03      Parto   Bamford      M 1986-08-28
+## 4  10004 1954-05-01  Chirstian   Koblick      M 1986-12-01
+## 5  10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12
+## 6  10006 1953-04-20     Anneke   Preusig      F 1989-06-02</code></pre>
+<p><br>
+### <strong>转换数据类型</strong></p>
+<p>首先，使用函数class()查看每个属性的数据类型：</p>
+<pre class="r"><code>class(employees$birth_date)
+## [1] &quot;character&quot;</code></pre>
+<p>也可以使用函数str()查看所有属性的数据类型：</p>
+<pre class="r"><code>str(employees)
+## &#39;data.frame&#39;:    10 obs. of  6 variables:
+##  $ emp_no    : int  10001 10002 10003 10004 10005 10006 10007 10008 10009 10010
+##  $ birth_date: chr  &quot;1953-09-02&quot; &quot;1964-06-02&quot; &quot;1959-12-03&quot; &quot;1954-05-01&quot; ...
+##  $ first_name: chr  &quot;Georgi&quot; &quot;Bezalel&quot; &quot;Parto&quot; &quot;Chirstian&quot; ...
+##  $ last_name : chr  &quot;Facello&quot; &quot;Simmel&quot; &quot;Bamford&quot; &quot;Koblick&quot; ...
+##  $ gender    : chr  &quot;M&quot; &quot;F&quot; &quot;M&quot; &quot;M&quot; ...
+##  $ hire_date : chr  &quot;1986-06-26&quot; &quot;1985-11-21&quot; &quot;1986-08-28&quot; &quot;1986-12-01&quot; ...</code></pre>
+<p>然后，需要把birth_date和hire_date转换为日期格式(如果想通过birth_date属性计算一个人的年龄，就需要把它转换成日期格式):</p>
+<pre class="r"><code>employees$birth_date &lt;- as.Date(employees$birth_date)
+employees$hire_date &lt;- as.Date(employees$hire_date)</code></pre>
+<p>也需要把first_name和last_name转换为字符类型(因子类型限制了属性在取值上的选择，我们并不能自由地给数据集添加记录。由于从数据集中准确地找到相同的姓和名并不容易，需要把last_name和first_name转换成字符类型)：</p>
+<pre class="r"><code>employees$first_name &lt;- as.character(employees$first_name)
+employees$last_name &lt;- as.character(employees$last_name)</code></pre>
+<p>再次使用str()查看数据集：</p>
+<pre class="r"><code>str(employees)
+## &#39;data.frame&#39;:    10 obs. of  6 variables:
+##  $ emp_no    : int  10001 10002 10003 10004 10005 10006 10007 10008 10009 10010
+##  $ birth_date: Date, format: &quot;1953-09-02&quot; &quot;1964-06-02&quot; ...
+##  $ first_name: chr  &quot;Georgi&quot; &quot;Bezalel&quot; &quot;Parto&quot; &quot;Chirstian&quot; ...
+##  $ last_name : chr  &quot;Facello&quot; &quot;Simmel&quot; &quot;Bamford&quot; &quot;Koblick&quot; ...
+##  $ gender    : chr  &quot;M&quot; &quot;F&quot; &quot;M&quot; &quot;M&quot; ...
+##  $ hire_date : Date, format: &quot;1986-06-26&quot; &quot;1985-11-21&quot; ...</code></pre>
+<p>也可以把salaries中的from_date和to_date转换为日期类型：</p>
+<pre class="r"><code>salaries$from_date &lt;- as.Date(salaries$from_date)
+salaries$to_date &lt;- as.Date(salaries$to_date)</code></pre>
+<p>除了使用as函数转换数据类型，也可以在数据导入阶段指定数据类型。以函数read.csv()为例，可以在colClasses参数中指定数据类型。如果希望R自动地选择数据类型(即自动把emp_no转换为整型)，只需要在colClasses中指明NA：</p>
+<pre class="r"><code>setwd(&quot;c:/Users/Boylad/Documents/mydata/R_for_Data_Science_Cookbook&quot;)
+employees1 &lt;- read.csv(&quot;employees.csv&quot;, colClasses = c(NA, &quot;Date&quot;, &quot;character&quot;,
+                                                      &quot;character&quot;, &quot;factor&quot;,
+                                                      &quot;Date&quot;), header = FALSE)
+str(employees1)
+## &#39;data.frame&#39;:    10 obs. of  6 variables:
+##  $ V1: int  10001 10002 10003 10004 10005 10006 10007 10008 10009 10010
+##  $ V2: Date, format: &quot;1953-09-02&quot; &quot;1964-06-02&quot; ...
+##  $ V3: chr  &quot;Georgi&quot; &quot;Bezalel&quot; &quot;Parto&quot; &quot;Chirstian&quot; ...
+##  $ V4: chr  &quot;Facello&quot; &quot;Simmel&quot; &quot;Bamford&quot; &quot;Koblick&quot; ...
+##  $ V5: Factor w/ 2 levels &quot;F&quot;,&quot;M&quot;: 2 1 2 2 2 1 1 2 1 1
+##  $ V6: Date, format: &quot;1986-06-26&quot; &quot;1985-11-21&quot; ...</code></pre>
+<p><br></p>
+</div>
+<div id="使用日期格式" class="section level3">
+<h3><strong>使用日期格式</strong></h3>
+<p>把每一个数据属性转换成合适的数据类型之后，可以看到employees和salaries中的一些属性是日期类型的。因此，可以计算雇员的出生日期和当前日期之间的年份数，进而得出每个雇员的年龄。这里介绍如何使用内置日期函数和lubridate程序包来操作日期格式的数据。</p>
+<p>可以使用以下代码，加上或者减去日期格式属性中的一些天数：</p>
+<pre class="r"><code>employees$hire_date + 30
+##  [1] &quot;1986-07-26&quot; &quot;1985-12-21&quot; &quot;1986-09-27&quot; &quot;1986-12-31&quot; &quot;1989-10-12&quot;
+##  [6] &quot;1989-07-02&quot; &quot;1989-03-12&quot; &quot;1994-10-15&quot; &quot;1985-03-20&quot; &quot;1989-09-23&quot;</code></pre>
+<p>可以使用下列代码，获取hire_date和birth_date之间的时间间隔：</p>
+<pre class="r"><code>employees$hire_date - employees$birth_date
+## Time differences in days
+##  [1] 11985  7842  9765 11902 12653 13192 11586 13357 11993  9581</code></pre>
+<p>除了得到以天为单位的时间间隔，还可以使用函数difftime获取以周为单位的时间间隔：</p>
+<pre class="r"><code>difftime(employees$hire_date, employees$birth_date, unit = &quot;weeks&quot;)
+## Time differences in weeks
+##  [1] 1712.143 1120.286 1395.000 1700.286 1807.571 1884.571 1655.143 1908.143
+##  [9] 1713.286 1368.714</code></pre>
+<p>除了内置的日期操作函数，还可以安装和加载lubridate程序包来操作日期。可以使用函数ymd把日期数据转换成POSIX格式：</p>
+<pre class="r"><code>library(lubridate)
+## 
+## 载入程辑包：&#39;lubridate&#39;
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     date, intersect, setdiff, union
+ymd(employees$hire_date)
+##  [1] &quot;1986-06-26&quot; &quot;1985-11-21&quot; &quot;1986-08-28&quot; &quot;1986-12-01&quot; &quot;1989-09-12&quot;
+##  [6] &quot;1989-06-02&quot; &quot;1989-02-10&quot; &quot;1994-09-15&quot; &quot;1985-02-18&quot; &quot;1989-08-24&quot;</code></pre>
+<p>接着，我们可以使用函数as.period查看hire_date和birth_date之间的时长：</p>
+<pre class="r"><code>span &lt;- interval(ymd(employees$birth_date), ymd(employees$hire_date))
+time_period &lt;- as.period(span)
+time_period 
+##  [1] &quot;32y 9m 24d 0H 0M 0S&quot; &quot;21y 5m 19d 0H 0M 0S&quot; &quot;26y 8m 25d 0H 0M 0S&quot;
+##  [4] &quot;32y 7m 0d 0H 0M 0S&quot;  &quot;34y 7m 22d 0H 0M 0S&quot; &quot;36y 1m 13d 0H 0M 0S&quot;
+##  [7] &quot;31y 8m 18d 0H 0M 0S&quot; &quot;36y 6m 27d 0H 0M 0S&quot; &quot;32y 9m 30d 0H 0M 0S&quot;
+## [10] &quot;26y 2m 23d 0H 0M 0S&quot;</code></pre>
+<p>可以使用函数year获取时间间隔：</p>
+<pre class="r"><code>year(time_period)
+##  [1] 32 21 26 32 34 36 31 36 32 26</code></pre>
+<p>可以使用函数now获取当前日期：</p>
+<pre class="r"><code>now()
+## [1] &quot;2020-10-24 17:50:14 CST&quot;</code></pre>
+<p>可以使用下列代码计算每一个雇员的年龄：</p>
+<pre class="r"><code>span2 &lt;- interval(ymd(employees$birth_date), now())
+year(as.period(span2))
+##  [1] 67 56 60 66 65 67 63 62 68 57</code></pre>
+<p><br></p>
+</div>
+<div id="添加新的记录" class="section level3">
+<h3><strong>添加新的记录</strong></h3>
+<p>使用rbind给employees添加新的记录：</p>
+<pre class="r"><code>employees
+##    emp_no birth_date first_name last_name gender  hire_date
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24
+rbind(employees, c(10011, &quot;1960-01-01&quot;, &quot;John&quot;, &quot;Doe&quot;, &quot;M&quot;, &quot;1988-01-01&quot;))
+##    emp_no birth_date first_name last_name gender  hire_date
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01</code></pre>
+<p>可以把新的结果重新分配给数据框employees:</p>
+<pre class="r"><code>employees &lt;- rbind(employees, c(10011, &quot;1960-01-01&quot;, &quot;John&quot;, &quot;Doe&quot;, &quot;M&quot;, &quot;1988-01-01&quot;))</code></pre>
+<p>除了给原始数据集添加新的记录，也可以使用NA默认值添加新的position属性：</p>
+<pre class="r"><code>cbind(employees, Position = NA)
+##    emp_no birth_date first_name last_name gender  hire_date Position
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26       NA
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21       NA
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28       NA
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01       NA
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12       NA
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02       NA
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10       NA
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15       NA
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18       NA
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24       NA
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01       NA</code></pre>
+<p>并且，可以根据当前日期和每一个雇员的birth_date添加新的age属性：</p>
+<pre class="r"><code>span &lt;- interval(ymd(employees$hire_date), now())
+time_period &lt;- as.period(span)
+employees$age &lt;- year(time_period)
+employees
+##    emp_no birth_date first_name last_name gender  hire_date age
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02  31
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10  31
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18  35
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24  31
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32</code></pre>
+<p>也可以使用函数transform添加多个变量：</p>
+<pre class="r"><code>employees2 &lt;- transform(employees, age = year(time_period), 
+                        Position = &quot;RD&quot;, marrital = NA)
+employees2
+##    emp_no birth_date first_name last_name gender  hire_date age Position
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       RD
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34       RD
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       RD
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33       RD
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       RD
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02  31       RD
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10  31       RD
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       RD
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18  35       RD
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24  31       RD
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       RD
+##    marrital
+## 1        NA
+## 2        NA
+## 3        NA
+## 4        NA
+## 5        NA
+## 6        NA
+## 7        NA
+## 8        NA
+## 9        NA
+## 10       NA
+## 11       NA</code></pre>
+<p>除了使用美元符号和函数transform，我们可以使用函数with创建新的变量：</p>
+<pre class="r"><code>with(employees, year(birth_date))
+##  [1] 1953 1964 1959 1954 1955 1953 1957 1958 1952 1963 1960
+employees$birth_year &lt;- with(employees, year(birth_date))
+employees
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34       1964
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33       1954
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       1955
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02  31       1953
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10  31       1957
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       1958
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18  35       1952
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24  31       1963
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       1960</code></pre>
+<p><br></p>
+</div>
+<div id="过滤数据" class="section level3">
+<h3><strong>过滤数据</strong></h3>
+<p>使用head和tail获取employees数据集的前3行和最后3行：</p>
+<pre class="r"><code>head(employees, 3)
+##   emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2  10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34       1964
+## 3  10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+tail(employees, 3)
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18  35       1952
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24  31       1963
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       1960</code></pre>
+<p>也可以使用方括号并给定从1到3的序列获取数据的前3行：</p>
+<pre class="r"><code>employees[1:3,]
+##   emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2  10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34       1964
+## 3  10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959</code></pre>
+<p>还可以指定要选取的列序号：</p>
+<pre class="r"><code>employees[1:3, 2:4]
+##   birth_date first_name last_name
+## 1 1953-09-02     Georgi   Facello
+## 2 1964-06-02    Bezalel    Simmel
+## 3 1959-12-03      Parto   Bamford</code></pre>
+<p>除了从数据集中抽取行、列序列，也可以指定具体的行和列，通过索引向量抽取数据子集：</p>
+<pre class="r"><code>employees[c(2,5), c(1,3)]
+##   emp_no first_name
+## 2  10002    Bezalel
+## 5  10005    Kyoichi</code></pre>
+<p>如果知道列的名字，也可以通过使用给定的名称向量选取列：</p>
+<pre class="r"><code>employees[1:3, c(&quot;first_name&quot;, &quot;last_name&quot;)]
+##   first_name last_name
+## 1     Georgi   Facello
+## 2    Bezalel    Simmel
+## 3      Parto   Bamford</code></pre>
+<p>另外，也可以使用反向索排除一些列：</p>
+<pre class="r"><code>employees[1:3, -6]
+##   emp_no birth_date first_name last_name gender age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M  34       1953
+## 2  10002 1964-06-02    Bezalel    Simmel      F  34       1964
+## 3  10003 1959-12-03      Parto   Bamford      M  34       1959</code></pre>
+<p>也可以使用in和！操作符排除一些属性(排除first_name和last_name属性下的数据)：</p>
+<pre class="r"><code>employees[1:3, !names(employees) %in% c(&quot;last_name&quot;, &quot;first_name&quot;)]
+##   emp_no birth_date gender  hire_date age birth_year
+## 1  10001 1953-09-02      M 1986-06-26  34       1953
+## 2  10002 1964-06-02      F 1985-11-21  34       1964
+## 3  10003 1959-12-03      M 1986-08-28  34       1959</code></pre>
+<p>还可以设置等号条件获取数据子集(由于需要使用条件来过滤数据记录，我们应该在逗号左边放置过滤标准)：</p>
+<pre class="r"><code>employees[employees$gender == &quot;M&quot;,]
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33       1954
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       1955
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       1958
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       1960</code></pre>
+<p>还可以使用比较操作符获取数据子集(显示前6行)：</p>
+<pre class="r"><code>head(salaries[salaries$salary &gt;= 60000 &amp; salaries$salary &lt; 70000,])
+##    emp_no salary  from_date    to_date
+## 1   10001  60117 1986-06-26 1987-06-26
+## 2   10001  62102 1987-06-26 1988-06-25
+## 3   10001  66074 1988-06-25 1989-06-25
+## 4   10001  66596 1989-06-25 1990-06-25
+## 5   10001  66961 1990-06-25 1991-06-25
+## 18  10002  65828 1996-08-03 1997-08-03</code></pre>
+<p>另外substr也可以抽取部分数据记录(函数subtr获取前两个字母为Ge的雇员)：</p>
+<pre class="r"><code>employees[substr(employees$first_name, 0, 2) == &quot;Ge&quot;,]
+##   emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953</code></pre>
+<p>正则表达式是另一种获取数据子集的有用而强大的工具(使用函数grep和正则表达式，通过判断名称末尾是否为元音字母，获得雇员数据集)：</p>
+<pre class="r"><code>employees[grep(&#39;[aeious]$&#39;, employees$first_name),]
+##   emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3  10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+## 5  10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       1955
+## 6  10006 1953-04-20     Anneke   Preusig      F 1989-06-02  31       1953
+## 8  10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       1958</code></pre>
+<p>除了使用方括号，也可以使用函数subset来获取数据子集。选取雇员数据前3行的first_name和last_name：</p>
+<pre class="r"><code>subset(employees, rownames(employees) %in% 1:3,
+       select = c(&quot;first_name&quot;, &quot;last_name&quot;))
+##   first_name last_name
+## 1     Georgi   Facello
+## 2    Bezalel    Simmel
+## 3      Parto   Bamford</code></pre>
+<p>也可以设置条件，按照gender过滤数据：</p>
+<pre class="r"><code>subset(employees, employees$gender ==&quot;M&quot;)
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33       1954
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       1955
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       1958
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       1960</code></pre>
+<p><br></p>
+</div>
+<div id="舍弃数据" class="section level3">
+<h3><strong>舍弃数据</strong></h3>
+<p>可以在过滤条件中排出last_name，舍弃该列：</p>
+<pre class="r"><code>employees
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2   10002 1964-06-02    Bezalel    Simmel      F 1985-11-21  34       1964
+## 3   10003 1959-12-03      Parto   Bamford      M 1986-08-28  34       1959
+## 4   10004 1954-05-01  Chirstian   Koblick      M 1986-12-01  33       1954
+## 5   10005 1955-01-21    Kyoichi  Maliniak      M 1989-09-12  31       1955
+## 6   10006 1953-04-20     Anneke   Preusig      F 1989-06-02  31       1953
+## 7   10007 1957-05-23    Tzvetan Zielinski      F 1989-02-10  31       1957
+## 8   10008 1958-02-19     Saniya  Kalloufi      M 1994-09-15  26       1958
+## 9   10009 1952-04-19     Sumant      Peac      F 1985-02-18  35       1952
+## 10  10010 1963-06-01  Duangkaew  Piveteau      F 1989-08-24  31       1963
+## 11  10011 1960-01-01       John       Doe      M 1988-01-01  32       1960
+employees4 &lt;- employees[, -4]
+employees4
+##    emp_no birth_date first_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi      M 1986-06-26  34       1953
+## 2   10002 1964-06-02    Bezalel      F 1985-11-21  34       1964
+## 3   10003 1959-12-03      Parto      M 1986-08-28  34       1959
+## 4   10004 1954-05-01  Chirstian      M 1986-12-01  33       1954
+## 5   10005 1955-01-21    Kyoichi      M 1989-09-12  31       1955
+## 6   10006 1953-04-20     Anneke      F 1989-06-02  31       1953
+## 7   10007 1957-05-23    Tzvetan      F 1989-02-10  31       1957
+## 8   10008 1958-02-19     Saniya      M 1994-09-15  26       1958
+## 9   10009 1952-04-19     Sumant      F 1985-02-18  35       1952
+## 10  10010 1963-06-01  Duangkaew      F 1989-08-24  31       1963
+## 11  10011 1960-01-01       John      M 1988-01-01  32       1960</code></pre>
+<p>或者可以给舍弃的数据分配NULL值：</p>
+<pre class="r"><code>employees4$hire_date &lt;- NULL
+employees4
+##    emp_no birth_date first_name gender age birth_year
+## 1   10001 1953-09-02     Georgi      M  34       1953
+## 2   10002 1964-06-02    Bezalel      F  34       1964
+## 3   10003 1959-12-03      Parto      M  34       1959
+## 4   10004 1954-05-01  Chirstian      M  33       1954
+## 5   10005 1955-01-21    Kyoichi      M  31       1955
+## 6   10006 1953-04-20     Anneke      F  31       1953
+## 7   10007 1957-05-23    Tzvetan      F  31       1957
+## 8   10008 1958-02-19     Saniya      M  26       1958
+## 9   10009 1952-04-19     Sumant      F  35       1952
+## 10  10010 1963-06-01  Duangkaew      F  31       1963
+## 11  10011 1960-01-01       John      M  32       1960</code></pre>
+<p>要舍弃行，可以通过反向索引，指定希望舍弃的行：</p>
+<pre class="r"><code>employees4 &lt;- employees4[c(-2, -4, -6),]
+employees4
+##    emp_no birth_date first_name gender age birth_year
+## 1   10001 1953-09-02     Georgi      M  34       1953
+## 3   10003 1959-12-03      Parto      M  34       1959
+## 5   10005 1955-01-21    Kyoichi      M  31       1955
+## 7   10007 1957-05-23    Tzvetan      F  31       1957
+## 8   10008 1958-02-19     Saniya      M  26       1958
+## 9   10009 1952-04-19     Sumant      F  35       1952
+## 10  10010 1963-06-01  Duangkaew      F  31       1963
+## 11  10011 1960-01-01       John      M  32       1960</code></pre>
+<p>除了使用数据过滤或给具体属性指定NULL值，也可以使用函数within移除不需要的属性。所需要的操作只不过是函数rm中放置不需要的名称：</p>
+<pre class="r"><code>(within(employees4, rm(birth_date, age)))
+##    emp_no first_name gender birth_year
+## 1   10001     Georgi      M       1953
+## 3   10003      Parto      M       1959
+## 5   10005    Kyoichi      M       1955
+## 7   10007    Tzvetan      F       1957
+## 8   10008     Saniya      M       1958
+## 9   10009     Sumant      F       1952
+## 10  10010  Duangkaew      F       1963
+## 11  10011       John      M       1960</code></pre>
+<p><br></p>
+</div>
+<div id="合并数据" class="section level3">
+<h3><strong>合并数据</strong></h3>
+<p>因为salaries和employees都有emp_no，可以使用emp_no作为连接键合并两个数据集：</p>
+<pre class="r"><code>employees_salary &lt;- merge(employees, salaries, by = &quot;emp_no&quot;)
+head(employees_salary)
+##   emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 4  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 5  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 6  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+##   salary  from_date    to_date
+## 1  71046 1991-06-25 1992-06-24
+## 2  74333 1992-06-24 1993-06-24
+## 3  66961 1990-06-25 1991-06-25
+## 4  76884 1995-06-24 1996-06-23
+## 5  80013 1996-06-23 1997-06-23
+## 6  75286 1993-06-24 1994-06-24</code></pre>
+<p>有时希望执行左连接或者右连接，以达到保留employees或salaries所有数据值的目的。要执行左连接，设置all.x为TRUE，然后，我们发现employees所有行在合并结果中保留了下来。相反，如果我们希望保留salaries的所有行，我们可以设置all.y为TRUE。</p>
+<pre class="r"><code>
+tail(merge(employees, salaries, by = &quot;emp_no&quot;, all.y = TRUE))
+##      emp_no birth_date first_name last_name gender hire_date age birth_year
+## 995   10100       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+## 996   10100       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+## 997   10100       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+## 998   10100       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+## 999   10100       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+## 1000  10101       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;      &lt;NA&gt;  NA         NA
+##      salary  from_date    to_date
+## 995   70575 1997-09-18 1998-09-18
+## 996   70464 1998-09-18 1999-09-18
+## 997   72343 1999-09-18 2000-09-17
+## 998   74365 2000-09-17 2001-09-17
+## 999   74957 2001-09-17 9999-01-01
+## 1000  66591 1998-10-14 1999-10-14</code></pre>
+<p>除了使用函数merge,还可以使用plyr包中的函数join来合并数据,join的用法和merge类似，只需要指定合并的数据以及by参数中相同值所在的列：</p>
+<pre class="r"><code>library(plyr)
+head(join(employees, salaries, by = &quot;emp_no&quot;), 10) #显示前10行
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 4   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 5   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 6   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 7   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 8   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 9   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 10  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+##    salary  from_date    to_date
+## 1   60117 1986-06-26 1987-06-26
+## 2   62102 1987-06-26 1988-06-25
+## 3   66074 1988-06-25 1989-06-25
+## 4   66596 1989-06-25 1990-06-25
+## 5   66961 1990-06-25 1991-06-25
+## 6   71046 1991-06-25 1992-06-24
+## 7   74333 1992-06-24 1993-06-24
+## 8   75286 1993-06-24 1994-06-24
+## 9   75994 1994-06-24 1995-06-24
+## 10  76884 1995-06-24 1996-06-23</code></pre>
+<p>在plyr程序包中，可以使用函数jion_all，在一个<strong>列表中</strong>递归地连接数据集。我们可以使用join_all按照emp_no合并employees和salaries数据集：</p>
+<pre class="r"><code>head(join_all(list(employees, salaries), &quot;emp_no&quot;), 10) #显示前10行
+##    emp_no birth_date first_name last_name gender  hire_date age birth_year
+## 1   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 2   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 3   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 4   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 5   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 6   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 7   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 8   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 9   10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+## 10  10001 1953-09-02     Georgi   Facello      M 1986-06-26  34       1953
+##    salary  from_date    to_date
+## 1   60117 1986-06-26 1987-06-26
+## 2   62102 1987-06-26 1988-06-25
+## 3   66074 1988-06-25 1989-06-25
+## 4   66596 1989-06-25 1990-06-25
+## 5   66961 1990-06-25 1991-06-25
+## 6   71046 1991-06-25 1992-06-24
+## 7   74333 1992-06-24 1993-06-24
+## 8   75286 1993-06-24 1994-06-24
+## 9   75994 1994-06-24 1995-06-24
+## 10  76884 1995-06-24 1996-06-23</code></pre>
+<p><br></p>
+</div>
+<div id="排列数据" class="section level3">
+<h3><strong>排列数据</strong></h3>
+<p>排列可以让我们在某种顺序下观察数据，以便有效地分析数据。在R中，我们使用函数order和sort来对数据排序：</p>
+<p>可以使用sort()函数对数据排序,函数sort返回排列好的向量作为输出，默认按升序排列：</p>
+<pre class="r"><code>a &lt;- c(5, 1, 4, 3, 2, 6, 3)
+sort(a)
+## [1] 1 2 3 3 4 5 6
+sort(a, decreasing = TRUE)
+## [1] 6 5 4 3 3 2 1</code></pre>
+<p>接着，我们可以看到order()函数是如何在同一个输入向量上工作的，order返回一个排列索引向量作为输出，：</p>
+<pre class="r"><code>order(a)
+## [1] 2 5 4 7 3 1 6
+order(a, decreasing = TRUE) #返回值是对应“排名”的元素所在原始向量中的位置
+## [1] 6 1 3 4 7 5 2</code></pre>
+<p>为了按照具体的列进行数据框排序，首先获取排列索引，然后使用索引获取排列好的数据集：</p>
+<pre class="r"><code>sorted_salaries &lt;- salaries[order(salaries$salary, decreasing = TRUE), ]
+head(sorted_salaries)
+##     emp_no salary  from_date    to_date
+## 684  10068 113229 2001-08-03 9999-01-01
+## 683  10068 112470 2000-08-03 2001-08-03
+## 682  10068 111623 1999-08-04 2000-08-03
+## 681  10068 108345 1998-08-04 1999-08-04
+## 680  10068 106204 1997-08-04 1998-08-04
+## 679  10068 105533 1996-08-04 1997-08-04</code></pre>
+<p>除了按照一个列进行排序，也可以按照多个列进行排序(当主列排序完成之后，会有相同级别的多行数据存在，这时可能就需要依照另外一列进行次级排序)：</p>
+<pre class="r"><code>sorted_salaries2 &lt;- salaries[order(salaries$salary, salaries$from_date,
+                                   decreasing = TRUE),]
+head(sorted_salaries2)
+##     emp_no salary  from_date    to_date
+## 684  10068 113229 2001-08-03 9999-01-01
+## 683  10068 112470 2000-08-03 2001-08-03
+## 682  10068 111623 1999-08-04 2000-08-03
+## 681  10068 108345 1998-08-04 1999-08-04
+## 680  10068 106204 1997-08-04 1998-08-04
+## 679  10068 105533 1996-08-04 1997-08-04</code></pre>
+<p>还可以使用plyr中的函数arrange，按照升序的salary和降序的from_date排列薪水数据：</p>
+<pre class="r"><code>arranged_salaries &lt;- arrange(salaries, salary, desc(from_date))
+head(arranged_salaries)
+##   emp_no salary  from_date    to_date
+## 1  10048  39507 1986-02-24 1987-01-27
+## 2  10027  39520 1996-04-01 1997-04-01
+## 3  10064  39551 1986-11-20 1987-11-20
+## 4  10072  39567 1990-05-21 1991-05-21
+## 5  10072  39724 1991-05-21 1992-05-20
+## 6  10049  39735 1993-05-04 1994-05-04</code></pre>
+<p><br></p>
+</div>
+<div id="重塑数据" class="section level3">
+<h3><strong>重塑数据</strong></h3>
+<p>重塑数据类似于创建列联表，它允许用户聚合特定值下的数据。reshape2程序包就是用来完成这个任务的。使用reshape2包借助函数dcast把长数据转换成宽数据，也可以使用函数melt把宽数据转换回长数据。</p>
+<p>我们可以使用函数dcast把长数据转换成宽数据(设定emp_no作为行，薪水年份作为列，salary作为宽数据中的值)：</p>
+<pre class="r"><code>library(&quot;reshape2&quot;)
+wide_salaries &lt;- dcast(salaries, emp_no ~ year(ymd(from_date)),
+                       value.var = &quot;salary&quot;)
+wide_salaries[1:3, 1:7]
+##   emp_no 1985  1986  1987  1988  1989  1990
+## 1  10001   NA 60117 62102 66074 66596 66961
+## 2  10002   NA    NA    NA    NA    NA    NA
+## 3  10003   NA    NA    NA    NA    NA    NA</code></pre>
+<p>也可以通过保留emp_no和格式化的名称字符串作为两个属性，来转换数据。然后我们可以设置薪水支付的年份作为列名，薪水作为它的值(使用多个列来重塑数据，只需使用+操作符，在公式的左边添加另一列的信息)。</p>
+<pre class="r"><code>dcast(employees_salary, emp_no + paste(first_name, last_name) ~ 
+      year(ymd(from_date)), value.var = &quot;salary&quot;, 
+      variable.name = &quot;condition&quot;) -&gt; wide_employees_salary #反向赋值
+wide_employees_salary[1:3, 1:7]
+##   emp_no paste(first_name, last_name) 1985  1986  1987  1988  1989
+## 1  10001               Georgi Facello   NA 60117 62102 66074 66596
+## 2  10002               Bezalel Simmel   NA    NA    NA    NA    NA
+## 3  10003                Parto Bamford   NA    NA    NA    NA    NA</code></pre>
+<p>也可以使用函数melt把宽数据转换回长数据：</p>
+<pre class="r"><code>long_salaries &lt;- melt(wide_salaries, id.vars = c(&quot;emp_no&quot;))
+head(long_salaries)
+##   emp_no variable value
+## 1  10001     1985    NA
+## 2  10002     1985    NA
+## 3  10003     1985    NA
+## 4  10004     1985    NA
+## 5  10005     1985    NA
+## 6  10006     1985    NA</code></pre>
+<p>为了移除long_salaries中带有缺失值的数据，可以使用na.omit移除这些数据：</p>
+<pre class="r"><code>head(na.omit(long_salaries))
+##    emp_no variable value
+## 9   10009     1985 60929
+## 13  10013     1985 40000
+## 48  10048     1985 40000
+## 64  10064     1985 40000
+## 70  10070     1985 55999
+## 98  10098     1985 40000</code></pre>
+<p>除了plyr程序包中的dcast和melt函数，还可以使用stack和unstack来分组数据和取消分组。使用unstack()函数按值分组数据：</p>
+<pre class="r"><code>un_salaries &lt;- unstack(na.omit(long_salaries)[, c(3,1)])
+head(un_salaries, 3)
+## $`10001`
+##  [1] 60117 62102 66074 66596 66961 71046 74333 75286 75994 76884 80013 81025
+## [13] 81097 84917 85112 85097 88958
+## 
+## $`10002`
+## [1] 65828 65909 67534 69366 71963 72527
+## 
+## $`10003`
+## [1] 40006 43616 43466 43636 43478 43699 43311</code></pre>
+<p>相反，我们可以使用函数stack把多个数据框或列表拼接起来：</p>
+<pre class="r"><code>stack_salaries &lt;- stack(un_salaries)
+head(stack_salaries)
+##   values   ind
+## 1  60117 10001
+## 2  62102 10001
+## 3  66074 10001
+## 4  66596 10001
+## 5  66961 10001
+## 6  71046 10001</code></pre>
+<p><br></p>
+</div>
+<div id="检测缺失数据" class="section level3">
+<h3><strong>检测缺失数据</strong></h3>
+<p>首先，我们把to_date属性设置一个超过2100-01-01的日期：</p>
+<pre class="r"><code>head(salaries[salaries$to_date &gt; &quot;2100-01-01&quot;,])
+##    emp_no salary  from_date    to_date
+## 17  10001  88958 2002-06-22 9999-01-01
+## 23  10002  72527 2001-08-02 9999-01-01
+## 30  10003  43311 2001-12-01 9999-01-01
+## 46  10004  74057 2001-11-27 9999-01-01
+## 59  10005  94692 2001-09-09 9999-01-01
+## 71  10006  59755 2001-08-02 9999-01-01</code></pre>
+<p>然后，把超过2100-01-01的日期变成缺失值：</p>
+<pre class="r"><code>salaries[salaries$to_date &gt; &quot;2100-01-01&quot;, &quot;to_date&quot;] &lt;-  NA</code></pre>
+<p>使用函数is.na()找出那一行包含缺失值：</p>
+<pre class="r"><code>head(is.na(salaries$to_date))
+## [1] FALSE FALSE FALSE FALSE FALSE FALSE</code></pre>
+<p>可以使用sum()对to_data中的缺失值计数：</p>
+<pre class="r"><code>sum(is.na(salaries$to_date))
+## [1] 81</code></pre>
+<p>可以计算缺失值的比例：</p>
+<pre class="r"><code>sum(is.na(salaries$to_date) == TRUE) / length(salaries$to_date) 
+## [1] 0.081</code></pre>
+<p>如果想知道每一列中缺失值比列，可以使用韩式sapply:</p>
+<pre class="r"><code>wide_salaries &lt;- dcast(salaries, emp_no ~ year(ymd(from_date)), 
+                       value.var = &quot;salary&quot;)
+wide_salaries[1:3, 1:7]
+##   emp_no 1985  1986  1987  1988  1989  1990
+## 1  10001   NA 60117 62102 66074 66596 66961
+## 2  10002   NA    NA    NA    NA    NA    NA
+## 3  10003   NA    NA    NA    NA    NA    NA
+sapply(wide_salaries, function(df) {
+  sum(is.na(df) == TRUE) / length(df);
+  })
+##    emp_no      1985      1986      1987      1988      1989      1990      1991 
+## 0.0000000 0.9405941 0.8910891 0.8217822 0.7524752 0.6534653 0.5544554 0.5148515 
+##      1992      1993      1994      1995      1996      1997      1998      1999 
+## 0.4158416 0.3960396 0.3267327 0.2475248 0.2079208 0.1782178 0.1485149 0.1287129 
+##      2000      2001      2002 
+## 0.1485149 0.1881188 0.5841584</code></pre>
+<p>可以安装加载Amelia程序包，使用函数missmap()绘制缺失值地图：</p>
+<pre class="r"><code>library(Amelia)
+## 载入需要的程辑包：Rcpp
+## ## 
+## ## Amelia II: Multiple Imputation
+## ## (Version 1.7.6, built: 2019-11-24)
+## ## Copyright (C) 2005-2020 James Honaker, Gary King and Matthew Blackwell
+## ## Refer to http://gking.harvard.edu/amelia/ for more information
+## ##
+missmap(wide_salaries, main = &quot;Missingness Map of Salary&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-12-14-r数据预处理_files/figure-html/unnamed-chunk-66-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>除了使用Amelia来可视化缺失值，也可以使用Amelia的交互式GUI，AmeliaView：</p>
+<pre class="r"><code>#在控制台输入AmeliaView() </code></pre>
+<p><br></p>
+</div>
+<div id="估计缺失数据" class="section level3">
+<h3><strong>估计缺失数据</strong></h3>
+<p>设置emp_no为10001，抽取用户数据子集：</p>
+<pre class="r"><code>test.emp &lt;- salaries[salaries$emp_no == 10001,]</code></pre>
+<p>故意把第8行的salary设置为缺失值：</p>
+<pre class="r"><code>test.emp[8, c(&quot;salary&quot;)]
+## [1] 75286
+test.emp[8, c(&quot;salary&quot;)] &lt;- NA
+test.emp
+##    emp_no salary  from_date    to_date
+## 1   10001  60117 1986-06-26 1987-06-26
+## 2   10001  62102 1987-06-26 1988-06-25
+## 3   10001  66074 1988-06-25 1989-06-25
+## 4   10001  66596 1989-06-25 1990-06-25
+## 5   10001  66961 1990-06-25 1991-06-25
+## 6   10001  71046 1991-06-25 1992-06-24
+## 7   10001  74333 1992-06-24 1993-06-24
+## 8   10001     NA 1993-06-24 1994-06-24
+## 9   10001  75994 1994-06-24 1995-06-24
+## 10  10001  76884 1995-06-24 1996-06-23
+## 11  10001  80013 1996-06-23 1997-06-23
+## 12  10001  81025 1997-06-23 1998-06-23
+## 13  10001  81097 1998-06-23 1999-06-23
+## 14  10001  84917 1999-06-23 2000-06-22
+## 15  10001  85112 2000-06-22 2001-06-22
+## 16  10001  85097 2001-06-22 2002-06-22
+## 17  10001  88958 2002-06-22       &lt;NA&gt;</code></pre>
+<p>第一个估计方法是，使用na.omit移除带有缺失值的记录(它会自动地移除带有缺失值的记录，移除缺失值是直接而简单的做法，并且适合缺失值所占的比例很小的时候，相反，如果缺失值在数据集中的比重比较大，移除这些缺失值会使分析结果产生偏差，并导致错误结论)：</p>
+<pre class="r"><code>na.omit(test.emp)
+##    emp_no salary  from_date    to_date
+## 1   10001  60117 1986-06-26 1987-06-26
+## 2   10001  62102 1987-06-26 1988-06-25
+## 3   10001  66074 1988-06-25 1989-06-25
+## 4   10001  66596 1989-06-25 1990-06-25
+## 5   10001  66961 1990-06-25 1991-06-25
+## 6   10001  71046 1991-06-25 1992-06-24
+## 7   10001  74333 1992-06-24 1993-06-24
+## 9   10001  75994 1994-06-24 1995-06-24
+## 10  10001  76884 1995-06-24 1996-06-23
+## 11  10001  80013 1996-06-23 1997-06-23
+## 12  10001  81025 1997-06-23 1998-06-23
+## 13  10001  81097 1998-06-23 1999-06-23
+## 14  10001  84917 1999-06-23 2000-06-22
+## 15  10001  85112 2000-06-22 2001-06-22
+## 16  10001  85097 2001-06-22 2002-06-22</code></pre>
+<p>另外，我们可以计算雇员10001的平均薪水：</p>
+<pre class="r"><code>mean_salary &lt;- mean(salaries$salary[salaries$emp_no == 10001], na.rm = TRUE)
+mean_salary
+## [1] 75388.94</code></pre>
+<p>然后我们可以使用雇员10001的平均薪水来估计缺失值(na.rm表明计算过程不会考虑缺失值，这种估计不会影响平均值的整体估计，但是可能会引起数据集标准差和平方误差的偏差，并进一步导致偏差估计。因此并不是一个值得推荐的方法)：</p>
+<pre class="r"><code>salaries$salary[salaries$emp_no == 10001 &amp; is.na(salaries$salary)] &lt;-  mean_salary</code></pre>
+<p>除了上述方法，还可以使用mice程序包来估计数据(考虑到雇员薪水每年都会增加，可以选择贝叶斯线性回归作为估计方法(通过给meth参数设置norm实现)来预测缺失值。最后用complete获取完整数据。多重估计方法使用数据之间的关系来预测缺失值，并使用蒙特卡洛方法生成可能的缺失值。是众多缺失值估计问题中常见的手段)：</p>
+<pre class="r"><code>library(mice)
+## 
+## 载入程辑包：&#39;mice&#39;
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     cbind, rbind
+test.emp$from_date &lt;- year(ymd(test.emp$from_date))
+test.emp$to_date &lt;- year(ymd(test.emp$to_date))
+imp &lt;- mice(test.emp, method = c(&#39;norm&#39;), set.seed = 7)
+## 
+##  iter imp variable
+##   1   1  salary
+##   1   2  salary
+##   1   3  salary
+##   1   4  salary
+##   1   5  salary
+##   2   1  salary
+##   2   2  salary
+##   2   3  salary
+##   2   4  salary
+##   2   5  salary
+##   3   1  salary
+##   3   2  salary
+##   3   3  salary
+##   3   4  salary
+##   3   5  salary
+##   4   1  salary
+##   4   2  salary
+##   4   3  salary
+##   4   4  salary
+##   4   5  salary
+##   5   1  salary
+##   5   2  salary
+##   5   3  salary
+##   5   4  salary
+##   5   5  salary
+## Warning: Number of logged events: 27
+complete(imp)
+##    emp_no   salary from_date to_date
+## 1   10001 60117.00      1986    1987
+## 2   10001 62102.00      1987    1988
+## 3   10001 66074.00      1988    1989
+## 4   10001 66596.00      1989    1990
+## 5   10001 66961.00      1990    1991
+## 6   10001 71046.00      1991    1992
+## 7   10001 74333.00      1992    1993
+## 8   10001 84913.57      1993    1994
+## 9   10001 75994.00      1994    1995
+## 10  10001 76884.00      1995    1996
+## 11  10001 80013.00      1996    1997
+## 12  10001 81025.00      1997    1998
+## 13  10001 81097.00      1998    1999
+## 14  10001 84917.00      1999    2000
+## 15  10001 85112.00      2000    2001
+## 16  10001 85097.00      2001    2002
+## 17  10001 88958.00      2002      NA</code></pre>
+<p>我们：还可以使用回归的方法来预测缺失值。首先，保证test.emp的每一个属性都易于访问：</p>
+<pre class="r"><code>attach(test.emp)</code></pre>
+<p>然后，拟合salary和from_data的回归曲线：</p>
+<pre class="r"><code>fit &lt;- lm(salary ~ from_date, test.emp)</code></pre>
+<p>最后，我们可以预测缺失值的薪水值：</p>
+<pre class="r"><code>predict(fit, data.frame(from_date = 1993))
+##        1 
+## 73575.91</code></pre>
+<p><br></p>
+<p><code>以上内容整理自《R for Data Science Cookbook》</code></p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/r%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97arima%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B/">R时间序列ARIMA模型预测</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191117mnist_mlp/">MNIST手写字体分类</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/r%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97arima%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191117mnist_mlp\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

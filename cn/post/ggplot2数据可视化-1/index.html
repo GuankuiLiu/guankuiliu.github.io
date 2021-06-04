@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>ggplot2数据可视化（一） - Boylad</title>
+    
+     
+    <meta property="og:title" content="ggplot2数据可视化（一） - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>ggplot2数据可视化（一）</h1>
+
+
+
+<h3>Boylad &middot 
+2018-10-21</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+
+
+
+<div id="使用ggplot2创建基础图形" class="section level2">
+<h2>使用ggplot2创建基础图形</h2>
+<pre class="r"><code>library(ggplot2)
+library(lattice)
+library(dplyr)
+## 
+## 载入程辑包：&#39;dplyr&#39;
+## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<p>读入数据：</p>
+<pre class="r"><code>setwd(&quot;C:/Users/Boylad/Documents/mydata/R_for_Data_Science_Cookbook/&quot;)
+superstore &lt;- read.csv(&quot;superstore_sales.csv&quot;, header = TRUE)
+superstore$Order.Date &lt;- as.Date(superstore$Order.Date)
+str(superstore)
+## &#39;data.frame&#39;:    8399 obs. of  9 variables:
+##  $ Order.ID        : int  3 293 293 483 515 515 613 613 643 678 ...
+##  $ Order.Date      : Date, format: &quot;2010-10-13&quot; &quot;2012-10-01&quot; ...
+##  $ Order.Quantity  : int  6 49 27 30 19 21 12 22 21 44 ...
+##  $ Sales           : num  262 10123 245 4966 394 ...
+##  $ Profit          : num  -213.2 457.8 46.7 1199 30.9 ...
+##  $ Unit.Price      : num  38.94 208.16 8.69 195.99 21.78 ...
+##  $ Province        : chr  &quot;Nunavut&quot; &quot;Nunavut&quot; &quot;Nunavut&quot; &quot;Nunavut&quot; ...
+##  $ Customer.Segment: chr  &quot;Small Business&quot; &quot;Consumer&quot; &quot;Consumer&quot; &quot;Corporate&quot; ...
+##  $ Product.Category: chr  &quot;Office Supplies&quot; &quot;Office Supplies&quot; &quot;Office Supplies&quot; &quot;Technology&quot; ...</code></pre>
+<p>根据年份、月份和省份汇总销售额：</p>
+<pre class="r"><code>sum_price_by_province &lt;- superstore %&gt;%
+  filter(Order.Date &gt; &#39;2012-01-01&#39;) %&gt;% 
+  select(Sales, Province, Order.Date) %&gt;%
+  group_by(Year_Month = as.Date(strftime(Order.Date, &quot;%Y/%m/01&quot;)), Province) %&gt;%
+  summarise(Total_Sales = sum(Sales))
+## `summarise()` regrouping output by &#39;Year_Month&#39; (override with `.groups` argument)
+head(sum_price_by_province)
+## # A tibble: 6 x 3
+## # Groups:   Year_Month [1]
+##   Year_Month Province              Total_Sales
+##   &lt;date&gt;     &lt;chr&gt;                       &lt;dbl&gt;
+## 1 2012-01-01 Alberta                    45518.
+## 2 2012-01-01 British Columbia           17430.
+## 3 2012-01-01 Manitoba                   51071.
+## 4 2012-01-01 New Brunswick               8085.
+## 5 2012-01-01 Newfoundland                1666 
+## 6 2012-01-01 Northwest Territories       1845.</code></pre>
+<p>抽取2012-07-01以来British Columbia和Alberta销售数据子集：</p>
+<pre class="r"><code>sample_sum &lt;- sum_price_by_province %&gt;% 
+  filter(Year_Month &gt; &#39;2012-07-01&#39;, 
+         Province %in% c(&#39;Alberta&#39;, &#39;British Columbia&#39;))</code></pre>
+<p>把Year_Month映射为x轴，Total_Sales映射为y轴，Province映射为colour，创建画布：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, 
+            mapping = aes(x=Year_Month, y=Total_Sales,
+                          colour=Province)) + ggtitle(&quot;Pure Canvas&quot;)
+g</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>给画布添加几何对象：</p>
+<pre class="r"><code>g &lt;- g + geom_point() + ggtitle(&quot;With Point Geometry&quot;)
+g</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>给画布添加几何对象：</p>
+<pre class="r"><code>g &lt;- g + geom_line() + ggtitle(&quot;With Line Geometry&quot;)
+g</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>给画布添加标签和标题:</p>
+<pre class="r"><code>g &lt;- g + xlab(&quot;Year Month&quot;) + ylab(&quot;Sale Amount&quot;) + ggtitle(&quot;Sale Amount By Region&quot;)
+g</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>在ggplot2中，数据绘图要求各种元素从数学空间映射到物理空间。我们可以使用简单的元素创建复杂的图形。首先我们需要创建一张画布，然后添加带有几何对象的图层，以及使用+记号把图层映射到画布。作为备选方案，我们可以使用qplot(quick plot，快速制图)产生ggplot2图形。qplot与函数plot类似：</p>
+<pre class="r"><code>qplot(Year_Month, Total_Sales, data = sample_sum, colour = Province,
+      geom = c(&quot;line&quot;, &quot;point&quot;), main = &quot;qplot example&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="改变美学映射" class="section level2">
+<h2>改变美学映射</h2>
+<p>美学映射描述了数据变量是如何映射到图形的视觉属性的。首先，把Year_Month映射为x轴，Total_Sales映射为y轴，Province映射为colour，创建散点图：</p>
+<pre class="r"><code>g&lt;- ggplot(data = sample_sum, 
+            mapping = aes(x=Year_Month, y=Total_Sales,
+                          colour=Province)) + ggtitle(&quot;With geom_point&quot;)
+g + geom_point()</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>给几何对象设置美学映射：</p>
+<pre class="r"><code>g2 &lt;- ggplot(data = sample_sum) + geom_point(mapping = aes(x = Year_Month, y = Total_Sales, colour = Province)) + ggtitle(&#39;With Aesthetics Mapping&#39;)
+g2</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>设置几何对象的大小属性，调整散点图的点的大小：</p>
+<pre class="r"><code>g + geom_point(aes(size = 5)) + ggtitle(&quot;Adjust Point Size&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>根据不同的几何对象，调整美学属性：</p>
+<pre class="r"><code>g + geom_point(aes(size = 5, colour = &quot;blue&quot;)) + geom_line()</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>可以重新载入y轴的位置：</p>
+<pre class="r"><code>g + geom_point(aes(y = Total_Sales/10000)) + ggtitle(&quot;Override y-axes&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>移除美学属性</p>
+<pre class="r"><code>g + geom_point(aes(colour = NULL)) + ggtitle(&quot;Remove Aesthetics Property&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>为了改变几何对象的展示样式，我们可以使用，函数aes把数据变量映射为视觉特性。通过设置美学映射，我们可以改变元素的位置、大小、项的形状，以及给定几何对象的颜色。可以把一个美学属性映射为一个变量，或者设置图形参数的值。通过在aes中设置蓝色，图形创建了一个新的包含blue值的变量，而且图中的所有点都变成了同样的颜色，但并不是蓝色。另外，如果我们在图层中设置blue，点都变成了蓝色。</p>
+<pre class="r"><code>g + geom_point(aes(colour = &quot;blue&quot;)) + ggtitle(&quot;Set Color to Blue in Aes Function&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>g + geom_point(colour = &quot;blue&quot;) + ggtitle(&quot;Set color to Blue in Layer&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="引入几何对象" class="section level2">
+<h2>引入几何对象</h2>
+<p>几何对象是图形中展示的元素。可以用几何对象创建一条线图、一个条形图，或者一个箱线图。也可以把这些简单的几何对象和美学映射组合在一起，创建出更加专业的图形。首先，使用函数geo_point创建散点图：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Total_Sales, col=Province)) + ggtitle(&quot;Scatter Plot&quot;)
+g + geom_point()</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>使用geom_line绘制线图：</p>
+<pre class="r"><code>g + geom_line(linetype = &quot;dashed&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>使geom_bar制作堆积条形图：</p>
+<pre class="r"><code>g + geom_bar(stat = &quot;identity&quot;, aes(fill = Province), position = &quot;stack&quot;) + ggtitle(&quot;Stack Position&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>当把position设置fill，可以绘制出带有归一化高度的堆积型条形图：</p>
+<pre class="r"><code>g + geom_bar(stat = &quot;identity&quot;, aes(fill = Province), position = &quot;fill&quot;) + ggtitle(&quot;Fill Position&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>当把position设置为dodge，并排放置条柱：</p>
+<pre class="r"><code>g + geom_bar(stat = &quot;identity&quot;, aes(fill = Province), position = &quot;dodge&quot;) + ggtitle(&quot;Dodge Position&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>可以使用函数geom_boxplot展示箱线图：</p>
+<pre class="r"><code>g + geom_boxplot(aes(x = Province)) + xlab(&quot;Province&quot;)+ ggtitle(&quot;Boxplot&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>可以使用geom_histogram创建一个柱状图：</p>
+<pre class="r"><code>set.seed(123)
+norm.sample = data.frame(val = rnorm(1000))
+ggplot(norm.sample, aes(val)) + geom_histogram(binwidth = 0.1) + ggtitle(&quot;Histogram&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" />
+可以使用geom_density制作密度图：</p>
+<pre class="r"><code>ggplot(norm.sample, aes(val)) + geom_density() + ggtitle(&quot;Dentisy Plot&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们可以设置美学映射中的shape和size来改变点的形状和大小，线图中的linetype可以指定为blank,solid,dashed,dotted,dotdash,lingdash和twodash。ggplot2包并不提供任何专门的几何对象用于绘制饼图。但是我们可以使用函数coord_polar，创建极坐标下的堆积型饼状图，进而得到饼状图。首先，使用dplyr生成每个省份的总量销售额：</p>
+<pre class="r"><code>sample_stat &lt;- sum_price_by_province %&gt;% select(Province, Total_Sales) %&gt;% group_by(Province) %&gt;% summarise(sales_stat = sum(Total_Sales))
+## Adding missing grouping variables: `Year_Month`
+## `summarise()` ungrouping output (override with `.groups` argument)
+head(sample_stat)
+## # A tibble: 6 x 2
+##   Province              sales_stat
+##   &lt;chr&gt;                      &lt;dbl&gt;
+## 1 Alberta                  416216.
+## 2 British Columbia         440368.
+## 3 Manitoba                 368266.
+## 4 New Brunswick            161298.
+## 5 Newfoundland              29392.
+## 6 Northwest Territories    169593.</code></pre>
+<p>使用geom_bar创建条形图：</p>
+<pre class="r"><code>g &lt;- ggplot(sample_stat, aes(x = &quot;&quot;, y = sales_stat, fill = Province)) + geom_bar(stat = &quot;identity&quot;) + ggtitle(&quot;Bar Plot&quot;)
+g</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>最后，使用函数coord_polar从堆积条形图中创建饼图：</p>
+<pre class="r"><code>g + coord_polar(&quot;y&quot;, start = 0) + ggtitle(&quot;Pie Chart&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>除了把特定的变量映射为x轴或y轴，我们可以先对变量进行统计变换，然后再把变换后的变量映射到指定的位置。<br></p>
+</div>
+<div id="执行变换" class="section level2">
+<h2>执行变换</h2>
+<p>首先，从Alberta和British Columbia中过滤销售数据，创建名为sample_sum2的数据集：</p>
+<pre class="r"><code>sample_sum2 &lt;- sum_price_by_province %&gt;% filter(Province %in% c(&quot;Alberta&quot;, &quot;British Columbia&quot;))</code></pre>
+<p>使用函数geom_poinnt和geom_smmoth，创建带有平滑回归曲线的线图：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum2, mapping = aes(x = Year_Month, y = Total_Sales, col = Province))
+g + geom_point(size = 5) + geom_smooth() + ggtitle(&quot;Adding Smoother&quot;)
+## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另外可以使用函数stat_smooth该图形添加回归曲线：</p>
+<pre class="r"><code>g + geom_point() + stat_smooth()
+## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们可以在method参数中指定回归方法：</p>
+<pre class="r"><code>library(MASS)
+## 
+## 载入程辑包：&#39;MASS&#39;
+## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     select
+g + geom_point() + geom_smooth(method = rlm) + ggtitle(&quot;Adding Robust Regresstion Line&quot;)
+## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们可以使用stats参数，添加用红点表示的月度平均销售额：</p>
+<pre class="r"><code>g + geom_point() + geom_point(stat = &quot;summary&quot;, fun.y = &quot;mean&quot;, colour = &quot;red&quot;, size = 4)
+## Warning: Ignoring unknown parameters: fun.y
+## No summary function supplied, defaulting to `mean_se()`</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>我们可以使用函数stat_summary获取汇总美学映射：</p>
+<pre class="r"><code>g + geom_point(size = 3) + geom_point(stat = &quot;summary&quot;, fun.y = &quot;mean&quot;, colour = &quot;red&quot;, size = 4) + ggtitle(&quot;Adding Mean Points&quot;)
+## Warning: Ignoring unknown parameters: fun.y
+## No summary function supplied, defaulting to `mean_se()`</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>为了添加回归曲线，我们既可以使用函数geo_smooth，也可以使用stat_smooth。完成后，ggplot2会在给定的数据点上执行回归分析，并添加半透明带表示的LOWESS(局部加权散点图平滑)线。或者我们也可以在函数geom_smooth中指定不同的回归模型。这里，我们首先加载了MASS程序包，然后给图形添加健壮回归曲线。最后，我们展示了如何根据x上的条件计算y的平均值。我们需要把参数stat传递给函数geom，然后指定stat=“summary”和fun.y=“mean”。最终，我们看到y的平均值在图中用红点表示。把参数stat传递给函数geom的另一种方法是，使用stat_summary生成平均值点。<br></p>
+</div>
+<div id="调整图形尺度" class="section level2">
+<h2>调整图形尺度</h2>
+<p>除了给每个点或者几何对象设定美学映射，我们还可以使用尺度来控制变量到视觉属性上的映射。首先，设定size=Tootal_Sales,colour=Province,y=Province,取Year_Month为条件制作散点图。使用函数scale_size_continuous重新调整点的大小：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Province, size = Total_Sales, colour = Province))
+g + geom_point(aes(size = Total_Sales)) + scale_size_continuous(range = c(1, 10)) + ggtitle(&quot;Resize The Point&quot;) </code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>使用函数scale_color_gradient，重新用渐变颜色给点上色：</p>
+<pre class="r"><code>g + geom_point(aes(colour = Total_Sales)) + scale_color_gradient() + ggtitle(&quot;Repaint The Point in Gradient Color&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>使用Province调整点的形状：</p>
+<pre class="r"><code>g + geom_point(aes(shape=Province)) + scale_shape_manual(values = c(5, 10)) + ggtitle(&quot;Adjust The Shape of The Point&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>对于条形图，我们可以使用函数scale_fill_brewer填充每个条柱：</p>
+<pre class="r"><code>g2 &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Total_Sales, colour=Province))
+g2 + geom_bar(stat = &quot;identity&quot;, aes(fill=Province), position = &quot;dodge&quot;) + scale_fill_brewer(palette=2) + ggtitle(&quot;Refill Bar Colour&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>还可以使用scale_y_continuous重新调整y轴的尺度：</p>
+<pre class="r"><code>g2 + geom_bar(stat = &quot;identity&quot;, aes(fill = Province), position = &quot;dodge&quot;) + scale_y_continuous(limits = c(1,100000), trans = &quot;log10&quot;) + ggtitle(&quot;Rescale y Axes&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>因为需要不同的量级来表示数据对象的美学属性，我们可以使用scale_*，重新调整x轴、y轴、颜色、填充色，甚至形状。首先利用超市数据集创建包含几何对象的散点图，使用函数scale_size_*重新调整点的大小，使用range参数配置大小的取值范围，使用函数scale_color_*重新用渐变色给点上色，使用函数scale_shape_*重新定义点的形状。对于条形图我们可以使用函数scale_fill_*改变条柱的颜色，为了改变颜色方案，我们需指定palette参数值。另外，我们可以使用尺度函数scale_y_*重新调整y轴尺度，除了使用limits参数限定y轴尺度，我们还可以把trans参数传递给函数scale_y_continus，执行量级变换。<br></p>
+</div>
+<div id="分面" class="section level2">
+<h2>分面</h2>
+<p>当我们研究数据的时候，我们通常会比较不同组之间的数据。分面是一种允许用户针对数据子集创建图形的技术。首先，使用函数facet_wrap创建多个子图，其中使用Province变量作为条件：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Total_Sales, colour = Province))
+g + geom_point(size = 5) + facet_wrap(~Province) + ggtitle(&quot;Creat Multiple Subplots by Province&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>如果我们设定列数为1，图形 布局可以改变到垂直方向：</p>
+<pre class="r"><code>g + geom_point() + facet_wrap(~Province, ncol = 1) + ggtitle(&quot;Multiple Subplots Vertical Direction&quot;) </code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>为了按照更多的变量分面，可以使用函数facet_grid：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=&quot;Total Sales&quot;, y=&quot;Total Sales&quot;, col = Province))
+g + geom_bar(stat = &quot;identity&quot;, aes(fill=Province), position = &quot;Stack&quot;) + facet_grid(Year_Month ~ Province) + ggtitle(&quot;facet_grid Example&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>另一个创建子图的强大的程序包是lattice。例如，要创建Province作为x值，Total Salesz作为y值，Year_Month作为分割条件的多个子图：</p>
+<pre class="r"><code>library(lattice)
+barchart(Total_Sales ~ Province | Year_Month, data = sample_sum)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-42-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="调整主题" class="section level2">
+<h2>调整主题</h2>
+<p>除了使用美学映射决定几何对象的视觉属性以外，还可以调整背景颜色、网格线和主题内的其他非数据属性。我们可以使用不同的theme函数调整图形的主题：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Total_Sales, colour = Province))
+g + geom_point(size=5) + theme_bw() + ggtitle(&quot;theme_bw Example&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-43-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>g + geom_point(size=5) + theme_dark() + ggtitle(&quot;theme_dark Example&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-43-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>可以使用函数theme自由地设置主题:</p>
+<pre class="r"><code>g + geom_point(size=5) + 
+  theme(axis.text = element_text(size = 12),
+        legend.background = element_rect(fill = &quot;white&quot;),
+        panel.grid.major = element_line(colour = &quot;yellow&quot;),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = &quot;blue&quot;)) + ggtitle(&quot;Customized Theme&quot;)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" />
+<br></p>
+</div>
+<div id="组合图形" class="section level2">
+<h2>组合图形</h2>
+<p>要创建对一个数据集的整体刻画，我们需要把多个独立的图形合成一个图形。首先，加载grid程序包并创建新的页面：</p>
+<pre class="r"><code>library(grid)
+grid.newpage() #创建一块新的画布</code></pre>
+<p>然后我们创建两个ggplot2图形：</p>
+<pre class="r"><code>g &lt;- ggplot(data = sample_sum, mapping = aes(x=Year_Month, y=Total_Sales, colour = Province))
+plot1 &lt;- g + geom_point(size = 5) + ggtitle(&quot;Scatter Plot&quot;)
+plot2 &lt;- g + geom_line(size = 3) + ggtitle(&quot;Line Chart&quot;)</code></pre>
+<p>接着，我们使用函数pushViewport，定义一个两列一行的可视区域：</p>
+<pre class="r"><code>pushViewport(viewport(layout = grid.layout(1, 2))) #带有布局信息的可视区域</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>最后，我们可以根据行列位置把图形放到可视区域中(函数viewport配置可视区域的位置)：</p>
+<pre class="r"><code>pushViewport(viewport(layout = grid.layout(1, 2)))
+print(plot1, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(plot2, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>不用grid程序包的话，如果喜欢使用简单的语法，例如用par来合并多个图到一个图中，可以使用gridExtra程序包中的函数grid.arrange()。</p>
+<pre class="r"><code>library(gridExtra)
+## 
+## 载入程辑包：&#39;gridExtra&#39;
+## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine
+grid.arrange(plot1, plot2, ncol = 2)</code></pre>
+<p><img src="../../../cn/post/2018-10-21-ggplot2数据可视化_1_files/figure-html/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><code>以上内容整理自《R FOR DATA SCIENCE COOKBOOK》</code></p>
+</div>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/log-normal-weibull-distribution/"> Log Normal &amp; Weibull Distribution</a></span>
+  <span class="nav-next"><a href="../../../cn/post/%E7%BB%9F%E8%AE%A1%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83%E6%A8%A1%E6%8B%9F/">统计概率分布模拟</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/log-normal-weibull-distribution\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/%E7%BB%9F%E8%AE%A1%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83%E6%A8%A1%E6%8B%9F\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

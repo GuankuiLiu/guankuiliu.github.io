@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>TensorFlow创建特征列 - Boylad</title>
+    
+     
+    <meta property="og:title" content="TensorFlow创建特征列 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>TensorFlow创建特征列</h1>
+
+
+
+<h3>Boylad &middot 
+2020-01-04</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> pandas <span style="color:#f92672">as</span> pd
+<span style="color:#f92672">import</span> tensorflow <span style="color:#f92672">as</span> tf
+<span style="color:#f92672">from</span> tensorflow <span style="color:#f92672">import</span> feature_column
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> layers
+<span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> train_test_split
+</code></pre></div><h3 id="使用pandas创建数据帧">使用Pandas创建数据帧</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">URL <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;https://storage.googleapis.com/applied-dl/heart.csv&#39;</span>
+dataframe <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>read_csv(URL)
+dataframe<span style="color:#f92672">.</span>head()
+</code></pre></div><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>sex</th>
+      <th>cp</th>
+      <th>trestbps</th>
+      <th>chol</th>
+      <th>fbs</th>
+      <th>restecg</th>
+      <th>thalach</th>
+      <th>exang</th>
+      <th>oldpeak</th>
+      <th>slope</th>
+      <th>ca</th>
+      <th>thal</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>63</td>
+      <td>1</td>
+      <td>1</td>
+      <td>145</td>
+      <td>233</td>
+      <td>1</td>
+      <td>2</td>
+      <td>150</td>
+      <td>0</td>
+      <td>2.3</td>
+      <td>3</td>
+      <td>0</td>
+      <td>fixed</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>67</td>
+      <td>1</td>
+      <td>4</td>
+      <td>160</td>
+      <td>286</td>
+      <td>0</td>
+      <td>2</td>
+      <td>108</td>
+      <td>1</td>
+      <td>1.5</td>
+      <td>2</td>
+      <td>3</td>
+      <td>normal</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>67</td>
+      <td>1</td>
+      <td>4</td>
+      <td>120</td>
+      <td>229</td>
+      <td>0</td>
+      <td>2</td>
+      <td>129</td>
+      <td>1</td>
+      <td>2.6</td>
+      <td>2</td>
+      <td>2</td>
+      <td>reversible</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>37</td>
+      <td>1</td>
+      <td>3</td>
+      <td>130</td>
+      <td>250</td>
+      <td>0</td>
+      <td>0</td>
+      <td>187</td>
+      <td>0</td>
+      <td>3.5</td>
+      <td>3</td>
+      <td>0</td>
+      <td>normal</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>41</td>
+      <td>0</td>
+      <td>2</td>
+      <td>130</td>
+      <td>204</td>
+      <td>0</td>
+      <td>2</td>
+      <td>172</td>
+      <td>0</td>
+      <td>1.4</td>
+      <td>1</td>
+      <td>0</td>
+      <td>normal</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h3 id="将数据拆分为训练集验证集和测试集">将数据拆分为训练集、验证集和测试集</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">train, test <span style="color:#f92672">=</span> train_test_split(dataframe, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>)
+train, val <span style="color:#f92672">=</span> train_test_split(train, test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>)
+<span style="color:#66d9ef">print</span>(len(train), <span style="color:#e6db74">&#39;train examples&#39;</span>)
+<span style="color:#66d9ef">print</span>(len(val), <span style="color:#e6db74">&#39;validation examples&#39;</span>)
+<span style="color:#66d9ef">print</span>(len(test), <span style="color:#e6db74">&#39;test examples&#39;</span>)
+</code></pre></div><pre><code>193 train examples
+49 validation examples
+61 test examples
+</code></pre>
+<h3 id="使用tfdata创建输入管道">使用tf.data创建输入管道</h3>
+<p>使用特征作为桥梁从Pandas数据框中的列映射到用于训练模型的特征，创建一个32批大小的输入管道。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">df_to_dataset</span>(dataframe, shuffle<span style="color:#f92672">=</span>True, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>):
+    dataframe <span style="color:#f92672">=</span> dataframe<span style="color:#f92672">.</span>copy()
+    labels <span style="color:#f92672">=</span> dataframe<span style="color:#f92672">.</span>pop(<span style="color:#e6db74">&#39;target&#39;</span>)
+    ds <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>Dataset<span style="color:#f92672">.</span>from_tensor_slices((dict(dataframe), labels))
+    <span style="color:#66d9ef">if</span> shuffle:
+        ds <span style="color:#f92672">=</span> ds<span style="color:#f92672">.</span>shuffle(buffer_size<span style="color:#f92672">=</span>len(dataframe))
+    ds <span style="color:#f92672">=</span> ds<span style="color:#f92672">.</span>batch(batch_size)
+    <span style="color:#66d9ef">return</span> ds
+
+batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">32</span>
+train_ds <span style="color:#f92672">=</span> df_to_dataset(train, batch_size<span style="color:#f92672">=</span>batch_size)
+val_ds <span style="color:#f92672">=</span> df_to_dataset(val, shuffle<span style="color:#f92672">=</span>False, batch_size<span style="color:#f92672">=</span>batch_size)
+test_ds <span style="color:#f92672">=</span> df_to_dataset(test, shuffle<span style="color:#f92672">=</span>False, batch_size<span style="color:#f92672">=</span>batch_size)
+</code></pre></div><h3 id="理解输入管道">理解输入管道</h3>
+<p>选择未被shuffle的val_ds作为演示。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> feature_batch, label_batch <span style="color:#f92672">in</span> val_ds<span style="color:#f92672">.</span>take(<span style="color:#ae81ff">1</span>):
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Every feature:&#39;</span>, list(feature_batch<span style="color:#f92672">.</span>keys()))
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;A batch of ages:&#39;</span>, feature_batch[<span style="color:#e6db74">&#39;age&#39;</span>])
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;A batch of targets:&#39;</span>, label_batch)
+</code></pre></div><pre><code>Every feature: ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+A batch of ages: tf.Tensor(
+[54 66 55 54 40 50 47 59 68 49 57 40 59 62 41 48 58 64 29 59 52 45 60 63
+ 65 52 40 44 35 42 55 42], shape=(32,), dtype=int32)
+A batch of targets: tf.Tensor([1 0 1 0 0 0 0 0 1 1 0 0 0 1 0 0 0 1 0 1 0 0 1 0 0 0 1 0 0 0 1 0], shape=(32,), dtype=int32)
+</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">val<span style="color:#f92672">.</span>head()
+</code></pre></div><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>sex</th>
+      <th>cp</th>
+      <th>trestbps</th>
+      <th>chol</th>
+      <th>fbs</th>
+      <th>restecg</th>
+      <th>thalach</th>
+      <th>exang</th>
+      <th>oldpeak</th>
+      <th>slope</th>
+      <th>ca</th>
+      <th>thal</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>182</th>
+      <td>54</td>
+      <td>1</td>
+      <td>4</td>
+      <td>122</td>
+      <td>286</td>
+      <td>0</td>
+      <td>2</td>
+      <td>116</td>
+      <td>1</td>
+      <td>3.2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>normal</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>222</th>
+      <td>66</td>
+      <td>0</td>
+      <td>3</td>
+      <td>146</td>
+      <td>278</td>
+      <td>0</td>
+      <td>2</td>
+      <td>152</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>normal</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>102</th>
+      <td>55</td>
+      <td>1</td>
+      <td>4</td>
+      <td>160</td>
+      <td>289</td>
+      <td>0</td>
+      <td>2</td>
+      <td>145</td>
+      <td>1</td>
+      <td>0.8</td>
+      <td>2</td>
+      <td>1</td>
+      <td>reversible</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>270</th>
+      <td>54</td>
+      <td>1</td>
+      <td>3</td>
+      <td>125</td>
+      <td>273</td>
+      <td>0</td>
+      <td>2</td>
+      <td>152</td>
+      <td>0</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>1</td>
+      <td>normal</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>253</th>
+      <td>40</td>
+      <td>1</td>
+      <td>1</td>
+      <td>140</td>
+      <td>199</td>
+      <td>0</td>
+      <td>0</td>
+      <td>178</td>
+      <td>1</td>
+      <td>1.4</td>
+      <td>1</td>
+      <td>0</td>
+      <td>reversible</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h3 id="选择要使用的特征并创建特征层">选择要使用的特征并创建特征层</h3>
+<p>作为演示，选择几列来任意训练我们的模型（参考后面的补充部分）。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">feature_columns <span style="color:#f92672">=</span> []
+
+<span style="color:#75715e">#  numeric 数字列</span>
+<span style="color:#66d9ef">for</span> header <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#39;age&#39;</span>, <span style="color:#e6db74">&#39;trestbps&#39;</span>, <span style="color:#e6db74">&#39;chol&#39;</span>, <span style="color:#e6db74">&#39;thalach&#39;</span>, <span style="color:#e6db74">&#39;oldpeak&#39;</span>, <span style="color:#e6db74">&#39;slope&#39;</span>, <span style="color:#e6db74">&#39;ca&#39;</span>]:
+    feature_columns<span style="color:#f92672">.</span>append(feature_column<span style="color:#f92672">.</span>numeric_column(header))
+    
+<span style="color:#75715e"># bucketized 分桶列</span>
+age <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>numeric_column(<span style="color:#e6db74">&#39;age&#39;</span>)
+age_buckets <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>bucketized_column(age, boundaries<span style="color:#f92672">=</span>[<span style="color:#ae81ff">18</span>, <span style="color:#ae81ff">25</span>, <span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">35</span>, <span style="color:#ae81ff">40</span>,
+                                               <span style="color:#ae81ff">45</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">55</span>, <span style="color:#ae81ff">60</span>, <span style="color:#ae81ff">65</span>])
+feature_columns<span style="color:#f92672">.</span>append(age_buckets)
+
+<span style="color:#75715e"># indicator 指示符列</span>
+thal <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>categorical_column_with_vocabulary_list(<span style="color:#e6db74">&#39;thal&#39;</span>, 
+                                                [<span style="color:#e6db74">&#39;fixed&#39;</span>, <span style="color:#e6db74">&#39;normal&#39;</span>, <span style="color:#e6db74">&#39;reversible&#39;</span>])
+thal_one_hot <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>indicator_column(thal)
+feature_columns<span style="color:#f92672">.</span>append(thal_one_hot)
+
+<span style="color:#75715e"># embedding 嵌入列</span>
+thal_embedding <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>embedding_column(thal, dimension<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+feature_columns<span style="color:#f92672">.</span>append(thal_embedding)
+
+<span style="color:#75715e"># crossed 交叉列</span>
+crossed_feature <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>crossed_column([age_buckets, thal], 
+                                                hash_bucket_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>)
+crossed_feature <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>indicator_column(crossed_feature)
+feature_columns<span style="color:#f92672">.</span>append(crossed_feature)
+
+<span style="color:#75715e"># 创建特征层</span>
+
+feature_layer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>keras<span style="color:#f92672">.</span>layers<span style="color:#f92672">.</span>DenseFeatures(feature_columns)
+</code></pre></div><h3 id="创建编译和训练模型">创建、编译和训练模型</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>keras<span style="color:#f92672">.</span>Sequential([
+    feature_layer,
+    layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">128</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>),
+    layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">128</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>),
+    layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>)
+])
+
+model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;adam&#39;</span>, loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>, metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;accuracy&#39;</span>])
+
+model<span style="color:#f92672">.</span>fit(train_ds, validation_data<span style="color:#f92672">=</span>val_ds, epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>)
+</code></pre></div><pre><code>Epoch 1/20
+7/7 [==============================] - 2s 246ms/step 
+- loss: 2.0220 - accuracy: 0.6010 
+- val_loss: 0.0000e+00 - val_accuracy: 0.0000e+00
+
+...
+
+Epoch 20/20
+7/7 [==============================] - 0s 8ms/step 
+- loss: 0.4231 - accuracy: 0.7824 
+- val_loss: 0.4006 - val_accuracy: 0.7755
+</code></pre>
+<h3 id="测试">测试</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">loss, accuracy <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>evaluate(test_ds)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;Accuracy&#39;</span>, accuracy)
+</code></pre></div><pre><code>2/2 [==============================] - 0s 4ms/step 
+- loss: 0.4646 - accuracy: 0.7869
+
+Accuracy 0.78688526
+</code></pre>
+<h2 id="补充几种类型的特征列">补充：几种类型的特征列</h2>
+<p>特征列的输出成为模型的输入，使用下面定义的demo()函数，能够准确地看到数据帧中每列转换的方式)。作为演示，批大小设置为5。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
+train_ds <span style="color:#f92672">=</span> df_to_dataset(train, batch_size<span style="color:#f92672">=</span>batch_size)
+val_ds <span style="color:#f92672">=</span> df_to_dataset(val, shuffle<span style="color:#f92672">=</span>False, batch_size<span style="color:#f92672">=</span>batch_size)
+test_ds <span style="color:#f92672">=</span> df_to_dataset(test, shuffle<span style="color:#f92672">=</span>False, batch_size<span style="color:#f92672">=</span>batch_size)
+
+example_batch <span style="color:#f92672">=</span> next(iter(val_ds))[<span style="color:#ae81ff">0</span>]
+example_batch
+</code></pre></div><pre><code>{'age': &lt;tf.Tensor: id=3490, shape=(5,), dtype=int32, numpy=array([54, 66, 55, 54, 40], dtype=int32)&gt;,
+ 'sex': &lt;tf.Tensor: id=3498, shape=(5,), dtype=int32, numpy=array([1, 0, 1, 1, 1], dtype=int32)&gt;,
+ 'cp': &lt;tf.Tensor: id=3493, shape=(5,), dtype=int32, numpy=array([4, 3, 4, 3, 1], dtype=int32)&gt;,
+ 'trestbps': &lt;tf.Tensor: id=3502, shape=(5,), dtype=int32, numpy=array([122, 146, 160, 125, 140], dtype=int32)&gt;,
+ 'chol': &lt;tf.Tensor: id=3492, shape=(5,), dtype=int32, numpy=array([286, 278, 289, 273, 199], dtype=int32)&gt;,
+ 'fbs': &lt;tf.Tensor: id=3495, shape=(5,), dtype=int32, numpy=array([0, 0, 0, 0, 0], dtype=int32)&gt;,
+ 'restecg': &lt;tf.Tensor: id=3497, shape=(5,), dtype=int32, numpy=array([2, 2, 2, 2, 0], dtype=int32)&gt;,
+ 'thalach': &lt;tf.Tensor: id=3501, shape=(5,), dtype=int32, numpy=array([116, 152, 145, 152, 178], dtype=int32)&gt;,
+ 'exang': &lt;tf.Tensor: id=3494, shape=(5,), dtype=int32, numpy=array([1, 0, 1, 0, 1], dtype=int32)&gt;,
+ 'oldpeak': &lt;tf.Tensor: id=3496, shape=(5,), dtype=float32, numpy=array([3.2, 0. , 0.8, 0.5, 1.4], dtype=float32)&gt;,
+ 'slope': &lt;tf.Tensor: id=3499, shape=(5,), dtype=int32, numpy=array([2, 2, 2, 3, 1], dtype=int32)&gt;,
+ 'ca': &lt;tf.Tensor: id=3491, shape=(5,), dtype=int32, numpy=array([2, 1, 1, 1, 0], dtype=int32)&gt;,
+ 'thal': &lt;tf.Tensor: id=3500, shape=(5,), dtype=string, numpy=
+ array([b'normal', b'normal', b'reversible', b'normal', b'reversible'],
+       dtype=object)&gt;}
+</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">demo</span>(feature_column):
+    feature_layer <span style="color:#f92672">=</span> layers<span style="color:#f92672">.</span>DenseFeatures(feature_column)
+    <span style="color:#66d9ef">print</span>(feature_layer(example_batch)<span style="color:#f92672">.</span>numpy())
+</code></pre></div><ul>
+<li><strong>数字列：</strong>
+最简单的列类型，它用于表示真正有价值的特征，使用此列时，模型将从数据帧中接收未更改的列值。此数据集中大多列都是数字。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">age <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>numeric_column(<span style="color:#e6db74">&#39;age&#39;</span>)
+demo(age)
+</code></pre></div><pre><code>[[54.]
+ [66.]
+ [55.]
+ [54.]
+ [40.]]
+</code></pre>
+<ul>
+<li><strong>Bucketized（桶）列：</strong>
+如果不希望将数字直接输入模型，而是根据数值范围将其值分成不同的类别，可以使用bucketized列。下面的one-hot值每行匹配的年龄范围。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">age_buckets <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>bucketized_column(age, boundaries<span style="color:#f92672">=</span>[<span style="color:#ae81ff">18</span>, <span style="color:#ae81ff">25</span>, <span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">35</span>, 
+                                               <span style="color:#ae81ff">40</span>, <span style="color:#ae81ff">45</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">55</span>, <span style="color:#ae81ff">60</span>, <span style="color:#ae81ff">65</span>])
+demo(age_buckets)
+</code></pre></div><pre><code>[[0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
+ [0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]]
+</code></pre>
+<ul>
+<li><strong>分类列：</strong>
+该数据集中，thal表示为字符串，必须将其映射到数值才能提供给模型。分类词汇列表提供了一种将字符串表示为one-hot矢量的方法：</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">thal <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>categorical_column_with_vocabulary_list(<span style="color:#e6db74">&#39;thal&#39;</span>, 
+                                             [<span style="color:#e6db74">&#39;fixed&#39;</span>, <span style="color:#e6db74">&#39;normal&#39;</span>, <span style="color:#e6db74">&#39;reversible&#39;</span>])
+thal_one_hot <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>indicator_column(thal)
+demo(thal_one_hot)
+</code></pre></div><pre><code>[[0. 1. 0.]
+ [0. 1. 0.]
+ [0. 0. 1.]
+ [0. 1. 0.]
+ [0. 0. 1.]]
+</code></pre>
+<ul>
+<li><strong>嵌入列：</strong>
+当不是只有几个可能的字符串，而是每个类别有数千（或更多）的值。由于多种原因，随着类别数量的增加，使用one-hot编码训练的神经网络变得不可行，可以使用嵌入列来克服此限制。嵌入列不是将数据表示为多维度的one-hot矢量，而是将数据表示为低纬密集向量，其中每个单元格可以包含任意数字，而不仅仅是0或者1的嵌入大小（下面的例子中是8）是必须调整的参数。当分类列具有许多可能的值时，最好使用嵌入列。注意：嵌入列的输入是分类列。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">thal_embedding <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>embedding_column(thal, dimension<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+demo(thal_embedding)
+</code></pre></div><pre><code>[[-0.11404778  0.05652272 -0.5231736  -0.27228993  0.19987193 -0.31442413
+   0.38294193  0.40042654]
+ [-0.11404778  0.05652272 -0.5231736  -0.27228993  0.19987193 -0.31442413
+   0.38294193  0.40042654]
+ [-0.4958867  -0.088071   -0.36765668 -0.18805741 -0.44936502  0.20667636
+   0.10853706  0.10239269]
+ [-0.11404778  0.05652272 -0.5231736  -0.27228993  0.19987193 -0.31442413
+   0.38294193  0.40042654]
+ [-0.4958867  -0.088071   -0.36765668 -0.18805741 -0.44936502  0.20667636
+   0.10853706  0.10239269]]
+</code></pre>
+<ul>
+<li><strong>哈希特征列：</strong>
+表示具有大量值的分类列的另一种方法是使用哈希特征列，此特征列计算输入的哈希值，然后选择一个hash_bucket_size存储桶来编码字符串。使用此列时，不需要提供词汇表，并且可以选择使用hash_buckets的数量远远小于实际类别的数量以节省空间。关键点：该技术的一个重要缺点是可能存在冲突，其中不同的字符串被映射到同一个桶。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">thal_hashed <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>categorical_column_with_hash_bucket(<span style="color:#e6db74">&#39;thal&#39;</span>,   
+                                                           hash_bucket_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>)
+demo(feature_column<span style="color:#f92672">.</span>indicator_column(thal_hashed))
+</code></pre></div><pre><code>[[0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+</code></pre>
+<ul>
+<li><strong>交叉特征列：</strong>
+将特征组合成单个特征（也称为交叉特征）,使模型能够为每个特征组合学习单独的权重。这里创建一个age和thal的交叉新功能。注意：crossed_column不会构建所有可能的完整表（可能非常大），相反。它由hashed_column支持，因此可以选择表的大小。</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">crossed_feature <span style="color:#f92672">=</span> feature_column<span style="color:#f92672">.</span>crossed_column([age_buckets, thal],
+                                                hash_bucket_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>)
+demo(feature_column<span style="color:#f92672">.</span>indicator_column(crossed_feature))
+</code></pre></div><pre><code>[[0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]
+ [0. 0. 0. ... 0. 0. 0.]]
+</code></pre>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/matplotlib_graph-01/">Matplotlib作图</a></span>
+  <span class="nav-next"></span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/matplotlib_graph-01\/';
+    
+  } else if (e.which == 39) {  
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

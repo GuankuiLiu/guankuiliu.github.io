@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>Cats v.s. Dogs CNN分类 - Boylad</title>
+    
+     
+    <meta property="og:title" content="Cats v.s. Dogs CNN分类 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>Cats v.s. Dogs CNN分类</h1>
+
+
+
+<h3>Boylad &middot 
+2019-11-30</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<p>用<strong>Kaggle</strong>竞赛的<a href="https://www.kaggle.com/c/dogs-vs-cats/data">Dogs vs. Cats</a>原始数据集中包含25000张猫狗图像(各12500张)。下载解压后，创建一个包含三个子集(train、validation、test)的新数据集(cats_and_dogs_small)：训练集每类图片各1000张，验证集每类图片各500张，测试集每类图片也是各500张。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> os<span style="color:#f92672">,</span> shutil
+
+original_dataset_dir <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;kaggle_original_data&#39;</span>
+
+base_dir <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small&#39;</span>
+os<span style="color:#f92672">.</span>mkdir(base_dir)
+
+train_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(base_dir, <span style="color:#e6db74">&#39;train&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(train_dir)
+validation_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(base_dir, <span style="color:#e6db74">&#39;validation&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(validation_dir)
+test_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(base_dir, <span style="color:#e6db74">&#39;test&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(test_dir)
+
+train_cats_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(train_dir, <span style="color:#e6db74">&#39;cats&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(train_cats_dir)
+validation_cats_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(validation_dir, <span style="color:#e6db74">&#39;cats&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(validation_cats_dir)
+test_cats_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(test_dir, <span style="color:#e6db74">&#39;cats&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(test_cats_dir)
+
+train_dogs_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(train_dir, <span style="color:#e6db74">&#39;dogs&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(train_dogs_dir)
+validation_dogs_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(validation_dir, <span style="color:#e6db74">&#39;dogs&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(validation_dogs_dir)
+test_dogs_dir <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(test_dir, <span style="color:#e6db74">&#39;dogs&#39;</span>)
+os<span style="color:#f92672">.</span>mkdir(test_dogs_dir)
+
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;cat.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1000</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(train_cats_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;cat.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1000</span>, <span style="color:#ae81ff">1500</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(validation_cats_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+    
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;cat.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1500</span>, <span style="color:#ae81ff">2000</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(test_cats_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+    
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;dog.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1000</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(train_dogs_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;dog.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1000</span>, <span style="color:#ae81ff">1500</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(validation_dogs_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+    
+fnames <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;dog.{}.jpg&#39;</span><span style="color:#f92672">.</span>format(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1500</span>, <span style="color:#ae81ff">2000</span>)]
+<span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> fnames:
+    src <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(original_dataset_dir, fname)
+    dst <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(test_dogs_dir, fname)
+    shutil<span style="color:#f92672">.</span>copyfile(src, dst)
+</code></pre></div><p>每个类别中的样本数均相同：这是一个平衡的二分类问题。数据集结构如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;training cat img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/train/cats&#39;</span>)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;training dog img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/train/dogs&#39;</span>)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;validation cat img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/validation/cats&#39;</span>)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;validation dog img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/validation/dogs&#39;</span>)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;test cat img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/test/cats&#39;</span>)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;test dog img:&#39;</span>,len(os<span style="color:#f92672">.</span>listdir(<span style="color:#e6db74">&#39;cats_and_dogs_small/test/dogs&#39;</span>)))
+</code></pre></div><pre><code>training cat img: 1000
+training dog img: 1000
+validation cat img: 500
+validation dog img: 500
+test cat img: 500
+test dog img: 500
+</code></pre>
+<h3 id="搭建cnn">搭建CNN</h3>
+<p>我们先对训练集进行一次简单的、无任何正则化的CNN训练，其结果作为<code>baseline</code>。CNN的架构如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> layers
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> models
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> optimizers
+<span style="color:#f92672">from</span> tensorflow.keras.preprocessing <span style="color:#f92672">import</span> image
+<span style="color:#f92672">from</span> tensorflow.keras.preprocessing.image <span style="color:#f92672">import</span> ImageDataGenerator
+
+model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">32</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">3</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">64</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">128</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">128</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Flatten())
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+
+model<span style="color:#f92672">.</span>summary()
+</code></pre></div><pre><code>Model: &quot;sequential_2&quot;
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d_8 (Conv2D)            (None, 148, 148, 32)      896       
+_________________________________________________________________
+max_pooling2d_8 (MaxPooling2 (None, 74, 74, 32)        0         
+_________________________________________________________________
+conv2d_9 (Conv2D)            (None, 72, 72, 64)        18496     
+_________________________________________________________________
+max_pooling2d_9 (MaxPooling2 (None, 36, 36, 64)        0         
+_________________________________________________________________
+conv2d_10 (Conv2D)           (None, 34, 34, 128)       73856     
+_________________________________________________________________
+max_pooling2d_10 (MaxPooling (None, 17, 17, 128)       0         
+_________________________________________________________________
+conv2d_11 (Conv2D)           (None, 15, 15, 128)       147584    
+_________________________________________________________________
+max_pooling2d_11 (MaxPooling (None, 7, 7, 128)         0         
+_________________________________________________________________
+flatten_2 (Flatten)          (None, 6272)              0         
+_________________________________________________________________
+dense_4 (Dense)              (None, 512)               3211776   
+_________________________________________________________________
+dense_5 (Dense)              (None, 1)                 513       
+=================================================================
+Total params: 3,453,121
+Trainable params: 3,453,121
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+<p>编译模型：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>compile(loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+              optimizer<span style="color:#f92672">=</span>optimizers<span style="color:#f92672">.</span>RMSprop(lr<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-4</span>),
+              metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+</code></pre></div><h3 id="数据预处理">数据预处理</h3>
+<p>Keras在<code>keras.preprocessing.image</code>中有一个带有图像处理工具模块，它包含<code>ImageDataGenerator</code>类，该类允许快速设置Python<code>生成器</code>，该生成器可以自动将磁盘上的图像文件转换为成批的预处理张量。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">train_datagen <span style="color:#f92672">=</span> ImageDataGenerator(rescale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span><span style="color:#ae81ff">255</span>)
+test_datagen <span style="color:#f92672">=</span> ImageDataGenerator(rescale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span><span style="color:#ae81ff">255</span>)
+
+train_generator <span style="color:#f92672">=</span> train_datagen<span style="color:#f92672">.</span>flow_from_directory(
+        directory <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small/train&#39;</span>,
+        target_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>),
+        batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+        class_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>)
+
+validation_generator <span style="color:#f92672">=</span> test_datagen<span style="color:#f92672">.</span>flow_from_directory(
+        directory <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small/validation&#39;</span>,
+        target_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>),
+        batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>,
+        class_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>) 
+</code></pre></div><pre><code>Found 2000 images belonging to 2 classes.
+Found 1000 images belonging to 2 classes.
+</code></pre>
+<p>生成器生成了一批形状是(20,150,150,3)的150x150RGB图像和形状是(20,)的二进制标签，20是每个批次的样本数(批次大小)。需要注意的是，生成器无限循环地遍历目标文件夹中存在的图像来生成这些批次。因此需要<code>break</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> data_batch, labels_batch <span style="color:#f92672">in</span> train_generator:
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;data batch shape:&#39;</span>, data_batch<span style="color:#f92672">.</span>shape)
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;labels batch shape:&#39;</span>, labels_batch<span style="color:#f92672">.</span>shape)
+    <span style="color:#66d9ef">break</span>
+</code></pre></div><pre><code>data batch shape: (20, 150, 150, 3)
+labels batch shape: (20,)
+</code></pre>
+<p>使用<code>fit_generator</code>方法将模型拟合到数据。生成器作为第一个参数，将无休止地生成数据，每次从生成器中提取<code>steps_per_epoch</code>批次并梯度下降之后，拟合过程将转到下一个<code>epoch</code>。由于批次是20个样本，因此需要100个<code>steps_per_epoch</code>，以符合2000个训练样本。<code>validation_data</code>参数既可以是生成器，也可以是<code>tuple of Numpy arrays</code>，如果是生成器的话，需要指定<code>validation_steps</code>，这里应该的值应该是50，以符合1000个验证集样本。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit_generator(
+      train_generator,
+      steps_per_epoch<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
+      epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">30</span>,
+      validation_data<span style="color:#f92672">=</span>validation_generator,
+      validation_steps<span style="color:#f92672">=</span><span style="color:#ae81ff">50</span>)
+</code></pre></div><pre><code>Epoch 1/30
+100/100 [==============================] - 31s 308ms/step 
+- loss: 0.6919 - acc: 0.5250 - val_loss: 0.6859 - val_acc: 0.5290
+...
+Epoch 30/30
+100/100 [==============================] - 30s 297ms/step 
+- loss: 0.0326 - acc: 0.9915 - val_loss: 1.3727 - val_acc: 0.7080
+</code></pre>
+<p>每次训练结束后保存模型是一个好习惯：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model<span style="color:#f92672">.</span>save(<span style="color:#e6db74">&#39;cats_and_dogs_small_1.h5&#39;</span>)
+</code></pre></div><p>查看训练过程中，损失和准确率在训练集和验证集上的变化情况：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;acc&#39;</span>]
+val_acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_acc&#39;</span>]
+loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+val_loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+epochs <span style="color:#f92672">=</span> range(len(acc))
+
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">10</span>,<span style="color:#ae81ff">4</span>))
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">121</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, acc, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training acc&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_acc, <span style="color:#e6db74">&#39;b&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation acc&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">122</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training loss&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_loss, <span style="color:#e6db74">&#39;b&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191130_cats_v.s._dogs/output_15_0.png" alt="png"></p>
+<p>上图显示我们训练出来的模型严重过拟合。猜测过拟合是由于要学习的样本太少而导致的。下面我们将使用<code>data augmentation</code>来避免这种情况。</p>
+<h3 id="使用数据增强">使用数据增强</h3>
+<p>数据增强(<code>data augmentation</code>)是指通过许多随机变换从现有训练集中生成更多训练数据。这有助于使模型暴露数据的更多方面。在Keras中，可以通过<code>ImageDataGenerator</code>来增强数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">datagen <span style="color:#f92672">=</span> ImageDataGenerator(rotation_range<span style="color:#f92672">=</span><span style="color:#ae81ff">40</span>, width_shift_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>,
+                             height_shift_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, shear_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>,
+                             zoom_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, horizontal_flip<span style="color:#f92672">=</span>True,
+                             fill_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;nearest&#39;</span>)
+</code></pre></div><ul>
+<li><code>rotation_range</code>是角度值（在0~180范围内），表示图像随机旋转的角度范围。</li>
+<li><code>width_shift</code>和<code>height_shift</code>是图像在水平或垂直方向上平移的范围（相对于总宽度或总高度的比例）。</li>
+<li><code>shear_range</code>是随机错切变换的角度。</li>
+<li><code>zoom_range</code>是图像随机缩放的范围。</li>
+<li><code>horizontal_flip</code>是随机将一半的图像水平翻转。</li>
+<li><code>fill_mode</code>是用于填充新创建像素的方法，这些新像素可能来自于旋转或宽度/高度平移。</li>
+</ul>
+<p>下面显示了训练集中猫类的第四张图片在<code>ImageDataGenerator</code>下的前四种变换效果：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">cat_path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small/train/cats&#39;</span>
+names <span style="color:#f92672">=</span> [os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(cat_path, name) <span style="color:#66d9ef">for</span> name <span style="color:#f92672">in</span> os<span style="color:#f92672">.</span>listdir(cat_path)]
+img_path <span style="color:#f92672">=</span> names[<span style="color:#ae81ff">3</span>]  <span style="color:#75715e"># 显示第4张图片</span>
+img <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>load_img(img_path, target_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>))
+x <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>img_to_array(img)  <span style="color:#75715e"># x.shape=(150,150,30)</span>
+x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>reshape((<span style="color:#ae81ff">1</span>,) <span style="color:#f92672">+</span> x<span style="color:#f92672">.</span>shape)  <span style="color:#75715e"># x.shape=(1,150,150,30)</span>
+i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">12</span>,<span style="color:#ae81ff">3</span>))
+<span style="color:#66d9ef">for</span> batch <span style="color:#f92672">in</span> datagen<span style="color:#f92672">.</span>flow(x, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>):
+    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">4</span>,i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+    imgplot <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>imshow(image<span style="color:#f92672">.</span>array_to_img(batch[<span style="color:#ae81ff">0</span>]))
+    i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+    <span style="color:#66d9ef">if</span> i <span style="color:#f92672">%</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        <span style="color:#66d9ef">break</span>
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191130_cats_v.s._dogs/output_21_0.png" alt="png"></p>
+<h3 id="重新构建cnn">重新构建CNN</h3>
+<p>由于数据增强只是混合现有信息，无法产生新信息，使用数据增强可能不足以摆脱过拟合问题，因此，在全连接层之前加入<code>Dropout</code>层。不能增强验证数据。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">32</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>, input_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">3</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">64</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">128</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Conv2D(<span style="color:#ae81ff">128</span>, (<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>MaxPooling2D((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Flatten())
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dropout(<span style="color:#ae81ff">0.5</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">512</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;sigmoid&#39;</span>))
+
+model<span style="color:#f92672">.</span>compile(loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary_crossentropy&#39;</span>,
+              optimizer<span style="color:#f92672">=</span>optimizers<span style="color:#f92672">.</span>RMSprop(lr<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-4</span>),
+              metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;acc&#39;</span>])
+
+train_datagen <span style="color:#f92672">=</span> ImageDataGenerator(rescale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span><span style="color:#ae81ff">255</span>, rotation_range<span style="color:#f92672">=</span><span style="color:#ae81ff">40</span>,
+                                   width_shift_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, height_shift_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>,
+                                   shear_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>, zoom_range<span style="color:#f92672">=</span><span style="color:#ae81ff">0.2</span>,
+                                   horizontal_flip<span style="color:#f92672">=</span>True,)
+
+test_datagen <span style="color:#f92672">=</span> ImageDataGenerator(rescale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span><span style="color:#ae81ff">255</span>)
+
+train_generator <span style="color:#f92672">=</span> train_datagen<span style="color:#f92672">.</span>flow_from_directory(
+                        directory <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small/train&#39;</span>,
+                        target_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>), batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>, class_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>)
+
+validation_generator <span style="color:#f92672">=</span> test_datagen<span style="color:#f92672">.</span>flow_from_directory(
+                        directory <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cats_and_dogs_small/validation/&#39;</span>,
+                        target_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">150</span>), batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>, class_mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;binary&#39;</span>)
+
+history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit_generator(train_generator, steps_per_epoch<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>,
+                              epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>, validation_data<span style="color:#f92672">=</span>validation_generator,
+                              validation_steps<span style="color:#f92672">=</span><span style="color:#ae81ff">50</span>)
+model<span style="color:#f92672">.</span>save(<span style="color:#e6db74">&#39;cats_and_dogs_small_2.h5&#39;</span>)                              
+</code></pre></div><pre><code>Found 2000 images belonging to 2 classes.
+Found 1000 images belonging to 2 classes.
+Epoch 1/100
+100/100 [==============================] - 50s 500ms/step
+- loss: 0.6920 - acc: 0.5164 - val_loss: 0.6971 - val_acc: 0.5222
+...
+Epoch 100/100
+100/100 [==============================] - 46s 457ms/step 
+- loss: 0.3358 - acc: 0.8542 - val_loss: 0.4305 - val_acc: 0.8173
+</code></pre>
+<p>数据增强和<code>Dropout</code>之后，在验证集上我们的准确率达到了将近82%，比无正则化模型提高了约12%，改进效果很明显。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;acc&#39;</span>]
+val_acc <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_acc&#39;</span>]
+loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;loss&#39;</span>]
+val_loss <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_loss&#39;</span>]
+epochs <span style="color:#f92672">=</span> range(len(acc))
+
+plt<span style="color:#f92672">.</span>figure(figsize <span style="color:#f92672">=</span> (<span style="color:#ae81ff">12</span>,<span style="color:#ae81ff">4</span>))
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">121</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, acc, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training acc&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_acc, <span style="color:#e6db74">&#39;b&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation acc&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation accuracy&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+
+plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">122</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, loss, <span style="color:#e6db74">&#39;bo&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Training loss&#39;</span>)
+plt<span style="color:#f92672">.</span>plot(epochs, val_loss, <span style="color:#e6db74">&#39;b&#39;</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">&#39;Training and validation loss&#39;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191130_cats_v.s._dogs/output_25_0.png" alt="png"></p>
+<p>从上图可以看出，新模型已经极大程度地减轻了过拟合程度。
+为了进一步提高准确率，我们将使用一个<code>pre_trained model</code>的VGG16，做迁移学习。</p>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191129_overfitting/">神经网络过拟合与正则化</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191206_fashion_mnist/">Fashion-MNIST CNN分类</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191129_overfitting\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191206_fashion_mnist\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+

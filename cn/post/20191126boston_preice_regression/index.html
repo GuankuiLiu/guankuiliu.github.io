@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    
+    <link rel="stylesheet" href="../../../fonts/academicons-1.8.6/css/academicons.min.css"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../logo/bodhi.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    
+    <title>波士顿房价预测 - Boylad</title>
+    
+     
+    <meta property="og:title" content="波士顿房价预测 - Guankui Liu | Boylad">
+    
+
+    
+      
+    
+
+    
+
+    
+    
+
+
+<link href='//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/mystyle.css" /> 
+    <link rel="stylesheet" href="../../../css/fonts.css" />
+    
+<script async src="../../../js/load-typekit.js"></script>
+
+
+<link rel="stylesheet" href="../../../css/custom.css" />
+
+  </head>
+
+  
+  <body class="cn">
+    <header class="masthead">
+      
+
+<h1><a href="../../../"><img src="../../../logo/ljk.png" alt="Boylad" /></a></h1>
+
+
+
+      <nav class="menu">
+        <input id="menu-check" type="checkbox" />
+        <label id="menu-label" for="menu-check" class="unselectable">
+          <span class="icon close-icon">✕</span>
+          <span class="icon open-icon">☰</span>
+          <span class="text">Menu</span>
+        </label>
+        <ul>
+        
+        
+        <li><a href="../../../">首页</a></li>
+        
+        <li><a href="../../../cn/about/">关于</a></li>
+        
+        <li><a href="../../../cn/post/">博客</a></li>
+        
+        <li><a href="../../../en/">English</a></li>
+        
+        
+
+<li class="menu-extra"></li>
+
+
+<li><a href="../../../cn/index.xml" type="application/rss+xml" title="RSS feed">订阅</a></li>
+
+<li><a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="Attribution-NonCommercial-ShareAlike 4.0 International">版权</a></li>
+
+
+        </ul>
+      </nav>
+    </header>
+
+    <article class="main">
+      <header class="title">
+        
+
+<h1>波士顿房价预测</h1>
+
+
+
+<h3>Boylad &middot 
+2019-11-26</h3> 
+
+
+   
+  
+
+
+      </header>
+
+
+<p>波士顿房价数据集包含20世纪70年代中期波士顿郊区犯罪率、财产税率等13个<code>feature</code>，<code>target</code>是住房价格的中位数，单位：千美元。其中，训练集404个<code>sample</code>，测试集102<code>sample</code>，<code>feature</code>之间的量纲有差异。<code>feature</code>如下：</p>
+<pre><code>1. Per capita crime rate.
+2. Proportion of residential land zoned for lots over 25,000 square feet.
+3. Proportion of non-retail business acres per town.
+4. Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+5. Nitric oxides concentration (parts per 10 million).
+6. Average number of rooms per dwelling.
+7. Proportion of owner-occupied units built prior to 1940.
+8. Weighted distances to five Boston employment centres.
+9. Index of accessibility to radial highways.
+10. Full-value property-tax rate per $10,000.
+11. Pupil-teacher ratio by town.
+12. 1000 * (Bk - 0.63) ** 2 where Bk is the proportion of Black people by town.
+13. % lower status of the population.
+</code></pre>
+<p>加载数据集：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> models
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> layers
+<span style="color:#f92672">from</span> tensorflow.keras <span style="color:#f92672">import</span> backend <span style="color:#66d9ef">as</span> K
+<span style="color:#f92672">from</span> keras.datasets <span style="color:#f92672">import</span> boston_housing
+
+(train_data,train_targets),(test_data,test_targets) <span style="color:#f92672">=</span> boston_housing<span style="color:#f92672">.</span>load_data()
+</code></pre></div><p>首先对数据做标准化处理，使用<strong>训练集</strong>的均值和标准差标准化测试集数据：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">mean <span style="color:#f92672">=</span> train_data<span style="color:#f92672">.</span>mean(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+train_data <span style="color:#f92672">-=</span> mean
+std <span style="color:#f92672">=</span> train_data<span style="color:#f92672">.</span>std(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+train_data <span style="color:#f92672">/=</span> std
+
+test_data <span style="color:#f92672">-=</span> mean
+test_data <span style="color:#f92672">/=</span> std
+</code></pre></div><p>因为这是一个回归问题，因此输出层的维度设为1，没有激活函数意味着它是线性层，损失函数用均方误差<code>(Mean Squared Error, MSE)</code>。平均绝对误差<code>(Mean Absolute Error, MAE)</code>作为模型的评价指标。因为需要将同一个模型多次实例化，所以用一个函数开构建模型。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">build_model</span>():
+    model <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>Sequential()
+    model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">64</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>,
+                           input_shape<span style="color:#f92672">=</span>(train_data<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>],)))
+    model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">64</span>, activation<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;relu&#39;</span>))
+    model<span style="color:#f92672">.</span>add(layers<span style="color:#f92672">.</span>Dense(<span style="color:#ae81ff">1</span>))
+    model<span style="color:#f92672">.</span>compile(optimizer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rmsprop&#39;</span>, loss<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;mse&#39;</span>, metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;mae&#39;</span>])
+    <span style="color:#66d9ef">return</span> model
+</code></pre></div><p>由于我们的数据量很小，验证集的划分对模型的训练影响可能比较明显。因此在这里我们采用4折交叉验证，使模型更具<code>Robust</code>。模型在验证集上的<code>MAE</code>是4折<code>MAE</code>的平均值。交叉验证时，我们保存每个<code>Epoch</code>验证集的<code>MAE</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">k <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
+num_val_samples <span style="color:#f92672">=</span> len(train_data) <span style="color:#f92672">//</span> k
+num_epochs <span style="color:#f92672">=</span> <span style="color:#ae81ff">500</span>
+all_mae_histories <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(k):
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;processing fold #&#39;</span>, i)
+    val_data <span style="color:#f92672">=</span> train_data[i <span style="color:#f92672">*</span> num_val_samples: (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> num_val_samples]
+    val_targets <span style="color:#f92672">=</span> train_targets[i <span style="color:#f92672">*</span> num_val_samples: (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> num_val_samples]
+
+    partial_train_data <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>concatenate(
+        [train_data[:i <span style="color:#f92672">*</span> num_val_samples],
+         train_data[(i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> num_val_samples:]],
+        axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+    partial_train_targets <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>concatenate(
+        [train_targets[:i <span style="color:#f92672">*</span> num_val_samples],
+         train_targets[(i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> num_val_samples:]],
+        axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+
+    model <span style="color:#f92672">=</span> build_model()
+    history <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>fit(partial_train_data, partial_train_targets,
+                        validation_data<span style="color:#f92672">=</span>(val_data, val_targets),
+                        epochs<span style="color:#f92672">=</span>num_epochs, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+    mae_history <span style="color:#f92672">=</span> history<span style="color:#f92672">.</span>history[<span style="color:#e6db74">&#39;val_mae&#39;</span>]
+    all_mae_histories<span style="color:#f92672">.</span>append(mae_history)
+</code></pre></div><pre><code>processing fold # 0
+processing fold # 1
+processing fold # 2
+processing fold # 3
+</code></pre>
+<p><code>all_mae_histories</code>是长度为4的列表，其每个元素是长度为500的列表。<code>average_mae_history</code>是每个<code>Epochs</code>上4折<code>MAE</code>的平均。可视化如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">average_mae_history <span style="color:#f92672">=</span> [
+    np<span style="color:#f92672">.</span>mean([x[i] <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> all_mae_histories]) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(num_epochs)]
+
+plt<span style="color:#f92672">.</span>plot(range(<span style="color:#ae81ff">1</span>, len(average_mae_history) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>), average_mae_history)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation MAE&#39;</span>)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191126_boston_house_price/output_9_0.png" alt="png"></p>
+<p>因为前10个<code>Epochs</code>的<code>Validation MAE</code>值比较极端，剔除前10个值后，将每个点替换为先前点的指数移动平均值，以获得平滑曲线：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">smooth_curve</span>(points, factor<span style="color:#f92672">=</span><span style="color:#ae81ff">0.9</span>):
+  smoothed_points <span style="color:#f92672">=</span> []
+  <span style="color:#66d9ef">for</span> point <span style="color:#f92672">in</span> points:
+    <span style="color:#66d9ef">if</span> smoothed_points:
+      previous <span style="color:#f92672">=</span> smoothed_points[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+      smoothed_points<span style="color:#f92672">.</span>append(previous <span style="color:#f92672">*</span> factor <span style="color:#f92672">+</span> point <span style="color:#f92672">*</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> factor))
+    <span style="color:#66d9ef">else</span>:
+      smoothed_points<span style="color:#f92672">.</span>append(point)
+  <span style="color:#66d9ef">return</span> smoothed_points
+
+smooth_mae_history <span style="color:#f92672">=</span> smooth_curve(average_mae_history[<span style="color:#ae81ff">10</span>:])
+
+plt<span style="color:#f92672">.</span>plot(range(<span style="color:#ae81ff">1</span>, len(smooth_mae_history) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>), smooth_mae_history)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#39;Epochs&#39;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#39;Validation MAE&#39;</span>)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="../../post/imgs/20191126_boston_house_price/output_11_0.png" alt="png"></p>
+<p>从上图可以看出，大约在70个<code>Epoch</code>之后，<code>validation MAE</code>停止显着改善。因此我们只使用70个<code>Epoch</code>训练模型：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">model <span style="color:#f92672">=</span> build_model()
+model<span style="color:#f92672">.</span>fit(train_data, train_targets,
+          epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">70</span>, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+test_mse_score, test_mae_score <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>evaluate(test_data, test_targets)
+</code></pre></div><pre><code>102/1 [========================] - 0s 2ms/sample - loss: 68.1000 - mae: 2.6371
+</code></pre>
+<p>模型在测试集上的<code>mae</code>约为2.643，意味着模型的预测结果与真实值平均相差约$2637<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">test_mae_score
+</code></pre></div><pre><code>2.6370993
+</code></pre>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>本文整理自：<em>Deep Learning with Python</em> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+
+  <footer>
+  
+<nav class="post-nav">
+  <span class="nav-prev">&larr; <a href="../../../cn/post/20191124imdb_mlp/">电影评论&amp;新闻主题文本分类</a></span>
+  <span class="nav-next"><a href="../../../cn/post/20191129_overfitting/">神经网络过拟合与正则化</a> &rarr;</span>
+</nav>
+<script type="text/javascript">
+document.addEventListener('keyup', function(e) {
+  if (e.target.nodeName.toUpperCase() != 'BODY') return;
+  var url = false;
+  if (e.which == 37) {  
+    
+    url = '\/cn\/post\/20191124imdb_mlp\/';
+    
+  } else if (e.which == 39) {  
+    
+    url = '\/cn\/post\/20191129_overfitting\/';
+    
+  }
+  if (url) window.location = url;
+});
+</script>
+
+
+
+<section class="comments">
+  <div id="disqus_thread"></div>
+  <script src="../../../js/disqusloader.min.js"></script>
+  <script>
+  var disqus_config = function () {
+  
+    this.page.url = "https:\/\/Boylad.github.io" + location.pathname;
+  
+  };
+  (function() {
+    var inIFrame = function() {
+      var iframe = true;
+      try { iframe = window.self !== window.top; } catch (e) {}
+      return iframe;
+    };
+    if (inIFrame()) return;
+    var disqus_js = '//home-xjdzylqrzp.disqus.com/embed.js';
+    
+    if (location.hash.match(/^#comment/)) {
+      var d = document, s = d.createElement('script');
+      s.src = disqus_js; s.async = true;
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    } else {
+      disqusLoader('#disqus_thread', {
+        scriptUrl: disqus_js, laziness: 0, disqusConfig: disqus_config
+      });
+    }
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<script async src="../../../js/fix-toc.js"></script>
+
+<script async src="../../../js/center-img.js"></script>
+
+<script async src="../../../js/right-quote.js"></script>
+
+<script async src="../../../js/no-highlight.js"></script>
+
+<script async src="../../../js/fix-footnote.js"></script>
+
+<script async src="../../../js/math-code.js"></script>
+
+<script async src="../../../js/external-link.js"></script>
+
+<script async src="../../../js/alt-title.js"></script>
+
+<script async src="../../../js/header-link.js"></script>
+
+
+<script async src="//cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+  
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/tex.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+  
+  
+
+  <div class="copyright"><a href="../../../tags/index.html"><i class='fab fa-github fa-1x'></i></a> · © <a href="../../../">Guankui Liu</a> 2019 </div>
+  
+  
+
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+
