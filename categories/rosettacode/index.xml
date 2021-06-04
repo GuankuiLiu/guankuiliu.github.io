@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RosettaCode on Guankui Liu | Boylad</title>
-    <link>https://shixiangwang.github.io/home/categories/rosettacode/</link>
+    <link>/categories/rosettacode/</link>
     <description>Recent content in RosettaCode on Guankui Liu | Boylad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 07 Dec 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/categories/rosettacode/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 07 Dec 2019 00:00:00 +0000</lastBuildDate><atom:link href="/categories/rosettacode/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>100扇门的打开与关闭</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191207_100_doors_open_close/</link>
+      <link>/cn/post/20191207_100_doors_open_close/</link>
       <pubDate>Sat, 07 Dec 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191207_100_doors_open_close/</guid>
+      <guid>/cn/post/20191207_100_doors_open_close/</guid>
       <description>有100扇门围成一圈，顺时针标号为$1,2,\cdots,100$，现在要你从1号门开始绕着这些门走100圈并按如下规则操作相关的门，假设起</description>
     </item>
     

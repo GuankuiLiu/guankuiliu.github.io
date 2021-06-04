@@ -2,53 +2,53 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Keras on Guankui Liu | Boylad</title>
-    <link>https://shixiangwang.github.io/home/tags/keras/</link>
+    <link>/tags/keras/</link>
     <description>Recent content in Keras on Guankui Liu | Boylad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 30 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/tags/keras/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 30 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="/tags/keras/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Cats v.s. Dogs CNN分类</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191130_cats_v.s._dogs/</link>
+      <link>/cn/post/20191130_cats_v.s._dogs/</link>
       <pubDate>Sat, 30 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191130_cats_v.s._dogs/</guid>
+      <guid>/cn/post/20191130_cats_v.s._dogs/</guid>
       <description>用Kaggle竞赛的Dogs vs. Cats原始数据集中包含25000张猫狗图像(各12500张)。下载解压后，创建一个包含三个子集(train、</description>
     </item>
     
     <item>
       <title>神经网络过拟合与正则化</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191129_overfitting/</link>
+      <link>/cn/post/20191129_overfitting/</link>
       <pubDate>Fri, 29 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191129_overfitting/</guid>
+      <guid>/cn/post/20191129_overfitting/</guid>
       <description>Deep learning models tend to be good at fitting to the training data, but the real challenge is generalization, not fitting. 这里我们使用IMDB数据集作为测试，介绍一些神经网络中过拟合问题的处理方法。数据预处理部分，参考这</description>
     </item>
     
     <item>
       <title>波士顿房价预测</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191126boston_preice_regression/</link>
+      <link>/cn/post/20191126boston_preice_regression/</link>
       <pubDate>Tue, 26 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191126boston_preice_regression/</guid>
+      <guid>/cn/post/20191126boston_preice_regression/</guid>
       <description>波士顿房价数据集包含20世纪70年代中期波士顿郊区犯罪率、财产税率等13个feature，target是住房价格的中位数，单位：千美元。其中</description>
     </item>
     
     <item>
       <title>电影评论&amp;新闻主题文本分类</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191124imdb_mlp/</link>
+      <link>/cn/post/20191124imdb_mlp/</link>
       <pubDate>Sun, 24 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191124imdb_mlp/</guid>
+      <guid>/cn/post/20191124imdb_mlp/</guid>
       <description>IMDB电影评论分类(二分类)1 IMDB数据集有50000条highly-polarized（高度极端化的）评论，其中训练集与测试集各有25</description>
     </item>
     
     <item>
       <title>MNIST手写字体分类</title>
-      <link>https://shixiangwang.github.io/home/cn/post/20191117mnist_mlp/</link>
+      <link>/cn/post/20191117mnist_mlp/</link>
       <pubDate>Sun, 17 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/20191117mnist_mlp/</guid>
+      <guid>/cn/post/20191117mnist_mlp/</guid>
       <description>下面的代码训练了一个多层感知机(Multilayer Perceptron, MLP)，在MNIST1数据集上做手写字体分类。训练集有60000张28x28像素的灰</description>
     </item>
     

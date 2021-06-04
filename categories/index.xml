@@ -2,80 +2,80 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Guankui Liu | Boylad</title>
-    <link>https://shixiangwang.github.io/home/categories/</link>
+    <link>/categories/</link>
     <description>Recent content in Categories on Guankui Liu | Boylad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 04 Jan 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 04 Jan 2020 00:00:00 +0000</lastBuildDate><atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Machine Learning</title>
-      <link>https://shixiangwang.github.io/home/categories/machine-learning/</link>
+      <link>/categories/machine-learning/</link>
       <pubDate>Sat, 04 Jan 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/machine-learning/</guid>
+      <guid>/categories/machine-learning/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Graphic</title>
-      <link>https://shixiangwang.github.io/home/categories/graphic/</link>
+      <link>/categories/graphic/</link>
       <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/graphic/</guid>
+      <guid>/categories/graphic/</guid>
       <description></description>
     </item>
     
     <item>
       <title>RosettaCode</title>
-      <link>https://shixiangwang.github.io/home/categories/rosettacode/</link>
+      <link>/categories/rosettacode/</link>
       <pubDate>Sat, 07 Dec 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/rosettacode/</guid>
+      <guid>/categories/rosettacode/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Deep Learning</title>
-      <link>https://shixiangwang.github.io/home/categories/deep-learning/</link>
+      <link>/categories/deep-learning/</link>
       <pubDate>Fri, 06 Dec 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/deep-learning/</guid>
+      <guid>/categories/deep-learning/</guid>
       <description></description>
     </item>
     
     <item>
       <title>life</title>
-      <link>https://shixiangwang.github.io/home/categories/life/</link>
+      <link>/categories/life/</link>
       <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/life/</guid>
+      <guid>/categories/life/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>https://shixiangwang.github.io/home/categories/r/</link>
+      <link>/categories/r/</link>
       <pubDate>Fri, 14 Dec 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/r/</guid>
+      <guid>/categories/r/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Statistics</title>
-      <link>https://shixiangwang.github.io/home/categories/statistics/</link>
+      <link>/categories/statistics/</link>
       <pubDate>Sat, 01 Dec 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/statistics/</guid>
+      <guid>/categories/statistics/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Mathematics</title>
-      <link>https://shixiangwang.github.io/home/categories/mathematics/</link>
+      <link>/categories/mathematics/</link>
       <pubDate>Thu, 04 Oct 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/categories/mathematics/</guid>
+      <guid>/categories/mathematics/</guid>
       <description></description>
     </item>
     

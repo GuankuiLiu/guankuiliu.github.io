@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>English Blog on Guankui Liu | Boylad</title>
-    <link>https://shixiangwang.github.io/home/en/post/</link>
+    <link>/en/post/</link>
     <description>Recent content in English Blog on Guankui Liu | Boylad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 11 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/en/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 11 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="/en/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>For Test</title>
-      <link>https://shixiangwang.github.io/home/en/post/for-test/</link>
+      <link>/en/post/for-test/</link>
       <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/en/post/for-test/</guid>
+      <guid>/en/post/for-test/</guid>
       <description> What I see in Nature is a magnificient structure that we can comprehend only very imperfectly, and that must fill a thinking person with a feeling of humility.
 ——Albert Einstein
  </description>

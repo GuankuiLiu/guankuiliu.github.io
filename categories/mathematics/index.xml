@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Mathematics on Guankui Liu | Boylad</title>
-    <link>https://shixiangwang.github.io/home/categories/mathematics/</link>
+    <link>/categories/mathematics/</link>
     <description>Recent content in Mathematics on Guankui Liu | Boylad</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 04 Oct 2018 00:00:00 +0000</lastBuildDate><atom:link href="https://shixiangwang.github.io/home/categories/mathematics/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 04 Oct 2018 00:00:00 +0000</lastBuildDate><atom:link href="/categories/mathematics/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>R矩阵运算</title>
-      <link>https://shixiangwang.github.io/home/cn/post/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97/</link>
+      <link>/cn/post/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97/</link>
       <pubDate>Thu, 04 Oct 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://shixiangwang.github.io/home/cn/post/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97/</guid>
+      <guid>/cn/post/r%E7%9F%A9%E9%98%B5%E8%BF%90%E7%AE%97/</guid>
       <description>数学公式 对于\(p\)维数据，设\(X=(x_1,x_2,\cdots,x_p)\)是\(n\times p\)随机向量。 期望计算公式: 若\(</description>
     </item>
     
